@@ -41,7 +41,7 @@ class astparser:
         elif isinstance(node, ast.Mult):
             return 'multiply'
         elif isinstance(node, ast.Sub):
-            return "subtract"
+            return "minus"
         elif isinstance(node, ast.Div):
             return "divide"
         elif isinstance(node, ast.Mod):
@@ -50,6 +50,10 @@ class astparser:
             return "FloorDiv"
         elif isinstance(node, ast.MatMult):
             return "MatMult"
+        elif isinstance(node, ast.Pow):
+            return "to the power of"
+        elif isinstance(node, ast.USub):
+            return "negative"
         else:
             raise Exception("Unknown Opcode" + str(node))
 
@@ -99,7 +103,6 @@ class astparser:
             
         return speech
 
-
     # parse an ast.Name code and # parse an ast.Num code$$ Helping extract the
     # num part from the comparators
     def emit_Name(self, node):
@@ -115,6 +118,15 @@ class astparser:
         speech = Speech()
 
         speech.text = str(node.n)
+        speech.data = ast.dump(node)
+
+        return speech
+
+    # parse an ast.Str Helping extract the string part from stmt
+    def emit_Str(self, node, level):
+        speech = Speech()
+
+        speech.text = "string "+ node.s
         speech.data = ast.dump(node)
 
         return speech
@@ -167,6 +179,40 @@ class astparser:
                        right_speech.text)
 
         return speech
+
+    # emit for UnaryOp nodes
+    def emit_UnaryOp(self, node, level):
+        # create an empty array to hold the values
+        speech = Speech()
+        
+        # visit operation
+        speech.data['op'] = self.emit_Opcode(node.op)
+        
+        # generate speech for operand
+        unary_operand = self.emit(node.operand)
+        
+        speech.text = (speech.data['op']+ " " + unary_operand.text)
+        return speech
+
+    # emit for Assign nodes
+    def emit_AugAssign(self, node, level):
+        # an empty array that holds a value is created
+        speech = Speech()
+
+        # visit operation
+        speech.data['op'] = self.emit_Opcode(node.op)
+
+        # generate speech for target
+        target_str = self.emit(node.target).text
+    
+        # handles the RHS of assignment
+        value_str = self.emit(node.value).text
+
+        speech.text = (target_str + " " + speech.data['op']+ " equal " +
+                       value_str)
+        
+        return speech
+
 
     # parse an ast.Return statment
     # current probably only handles returning a variable or a number
@@ -237,16 +283,22 @@ class astparser:
             return self.emit_Expr(node, level)
         elif isinstance(node, ast.BinOp):
             return self.emit_BinOp(node, level)
+        elif isinstance(node, ast.UnaryOp):
+            return self.emit_UnaryOp(node, level)
         elif isinstance(node, ast.Assign):
             return self.emit_Assign(node, level)
         elif isinstance(node, ast.If):
             return self.emit_IfExp(node, level)
+        elif isinstance(node, ast.AugAssign):
+            return self.emit_AugAssign(node, level)
         elif isinstance(node, ast.Compare):
             return self.emit_compare(node, level)
         elif isinstance(node, ast.Name):
             return self.emit_Name(node)
         elif isinstance(node, ast.Num):
             return self.emit_Num(node, level)
+        elif isinstance(node, ast.Str):
+            return self.emit_Str(node,level)
         elif isinstance(node, ast.Return):
             return self.emit_Return(node, level)
         else:
