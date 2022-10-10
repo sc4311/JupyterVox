@@ -93,7 +93,7 @@ class astparser:
         speech = Speech()
         
         # handle left operand
-        print(node.left)
+        # print(node.left)
         left_speech = self.emit(node.left)
         
         # handle the comparator
@@ -316,6 +316,93 @@ class astparser:
 
         return speech
 
+    def emit_For_loop(self, node, level):
+        speech = Speech()
+        body_speech = Speech()
+        
+
+        s1 = self.emit(node.target)
+        s2 = self.emit(node.iter)
+        s3 = ''
+
+        for i in range(len(node.body)-1):
+            body_speech = self.emit(node.body[i])
+            s3 += f"{body_speech.text}, "
+
+        body_speech = self.emit(node.body[-1])
+        s3 += body_speech.text
+
+        if isinstance(s1, Speech) and isinstance(s2, Speech):
+            speech.text = f"for {s1.text} in {s2.text} {s3}"
+        elif isinstance(s1, Speech) and isinstance(s2, str):
+            speech.text = f"for {s1.text} in {s2} {s3}"
+        else:
+            speech.text = f"for {s1} in {s2} {s3}"
+
+        return speech
+
+    def emit_List(self, node, level):
+        speech = Speech()
+        text = "list "
+        for i in range(len(node.elts)-1):
+            speech = self.emit(node.elts[i])
+            text += f"{speech.text}, "
+        
+        speech = self.emit(node.elts[-1])
+        text += speech.text
+        speech.text = text
+
+        return speech
+
+    def emit_Call(self, node, level):
+        speech_text = ''
+        text = self.emit(node.func)
+
+        speech_text += text.text
+        if speech_text == "len":
+                    speech_text = "length of"
+
+        for arg in node.args:
+            body = self.emit(arg)
+            if isinstance(body, str):
+                speech_text += f" {body}"
+            else:
+                speech_text += f" {body.text}"
+        
+        text.text = speech_text
+
+        return text
+
+    def emit_Dict(self, node, level):
+        text = "dictionary with "
+            
+        for i in range(len(node.keys)-1):
+            text += f"key {self.emit(node.keys[i])} "
+            text += f"value {self.emit(node.values[i])} "
+        
+
+        text += f"and key {self.emit(node.keys[-1])} "
+        text += f"value {self.emit(node.values[-1])}"
+
+        
+        return text
+
+    def emit_Constant(self, node, level):
+        constant = ''
+        for value in node.value:
+            constant += value
+        
+        if constant:
+            return f"\"{constant}\""
+
+        return ""
+
+    def emit_None(self, node, level):
+        speech = Speech()
+
+        speech.text = "None"
+
+        return speech
 
     # emit for ast.Module
     def emit_Module(self, node, level):
@@ -358,6 +445,18 @@ class astparser:
             return self.emit_Str(node,level)
         elif isinstance(node, ast.Return):
             return self.emit_Return(node, level)
+        elif isinstance(node, ast.For):
+            return self.emit_For_loop(node, level)
+        elif isinstance(node, ast.List):
+            return self.emit_List(node, level)
+        elif isinstance(node, ast.Call):
+            return self.emit_Call(node, level)
+        elif isinstance(node, ast.Dict):
+            return self.emit_Dict(node, level)
+        elif isinstance(node, ast.Constant):
+            return self.emit_Constant(node, level)
+        elif isinstance(node, type(None)):
+            return self.emit_None(node, level)
         else:
             print("Unhandled node type:", type(node))
             return
