@@ -23,7 +23,8 @@ def run_test(parser, statement):
 
 ####### testing assignment statements
 test_statements = ["c = 3 - x ** y", "x = -12", "c -= a", "x += 10", "u *= 12",
-                   "t = \"hello\""]
+                   "t = \"hello\"",
+                   "c = 3*7 + a*b"]
 
 for s in test_statements:
     run_test(vox_parser, s)
