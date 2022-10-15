@@ -19,17 +19,19 @@ def run_test(parser, statement):
     print("Returned data is ", speech2.data)
     print()
 
+    parser.text_to_speech(speech2.text)
+
     return
 
 ####### testing assignment statements
-# test_statements = ["c = 3 - x ** y", "x = -12", "c -= a", "x += 10", "u *= 12",
-#                    "t = \"hello\"",
-#                    "c = 3*7 + a*b"]
+test_statements = ["c = 3 - x ** y", "x = -12", "c -= a", "x += 10", "u *= 12",
+                   "t = \"hello\"",
+                   "c = 3*7 + a*b"]
 
-# for s in test_statements:
-#     run_test(vox_parser, s)
+for s in test_statements:
+    run_test(vox_parser, s)
 
-# ####### testing if-else statement
+######## testing if-else statement
 # test_statement = """
 # if x == 3:
 #   return 4
@@ -40,11 +42,11 @@ def run_test(parser, statement):
 # run_test(vox_parser, test_statement)
 
 ####### testing for-loop statement
-test_statements = ["for i in [1, 1, 1]: return", 
-                   "for i in range(6): print(i)", 
-                   "for word in range(len('Python')): return", 
-                   "for i in 'Computer Science': sum += 0", 
-                   'for i in {"green":"grass", "red":"fire", "blue":"water"}: return']
+# test_statements = ["for i in [1, 1, 1]: return", 
+#                    "for i in range(6): print(i)", 
+#                    "for word in range(len('Python')): return",
+#                    "for i in 'Computer Science': sum += 0"] 
+#                   #  'for i in {"green":"grass", "red":"fire", "blue":"water"}: return']
 
-for s in test_statements:
-  run_test(vox_parser, s)
+# for s in test_statements:
+#   run_test(vox_parser, s)

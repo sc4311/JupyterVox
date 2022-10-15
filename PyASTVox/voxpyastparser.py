@@ -1,4 +1,6 @@
 import ast
+import pyttsx3
+
 from pprint import pprint
 
 # class for the object used for returns from emit functions
@@ -333,11 +335,11 @@ class astparser:
         s3 += body_speech.text
 
         if isinstance(s1, Speech) and isinstance(s2, Speech):
-            speech.text = f"for {s1.text} in {s2.text} {s3}"
+            speech.text = f"for loop with condition {s1.text} in {s2.text} has a body of {s3}"
         elif isinstance(s1, Speech) and isinstance(s2, str):
-            speech.text = f"for {s1.text} in {s2} {s3}"
+            speech.text = f"for loop with condition {s1.text} in {s2} has a body of {s3}"
         else:
-            speech.text = f"for {s1} in {s2} {s3}"
+            speech.text = f"for loop with condition {s1} in {s2} {s3}"
 
         return speech
 
@@ -373,19 +375,22 @@ class astparser:
 
         return text
 
-    def emit_Dict(self, node, level):
-        text = "dictionary with "
+
+    # Dictionary functionality to be added in
+
+    # def emit_Dict(self, node, level):
+    #     text = "dictionary with "
             
-        for i in range(len(node.keys)-1):
-            text += f"key {self.emit(node.keys[i])} "
-            text += f"value {self.emit(node.values[i])} "
+    #     for i in range(len(node.keys)-1):
+    #         text += f"key {self.emit(node.keys[i]).text} "
+    #         text += f"value {self.emit(node.values[i]).text} "
         
 
-        text += f"and key {self.emit(node.keys[-1])} "
-        text += f"value {self.emit(node.values[-1])}"
+    #     text += f"and key {self.emit(node.keys[-1]).text} "
+    #     text += f"value {self.emit(node.values[-1]).text}"
 
         
-        return text
+    #     return text
 
     def emit_Constant(self, node, level):
         constant = ''
@@ -415,6 +420,12 @@ class astparser:
 
         return speech
 
+
+    def text_to_speech(self, speech):
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 110)
+        engine.say(speech)
+        engine.runAndWait()
 
     # emit: the main entrance function
     # It calls the emit function for each type of nodes
