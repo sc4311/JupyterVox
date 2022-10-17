@@ -32,21 +32,20 @@ for s in test_statements:
     run_test(vox_parser, s)
 
 ######## testing if-else statement
-# test_statement = """
-# if x == 3:
-#   return 4
-# else:
-#   return 5
-# """
+test_statement = """
+if x == 3:
+  return 4
+else:
+  return 5
+"""
 
-# run_test(vox_parser, test_statement)
+run_test(vox_parser, test_statement)
 
 ####### testing for-loop statement
-# test_statements = ["for i in [1, 1, 1]: return", 
-#                    "for i in range(6): print(i)", 
-#                    "for word in range(len('Python')): return",
-#                    "for i in 'Computer Science': sum += 0"] 
-#                   #  'for i in {"green":"grass", "red":"fire", "blue":"water"}: return']
+test_statements = ["for i in [1, 1, 1]: return", 
+                   "for i in range(6): print(i)", 
+                   "for word in range(len('Python')): return",
+                   "for i in 'Computer Science': sum += 0"] 
 
-# for s in test_statements:
-#   run_test(vox_parser, s)
+for s in test_statements:
+  run_test(vox_parser, s)
