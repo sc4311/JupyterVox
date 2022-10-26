@@ -335,11 +335,12 @@ class astparser:
         s3 += body_speech.text
 
         if isinstance(s1, Speech) and isinstance(s2, Speech):
-            speech.text = f"for loop with condition {s1.text} in {s2.text} has a body of {s3}"
+            if "ranging" in s2.text:
+                speech.text = f"for loop with condition {s1.text} {s2.text}, has a body of {s3}"
+            else:
+                speech.text = f"for loop with condition {s1.text} in {s2.text}, has a body of {s3}"
         elif isinstance(s1, Speech) and isinstance(s2, str):
-            speech.text = f"for loop with condition {s1.text} in {s2} has a body of {s3}"
-        else:
-            speech.text = f"for loop with condition {s1} in {s2} {s3}"
+            speech.text = f"for loop with condition {s1.text} in {s2}, has a body of {s3}"
 
         return speech
 
@@ -362,14 +363,44 @@ class astparser:
 
         speech_text += text.text
         if speech_text == "len":
-                    speech_text = "length of"
+            speech_text = "length of "
+            body = self.emit(node.args[0])
+            length = str(len(body.text.split()[-1]))
+            speech_text += f"{body.text} ({length})"
 
-        for arg in node.args:
-            body = self.emit(arg)
-            if isinstance(body, str):
-                speech_text += f" {body}"
+        elif speech_text == "range":
+            speech_text = "ranging from "
+            start = '0'
+            stop = ''
+            step = None
+            parameters = []
+            for arg in node.args:
+                body = self.emit(arg)
+                parameters.append(body.text)
+            if len(parameters) == 3:
+                start = parameters[0]
+                stop = parameters[1]
+                step = parameters[2]
+            elif len(parameters) == 2:
+                start = parameters[0]
+                stop = parameters[1]
+            elif len(parameters) == 1:
+                if parameters[0].isdigit():
+                    stop = parameters[0]
+                else:
+                    stop = str(len(parameters[0].split()[-1]))
+            if step and step[0].isdigit():
+                speech_text += f"{start} to {stop} increasing by {step}"
+            elif step and step[0].isdigit() == False:
+                speech_text += f"{start} to {stop} decreasing by {step[-1]}"
+            elif parameters[0].startswith("length"):
+                speech_text += f"{start} to {parameters[0]}"
             else:
-                speech_text += f" {body.text}"
+                speech_text += f"{start} to {stop}"  
+        else:
+            for arg in node.args:
+                body = self.emit(arg)
+                speech_text += f" {body.text}"     
         
         text.text = speech_text
 
