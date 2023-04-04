@@ -28,6 +28,27 @@ def parse_statement(parser, stmt, verbose):
 
     return s
 
+# function to read a test case from the file a test case in a file starts with a
+# line of "<<<...", and ends with a line ">>>,,,".
+#
+# Note that this function does not check for incorrect formatting. So please
+# make sure the test case file is correctly formatted.
+def read_test_case(file_handle):
+    # skip lines until a line of "<<<..."
+    for line in file_handle:
+        if line.startswith("<<<"):
+           break
+
+    # read-in the test  cases
+    test_case = ""
+    for line in file_handle:
+        if not line.startswith(">>>"):
+            test_case += line
+        else:
+            break
+
+    return test_case
+
 
 # parse the input
 parser = argparse.ArgumentParser(description='Testing file for JupyterVox with PyAST')
@@ -64,13 +85,16 @@ else:
 
     # generate speech for each line
     print("Generating speeches ...\n")
+    file_all_parsed = False
+    while not file_all_parsed:
+        test_case = read_test_case(f)
 
-    for line in f:
-        line = line.rstrip('\n')
+        if test_case == "": # no more test cases
+            break
 
-        s = parse_statement(vox_parser, line, args.verbose)
+        s = parse_statement(vox_parser, test_case, args.verbose)
     
-        print("  ", line, "=>", s.text, "\n")
+        print(">>> Test case:\n", test_case, "=>", s.text, "\n")
         #print(s.data)
 
     print("\nDone.")

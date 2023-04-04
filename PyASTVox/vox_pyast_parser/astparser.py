@@ -9,10 +9,14 @@ from speech import Speech
 import _operators
 import _expressions
 import _variables
+import _if_stmts
+import _functions
 
 class astparser(_operators.ops_mixin,
                 _expressions.exprs_mixin,
-                _variables.vars_mixin):
+                _variables.vars_mixin,
+                _if_stmts.if_stmts_mixin,
+                _functions.functions_mixin):
     # init function. does nothing at the moment
     def __init__(self):
         return
@@ -26,6 +30,15 @@ class astparser(_operators.ops_mixin,
         print("Iter children")
         for child in ast.iter_child_nodes(node):
             print(child)
+
+    # generate dict key for statements
+    def gen_Dict_Key(self, node, level):
+        if isinstance(node, ast.Expr):
+            return "ExprStmt-" + str(level)
+        elif isinstance(node, ast.BinOp):
+            return "BinOpStmt-" + str(level)
+        elif isinstance(node, ast.Assign):
+            return "BinOpStmt-" + str(level)
 
     # emit for ast.Module
     def emit_Module(self, node, level):
