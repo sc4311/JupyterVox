@@ -88,7 +88,7 @@ class ops_mixin:
         return speech
 
     # generate speech for comparison
-    def emit_compare(self, node, level):
+    def emit_Compare(self, node, level):
 
         # create an empty array to hold the values
         speech = Speech()
@@ -128,7 +128,8 @@ class ops_mixin:
         for right_opr in node.comparators:
             right_speech = self.emit(right_opr)
             
-            speech.text = left_speech.text + " " + op_text + " " + right_speech.text
+            speech.text = (left_speech.text + " " + op_text + " " +
+                           right_speech.text)
             
         return speech
 

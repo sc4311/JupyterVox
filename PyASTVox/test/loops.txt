@@ -1,0 +1,39 @@
+<<<<<<
+for _ in range(10):
+  return
+>>>>>>>>>
+
+<<<<<<
+for i in [1, 1, 1]:
+  return
+>>>>>>>>>
+
+<<<<<<
+for i in 'Computer Science':
+  sum += b
+>>>>>>>>>
+
+<<<<<<
+for i in range(3, 10):
+  print(i)
+>>>>>>>>>
+
+<<<<<<
+for i in range (10, 0, -2):
+  print(i)
+>>>>>>>>>
+
+<<<<<<
+for i in range (0, 10, 2):
+  print(i)
+>>>>>>>>>
+
+<<<<<<
+for word in range(len('Python')):
+  return
+>>>>>>>>>
+
+<<<<<<
+for x in ['University', 'of', 'Texas', 'at', 'San', 'Antonio']:
+  return
+>>>>>>>>>

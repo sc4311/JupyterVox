@@ -11,12 +11,16 @@ import _expressions
 import _variables
 import _if_stmts
 import _functions
+import _loops
+import _lists_dicts
 
 class astparser(_operators.ops_mixin,
                 _expressions.exprs_mixin,
                 _variables.vars_mixin,
                 _if_stmts.if_stmts_mixin,
-                _functions.functions_mixin):
+                _functions.functions_mixin,
+                _loops.loops_mixin,
+                _lists_dicts.lists_dicts_mixin):
     # init function. does nothing at the moment
     def __init__(self):
         return
@@ -71,7 +75,7 @@ class astparser(_operators.ops_mixin,
         elif isinstance(node, ast.AugAssign):
             return self.emit_AugAssign(node, level)
         elif isinstance(node, ast.Compare):
-            return self.emit_compare(node, level)
+            return self.emit_Compare(node, level)
         elif isinstance(node, ast.Name):
             return self.emit_Name(node)
         elif isinstance(node, ast.Num):
@@ -80,6 +84,16 @@ class astparser(_operators.ops_mixin,
             return self.emit_Str(node,level)
         elif isinstance(node, ast.Return):
             return self.emit_Return(node, level)
+        elif isinstance(node, ast.For):
+            return self.emit_For(node, level)
+        elif isinstance(node, ast.List):
+            return self.emit_List(node, level)
+        elif isinstance(node, ast.Call):
+            return self.emit_Call(node, level)
+        elif isinstance(node, ast.Dict):
+            return self.emit_Dict(node, level)
+        elif isinstance(node, ast.Constant):
+            return self.emit_Constant(node, level)
         else:
             print("Unhandled node type:", type(node))
             return
