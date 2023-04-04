@@ -86,3 +86,104 @@ class ops_mixin:
                            right_speech.text + ", ")
         
         return speech
+
+    # generate speech for comparison
+    def emit_compare(self, node, level):
+
+        # create an empty array to hold the values
+        speech = Speech()
+        
+        # handle left operand
+        print(node.left)
+        left_speech = self.emit(node.left)
+        
+        # handle the comparator
+        ops = node.ops[0]
+        
+        if isinstance(ops, ast.NotIn):
+            op_text = "not in"
+        elif isinstance(ops, ast.Lt):
+            print('less than')
+            op_text = "less than"
+        elif isinstance(ops, ast.Gt):
+            op_text = "greater than"
+        elif isinstance(ops, ast.GtE):
+            op_text = "great than equal to"
+        elif isinstance(ops, ast.LtE):
+            op_text = "less than equal to"
+        elif isinstance(ops, ast.Eq):
+            op_text = "equal to"
+        elif isinstance(ops, ast.NotEq):
+            op_text = "not equal to"
+        elif isinstance(ops, ast.Is):
+            op_text = "Is"
+        elif isinstance(ops, ast.If):
+            op_text = "if"
+        else:
+            raise Exception("Unknown Opcode" + str(test))
+
+        # handle the right operand
+        # this only handles one right operand, not sure what multi-operand test
+        # look like
+        for right_opr in node.comparators:
+            right_speech = self.emit(right_opr)
+            
+            speech.text = left_speech.text + " " + op_text + " " + right_speech.text
+            
+        return speech
+
+    # emit for UnaryOp nodes
+    def emit_UnaryOp(self, node, level):
+        # create an empty array to hold the values
+        speech = Speech()
+        
+        # visit operation
+        speech.data['op'] = self.emit_Opcode(node.op)
+        
+        # generate speech for operand
+        unary_operand = self.emit(node.operand)
+        
+        speech.text = (speech.data['op']+ " " + unary_operand.text)
+        return speech
+
+    # parse an ast.Add/Mult/Assi... node
+    def emit_Opcode(self, node):
+        if isinstance(node, ast.Add):
+            return 'plus'
+        elif isinstance(node, ast.Mult):
+            return 'multiply'
+        elif isinstance(node, ast.Sub):
+            return "minus"
+        elif isinstance(node, ast.Div):
+            return "divide"
+        elif isinstance(node, ast.Mod):
+            return "Mod"
+        elif isinstance(node, ast.FloorDiv):
+            return "FloorDiv"
+        elif isinstance(node, ast.MatMult):
+            return "MatMult"
+        elif isinstance(node, ast.Pow):
+            return "to the power of"
+        elif isinstance(node, ast.USub):
+            return "negative"
+        else:
+            raise Exception("Unknown Opcode" + str(node))
+
+    # emit for AugAssign nodes (e.g., +=)
+    def emit_AugAssign(self, node, level):
+        # an empty array that holds a value is created
+        speech = Speech()
+
+        # visit operation
+        speech.data['op'] = self.emit_Opcode(node.op)
+
+        # generate speech for target
+        target_str = self.emit(node.target).text
+    
+        # handles the RHS of assignment
+        value_str = self.emit(node.value).text
+
+        speech.text = (target_str + " " + speech.data['op']+ " equal " +
+                       value_str)
+        
+        return speech
