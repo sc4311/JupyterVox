@@ -1,14 +1,14 @@
-# fix module path issue
+# add antlr2pyast to module search path
 import os
-parser_path = os.path.abspath('../antlr_parser/')
-
+parser_path = os.path.abspath('../antlr2pyast/')
 import sys
 sys.path.append(parser_path)
 
 # antlr4 python packages
 import antlr4
-from Python3Lexer import Python3Lexer
-from Python3Parser import Python3Parser
+from antlr_parser.Python3Lexer import Python3Lexer
+#from antlr_parser import *
+from antlr_parser.Python3Parser import Python3Parser
 
 ##### AST tree print functions ###############
 # generate the AST tree

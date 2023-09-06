@@ -13,9 +13,9 @@ from antlr_parser.Python3ParserListener import Python3ParserListener
 import ast
 
 # Actual implementation of the member methods
-import atom_name_terminals
-import expr
-import basic_rules
+from . import atom_name_terminals
+from . import expr
+from . import basic_rules
 
 class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
