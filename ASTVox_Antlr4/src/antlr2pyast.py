@@ -23,7 +23,7 @@ def generate_ast_tree(stmt):
 # It uses the listener class to walk and convert the ANTLR4 tree
 # Returns the Python AST tree and the listener class holding the Python AST tree
 def convert_tree(tree):
-    converter = anltr2pyast_listener()
+    converter = antlr2pyast_listener()
     walker = antlr4.ParseTreeWalker()
 
     # traverse and convert the
