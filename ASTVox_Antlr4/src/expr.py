@@ -43,7 +43,18 @@ def gen_ast_operator(op_text):
 
     return ast_node
 
-#
+# Grammar:
+# expr: 
+#    atom_expr
+#    | expr '**' expr
+#    | ('+'|'-'|'~')+ expr
+#    | expr ('*'|'@'|'/'|'%'|'//') expr
+#    | expr ('+'|'-') expr
+#    | expr ('<<' | '>>') expr
+#    | expr '&' expr
+#    | expr '^' expr
+#    | expr '|' expr
+#    ;
 def convert_expr(listener, ctx:Python3Parser.ExprContext):
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
@@ -60,16 +71,17 @@ def convert_expr(listener, ctx:Python3Parser.ExprContext):
     elif ctx.getChildCount() == 3:
         # three children typically is binary operation
 
-        # generate the node for left and right children (operands) first
-        left_opr = antlr2pyast.convert_tree(ctx.getChild(0))
-        right_opr = antlr2pyast.convert_tree(ctx.getChild(2))
+        # get the PyAST nodes for left and right operands
+        left_opr = listener.pyast_trees[ctx.getChild(0)]
+        right_opr = listener.pyast_trees[ctx.getChild(2)]
 
-        # generat the operation node
+        # generate the operator node
         operator = gen_ast_operator(ctx.getChild(1).getText())
 
         # generate the tree node
         binop_node = ast.BinOp(left_opr, operator, right_opr)
-        return binop_node
+        listener.pyast_trees[ctx] = binop_node
+        return 
     else:
         raise NotImplementedError("More than one child is not supported for " +
                                   "Expr node at the moment, count is " +
