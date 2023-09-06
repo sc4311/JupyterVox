@@ -15,7 +15,12 @@ import ast
 
 ####### functions to print an AST tree
 def str_node(node):
-    if isinstance(node, ast.AST):
+    if isinstance(node, ast.Module):
+        # for module, just print its class name and type_ignores
+        # otherwise, the pointer addresses will never match between trees
+        s = "Module(type_ignores=" + repr(node.type_ignores) + ")"
+        return s
+    elif isinstance(node, ast.AST):
         fields = [(name, str_node(val)) for name, val in ast.iter_fields(node) if name not in ('left', 'right')]
         rv = '%s(%s' % (node.__class__.__name__, ', '.join('%s=%s' % field for field in fields))
         return rv + ')'
@@ -39,7 +44,7 @@ def ast_visit(node, out_str, level=0):
 def test_antlr4_conversion(line):
     # generate and convert tree
     tree = antlr2pyast.generate_ast_tree(line)
-    converted_tree = antlr2pyast.convert_tree(tree)
+    converted_tree, converter = antlr2pyast.convert_tree(tree)
     # print the tree
     converted_tree_str = []
     ast_visit(converted_tree, converted_tree_str)
@@ -58,15 +63,13 @@ def test_pyast(line):
 
 ############### functions for comparing two tree outputs
 # compare if two trees are the same
-# if one tree is taller than the other one, only the lower parts of the tree
-# are compared
-tree2_start_col = 40 # beginning position (in chars/cols) to print tree2
+tree2_start_col = 50 # beginning position (in chars/cols) to print tree2
 def compare_and_print_trees(tree1, tree2):
     # make the two tree has the same height
-    if len(tree1) < len(tree2):
-        tree2 = tree2[-len(tree1):]
-    else:
-        tree1 = tree1[-len(tree2):]
+    # if len(tree1) < len(tree2):
+    #     tree2 = tree2[-len(tree1):]
+    # else:
+    #     tree1 = tree1[-len(tree2):]
 
     # print two trees out
     same_tree = True
@@ -103,7 +106,9 @@ test_f = open(args.filename, 'r')
 # read line by line, and parse/check each line
 test_case_cnt = 1
 for line in test_f:
-    line = line.rstrip('\n')
+    # line = line.rstrip('\n')
+    if line.startswith('#'): # comments, skip
+        continue;
     # generate the tree/outputs for converted tree
     converted_tree_str = test_antlr4_conversion(line)
     #for s in converted_tree_str:

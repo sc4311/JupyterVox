@@ -17,7 +17,7 @@ import atom_name_terminals
 import expr
 import basic_rules
 
-class anltr2pyast_listener(Python3ParserListener):
+class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
         self.pyast_trees = {}
         
