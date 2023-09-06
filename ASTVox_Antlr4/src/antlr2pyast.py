@@ -7,7 +7,7 @@ from antlr_parser.Python3Parser import Python3Parser
 import ast
 
 # node/rule-specific translation functions
-from antlr2pyast_listener import anltr2pyast_listener
+from antlr2pyast_listener import antlr2pyast_listener
 
 # generate the AST tree
 def generate_ast_tree(stmt):
