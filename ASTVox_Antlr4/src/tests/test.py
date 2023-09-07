@@ -62,7 +62,7 @@ def test_pyast(line):
 ############### functions for comparing two tree outputs
 # compare if two trees are the same
 tree2_start_col = 50 # beginning position (in chars/cols) to print tree2
-def compare_and_print_trees(tree1, tree2):
+def compare_and_print_trees(tree1, tree2, print_tree):
     # make the two tree has the same height
     # if len(tree1) < len(tree2):
     #     tree2 = tree2[-len(tree1):]
@@ -77,14 +77,31 @@ def compare_and_print_trees(tree1, tree2):
         if tree1[i].strip() != tree2[i].strip():
             same = "Diff"
             same_tree = False
-        print(str(same) + ":  ", end='')    
+        if print_tree: print(str(same) + ":  ", end='')    
             
         # print tree1
-        print(tree1[i], end='')
+        if print_tree: print(tree1[i], end='')
         # skip to beginning col of tree2
         skip = ' ' * (tree2_start_col - len(tree1[i]))
         # print tree2
-        print(skip + tree2[i])
+        if print_tree: print(skip + tree2[i])
+
+    return same_tree
+
+# convert the tree and compare with the standard Python AST tree
+def convert_and_compare(stmt, test_case_cnt, print_tree):
+    # generate the tree/outputs for converted tree
+    converted_tree_str = test_antlr4_conversion(stmt)
+
+    # generate the tree/outputs for Python AST tree
+    pyast_tree_str = test_pyast(stmt)
+
+    # print and compare trees
+    print("Test case", test_case_cnt, ":", stmt.rstrip('\n'))
+    same_tree = compare_and_print_trees(pyast_tree_str, converted_tree_str,
+                                        print_tree)
+    print("Test case", test_case_cnt, "passed:", same_tree)
+    print()
 
     return same_tree
     
@@ -95,36 +112,43 @@ def compare_and_print_trees(tree1, tree2):
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='test case file',
                     dest='filename')
+parser.add_argument('-s', '--statement', help='a single statement to test',
+                    dest='stmt')
+parser.add_argument('-p', '--print_tree', action='store_true',
+                    dest='print_tree', help='enable AST tree printing' )
+
 args = parser.parse_args()
 
+if not (args.stmt is None):
+    convert_and_compare(args.stmt, 0, args.print_tree)
 
-# open test case file
-test_f = open(args.filename, 'r')
+if not (args.filename is None):
+    # open test case file
+    test_f = open(args.filename, 'r')
 
-# read line by line, and parse/check each line
-test_case_cnt = 1
-for line in test_f:
-    # line = line.rstrip('\n')
-    if line.startswith('#'): # comments, skip
-        continue;
-    # generate the tree/outputs for converted tree
-    converted_tree_str = test_antlr4_conversion(line)
-    #for s in converted_tree_str:
-    #    print(s)
+    # read line by line, and parse/check each line
+    test_case_cnt = 0
+    correct_cnt = 0
+    incorrect_test_cases = []
+    for line in test_f:
+        # line = line.rstrip('\n')
+        if line.startswith('#'): # comments, skip
+            continue;
 
-    # generate the tree/outputs for Python AST tree
-    pyast_tree_str = test_pyast(line)
-    #for s in pyast_tree_str:
-    #    print(s)
+        same_tree = convert_and_compare(line, test_case_cnt, args.print_tree)
+        if same_tree:
+            correct_cnt += 1
+        else:
+            incorrect_test_cases.append(line)
+        
+        test_case_cnt += 1
 
-    # print and compare trees
-    print("Test case", test_case_cnt, ":", line)
-    same_tree = compare_and_print_trees(pyast_tree_str, converted_tree_str)
-    print("Test case", test_case_cnt, "passed:", same_tree)
-    print()
-
-    test_case_cnt += 1
-
-# close test case file
-test_f.close()
+    # print out overall results
+    print("Correct/Total: {0}/{1}".format(correct_cnt, test_case_cnt))
+    if correct_cnt < test_case_cnt:
+        print("Incorrect test cases:")
+        print(incorrect_test_cases)
+    
+    # close test case file
+    test_f.close()
     
