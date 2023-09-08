@@ -23,34 +23,68 @@ def gen_ast_constant(ctx:antlr4.tree.Tree.TerminalNodeImpl):
 
     return ast_node
 
-# convert an atom node with terminals to Python AST tree
-def convert_atom_terminals(listener, ctx:Python3Parser.AtomContext):
-    # should have only one child
-    child = ctx.children[0]
+# It seems ANTLR4 will pass on the string with the quote marks, I will
+# remove them here. However, there may be other preprocessing need, 
+# hence the separate function
+def atom_string_processing(text:str):
+  if text[0] == '\"':
+    return text.lstrip('\"').rstrip('\"')
+  elif text[0] == '\'':
+    return text.lstrip('\'').rstrip('\'')
+  else:
+    return text # should not reach here
 
-    # process case by case
-    if isinstance(child, Python3Parser.NameContext):
-        # case 1: child is a name node, just copy the child's AST tree
-        #listener.pyast_trees[ctx] = listener.pyast_trees[child]
-        ctx.pyast_tree = child.pyast_tree
-    elif (isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and
-          child.getSymbol().type == Python3Lexer.NUMBER):
-        # case 2: child a is NUMER type, convert it to ast.Constant
-        # listener.pyast_trees[ctx] = gen_ast_constant(child)
-        ctx.pyast_tree = gen_ast_constant(child)
-    else:
-        raise NotImplementedError("Other terminal type not implemented yet "
-                                  "for Atom node at the moment")
+# convert a list of strings (STRING+) to one string ast.Constant node
+# note that, the strings will also be saved into a list and add to the
+# ast.Constant node. The name of the string is "original_string"
+def convert_atom_strings(listener, ctx:Python3Parser.AtomContext):
+  
+  combined_string=""
+  original_strings=[]
 
-    return
+  for child in ctx.children:
+    # check if child is STRING
+    if not (isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and
+          child.getSymbol().type == Python3Lexer.STRING):
+      raise ValueError("")
+
+    # combine and insert the strings.
+    combined_string += atom_string_processing(child.getText())
+    original_strings.append(child.getText())
+
+  ast_node = ast.Constant(value = combined_string)
+  ast_node.original_strings = original_strings
+
+  return ast_node
 
 # convert an atom node from Anltr4 tree to Python AST tree
 def convert_atom(listener, ctx:Python3Parser.AtomContext):
-    # terminals
-    if ctx.getChildCount() == 1:
-        convert_atom_terminals(listener, ctx)
+    # should have more than one child and the type of the first child
+    # can help determine what rule it is and what to do
+    first_child = ctx.children[0]
+
+    # process based on rules/first_child
+    if isinstance(first_child, Python3Parser.NameContext):
+        # rule 1: atom: name
+        # child is a name node, just copy the child's AST tree
+        ctx.pyast_tree = first_child.pyast_tree
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.NUMBER):
+        # rule 2: atom: NUMBER
+        # child a is NUMER type, convert it to ast.Constant
+        ctx.pyast_tree = gen_ast_constant(first_child)
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.NUMBER):
+        # rule 3: atom: STRING+
+        # child a is NUMER type, convert it to ast.Constant
+        ctx.pyast_tree = gen_ast_constant(first_child)
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.STRING):
+        # rule 3: atom: STRING+
+        # child a is NUMER type, convert it to ast.Constant
+        ctx.pyast_tree = convert_atom_strings(listener, ctx)
     else:
-        raise NotImplementedError("More than one child is not supported for " +
+        raise NotImplementedError("Other rules not implemented for " +
                                   "Atom node at the moment")
     return
 
@@ -59,7 +93,7 @@ def convert_name(listener, ctx:Python3Parser.NameContext):
     # should have only one child
     if ctx.getChildCount() != 1:
         raise ValueError("Name node has more than one child, count is" +
-                         str(node.getChildCount()))
+                         str(ctx.getChildCount()))
 
     # child should be terminal
     child = ctx.children[0]
@@ -85,7 +119,7 @@ def convert_atom_expr(listener, ctx:Python3Parser.Atom_exprContext):
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("Atom_expr node has more than three children, " +
-                         "count is " + str(node.getChildCount()))
+                         "count is " + str(ctx.getChildCount()))
 
     # only handles one the case with one child now
     if ctx.getChildCount() != 1:

@@ -15,7 +15,7 @@ def convert_comparison(listener, ctx:Python3Parser.ComparisonContext):
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("Comparison node has more than three children, "
-                         + "count is " + str(node.getChildCount()))
+                         + "count is " + str(ctx.getChildCount()))
 
     # only handles one the case with one child now
     if ctx.getChildCount() != 1:
@@ -34,7 +34,7 @@ def convert_not_test(listener, ctx:Python3Parser.Not_testContext):
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("Not_test node has more than three children, "
-                         + "count is " + str(node.getChildCount()))
+                         + "count is " + str(ctx.getChildCount()))
 
     # only handles one the case with one child now
     if ctx.getChildCount() != 1:
@@ -53,7 +53,7 @@ def convert_and_test(listener, ctx:Python3Parser.And_testContext):
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("And_test node has more than three children, "
-                         + "count is " + str(node.getChildCount()))
+                         + "count is " + str(ctx.getChildCount()))
 
     # only handles one the case with one child now
     if ctx.getChildCount() != 1:
@@ -111,7 +111,7 @@ def convert_testlist_star_expr(listener,
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("Testlist_star_expr node has more than three children"
-                         + ", count is " + str(node.getChildCount()))
+                         + ", count is " + str(ctx.getChildCount()))
 
     # only handles one the case with one child now
     if ctx.getChildCount() != 1:
@@ -131,7 +131,7 @@ def convert_expr_stmt(listener, ctx:Python3Parser.Expr_stmtContext):
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("Expr_stmt node has more than three children, "
-                         + "count is " + str(node.getChildCount()))
+                         + "count is " + str(ctx.getChildCount()))
 
     # only handles one the case with one child now
     if ctx.getChildCount() != 1:
@@ -153,7 +153,7 @@ def convert_simple_stmt(listener, ctx:Python3Parser.Simple_stmtContext):
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("Simple_stmt node has more than three children, "
-                         + "count is " + str(node.getChildCount()))
+                         + "count is " + str(ctx.getChildCount()))
 
     # only handles one the case with one child now
     if ctx.getChildCount() != 1:
@@ -173,7 +173,7 @@ def convert_simple_stmts(listener, ctx:Python3Parser.Simple_stmtsContext):
     # can have one or more simple statement with ';' and NEWLINE
     if ctx.getChildCount() < 1: # this should never happen...
         raise ValueError("Simple_stmts node has less than one children? "
-                         + "count is " + str(node.getChildCount()))
+                         + "count is " + str(ctx.getChildCount()))
 
     # in Python AST, statements are stored in a list, as the "body"
     # of ast.Module
@@ -210,7 +210,7 @@ def convert_single_input(listener, ctx:Python3Parser.Single_inputContext):
     # should have no more than 2 child
     if ctx.getChildCount() > 2:
         raise ValueError("Single_input node has more than two children, "
-                         + "count is " + str(node.getChildCount()))
+                         + "count is " + str(ctx.getChildCount()))
 
     # based on the grammar on the first child matter
     child = ctx.children[0]

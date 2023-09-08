@@ -21,6 +21,11 @@
 1. AtomContext.pyast_tree <= AtomContext.children[0].pyast_tree (copy child)
 ### 2.2.2 atom: NUMBER
 1. AtomContext.pyast_tree <= ast.Constant(AtomContext.children[0]), see 1.1 NUMBER
+### 2.2.3 atom:STRING+
+1. AtomContext.pyast_tree <= ast.Constant
+    1. value <= concatenated string tokens
+    2. A separate list "original_strings" is also added to the ast.Constant node with individual strings in STRING+
+    3. String is processes to remove leading and trailing " and '
 ### 2.2.x Other not implemented yet
 
 ## 2.3 atom_expr

@@ -138,4 +138,4 @@ def convert_expr(listener, ctx:Python3Parser.ExprContext):
     else:
         raise NotImplementedError("More than one child is not supported for " +
                                   "Expr node at the moment, count is " +
-                                  str(node.getChildCount()))
+                                  str(ctx.getChildCount()))
