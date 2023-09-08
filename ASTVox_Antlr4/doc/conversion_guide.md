@@ -57,7 +57,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ## 2.6 simple_stmts
 ### 2.6.1 simple_stmts: simple_stmt (';' simple_stmt)* ';'? NEWLINE;
 1. Simple_stmtsContext.pyast_tree = [Simple_stmtsContext.children[*].pyast_tree]
-2. The tree is a list containing the trees of the children simple_stmt trees
+2. The tree is a list containing the trees of all simple_stmt children 
 3. ';' and NEWLINE are omitted from the list
 
 ## 2.7 single_input
