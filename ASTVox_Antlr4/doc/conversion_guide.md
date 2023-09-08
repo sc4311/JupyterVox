@@ -42,9 +42,9 @@
 >    | expr '&' expr <br/>
 >    | expr '^' expr <br/>
 >    | expr '|' expr <br/>
-### 2.4.3 expr: ('+'|'-'|'~')+ expr, i.e., UnaryOp +/-/~
+### 2.4.3 expr: ('+'|'-'|'~')+ expr, i.e., UnaryOp 
 1. ExprContext.pyast_tree <= ast.UnaryOp(ast.UAdd/USub/Invert*, right epxr)
-2. * means nested tree
+2. \* means nested tree
 
 ## 2.5 expr_stmt:
 ### 2.5.1 expr_stmt: testlist_star_expr
@@ -57,7 +57,8 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ## 2.6 simple_stmts
 ### 2.6.1 simple_stmts: simple_stmt (';' simple_stmt)* ';'? NEWLINE;
 1. Simple_stmtsContext.pyast_tree = [Simple_stmtsContext.children[*].pyast_tree]
-2. ';' and NEWLINE are omitted from the list
+2. The tree is a list containing the trees of the children simple_stmt trees
+3. ';' and NEWLINE are omitted from the list
 
 ## 2.7 single_input
 ### 2.7.1 single_input: NEWLINE
