@@ -31,7 +31,8 @@ def convert_tree(tree):
     walker.walk(converter, tree)
 
     # get the converted tree
-    pyast_tree = converter.pyast_trees[tree]
+    # pyast_tree = converter.pyast_trees[tree]
+    pyast_tree = tree.pyast_tree
 
     return pyast_tree, converter
 

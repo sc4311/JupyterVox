@@ -19,7 +19,9 @@ from . import basic_rules
 
 class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
-        self.pyast_trees = {}
+        #self.pyast_trees = {}
+
+        return
         
     # Exit a parse tree produced by Python3Parser#atom.
     def exitAtom(self, ctx:Python3Parser.AtomContext):

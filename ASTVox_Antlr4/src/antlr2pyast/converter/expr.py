@@ -46,8 +46,10 @@ def gen_ast_binary_operator(op_text):
 # generate ast.BinOp node for an expression
 def gen_ast_binop(listener, ctx:Python3Parser.ExprContext):
     # get the PyAST nodes for left and right operands
-    left_opr = listener.pyast_trees[ctx.getChild(0)]
-    right_opr = listener.pyast_trees[ctx.getChild(2)]
+    # left_opr = listener.pyast_trees[ctx.getChild(0)]
+    left_opr = ctx.getChild(0).pyast_tree
+    # right_opr = listener.pyast_trees[ctx.getChild(2)]
+    right_opr = ctx.getChild(2).pyast_tree
     
     # generate the operator node
     operator = gen_ast_binary_operator(ctx.getChild(1).getText())
@@ -79,7 +81,8 @@ def gen_ast_unaryop(listener, ctx:Python3Parser.ExprContext):
     count = ctx.getChildCount()
 
     # get the last operand node
-    operand = listener.pyast_trees[ctx.getChild(count-1)]
+    #operand = listener.pyast_trees[ctx.getChild(count-1)]
+    operand = ctx.getChild(count-1).pyast_tree
     # generate the AST node for the last unary operator
     op = gen_ast_unary_operations(ctx.getChild(count-2).getText())
     # generate the lowest ast.UnaryOp node
@@ -114,20 +117,23 @@ def convert_expr(listener, ctx:Python3Parser.ExprContext):
         # one child => rule expr => atom_expr
         # copy child's AST node
         child = ctx.children[0]
-        listener.pyast_trees[ctx] = listener.pyast_trees[child]
+        # listener.pyast_trees[ctx] = listener.pyast_trees[child]
+        ctx.pyast_tree = child.pyast_tree
         return
     elif (ctx.getChildCount() == 3 and
           isinstance(ctx.getChild(0), Python3Parser.ExprContext) and
           isinstance(ctx.getChild(2), Python3Parser.ExprContext)):
         # expr op expr is BinOp expression
         binop_node = gen_ast_binop(listener, ctx)
-        listener.pyast_trees[ctx] = binop_node
+        #listener.pyast_trees[ctx] = binop_node
+        ctx.pyast_tree = binop_node
         return
     elif isinstance(ctx.getChild(0), antlr4.tree.Tree.TerminalNodeImpl):
         # UnaryOp expression, i.e.,
         # for grammar expr ('*'|'@'|'/'|'%'|'//') expr
         unaryop_node = gen_ast_unaryop(listener, ctx)
-        listener.pyast_trees[ctx] = unaryop_node
+        #listener.pyast_trees[ctx] = unaryop_node
+        ctx.pyast_tree = unaryop_node
         return
     else:
         raise NotImplementedError("More than one child is not supported for " +

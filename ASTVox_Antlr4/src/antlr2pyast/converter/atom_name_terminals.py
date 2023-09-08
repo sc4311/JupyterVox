@@ -31,11 +31,13 @@ def convert_atom_terminals(listener, ctx:Python3Parser.AtomContext):
     # process case by case
     if isinstance(child, Python3Parser.NameContext):
         # case 1: child is a name node, just copy the child's AST tree
-        listener.pyast_trees[ctx] = listener.pyast_trees[child]
+        #listener.pyast_trees[ctx] = listener.pyast_trees[child]
+        ctx.pyast_tree = child.pyast_tree
     elif (isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and
           child.getSymbol().type == Python3Lexer.NUMBER):
         # case 2: child a is NUMER type, convert it to ast.Constant
-        listener.pyast_trees[ctx] = gen_ast_constant(child)
+        # listener.pyast_trees[ctx] = gen_ast_constant(child)
+        ctx.pyast_tree = gen_ast_constant(child)
     else:
         raise NotImplementedError("Other terminal type not implemented yet "
                                   "for Atom node at the moment")
@@ -73,7 +75,8 @@ def convert_name(listener, ctx:Python3Parser.NameContext):
     ast_node = ast.Name(id, ast.Load())
 
     # save the node/tree
-    listener.pyast_trees[ctx] = ast_node
+    # listener.pyast_trees[ctx] = ast_node
+    ctx.pyast_tree = ast_node
 
     return
 
@@ -91,5 +94,6 @@ def convert_atom_expr(listener, ctx:Python3Parser.Atom_exprContext):
 
     # copy child's AST node
     child = ctx.children[0]
-    listener.pyast_trees[ctx] = listener.pyast_trees[child]
+    #listener.pyast_trees[ctx] = listener.pyast_trees[child]
+    ctx.pyast_tree = child.pyast_tree
     return
