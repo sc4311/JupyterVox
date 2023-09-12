@@ -11,7 +11,7 @@ from antlr_parser.Python3ParserListener import Python3ParserListener
 import ast
 
 # convert a NUMBER to ast.Constant
-def gen_ast_constant(ctx:antlr4.tree.Tree.TerminalNodeImpl):
+def gen_ast_num_constant(ctx:antlr4.tree.Tree.TerminalNodeImpl):
     # extract the value, a bit hacky
     try:
         value = int(ctx.getText())
@@ -72,7 +72,7 @@ def convert_atom(listener, ctx:Python3Parser.AtomContext):
           first_child.getSymbol().type == Python3Lexer.NUMBER):
         # rule 2: atom: NUMBER
         # child a is NUMER type, convert it to ast.Constant
-        ctx.pyast_tree = gen_ast_constant(first_child)
+        ctx.pyast_tree = gen_ast_num_constant(first_child)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
           first_child.getSymbol().type == Python3Lexer.STRING):
         # rule 3: atom: STRING+
