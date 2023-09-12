@@ -74,15 +74,22 @@ def convert_atom(listener, ctx:Python3Parser.AtomContext):
         # child a is NUMER type, convert it to ast.Constant
         ctx.pyast_tree = gen_ast_constant(first_child)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
-          first_child.getSymbol().type == Python3Lexer.NUMBER):
-        # rule 3: atom: STRING+
-        # child a is NUMER type, convert it to ast.Constant
-        ctx.pyast_tree = gen_ast_constant(first_child)
-    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
           first_child.getSymbol().type == Python3Lexer.STRING):
         # rule 3: atom: STRING+
-        # child a is NUMER type, convert it to ast.Constant
+        # child a is String type, convert it to list of strings
         ctx.pyast_tree = convert_atom_strings(listener, ctx)
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.TRUE):
+        # rule 4: atom: "True"
+        # child a is True, convert it to ast.Constant
+        # implement here => ast.Constant
+        ctx.pyast_tree = ast.Constant(True)
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.FALSE):
+        # rule 4: atom: "True"
+        # child a is False, convert it to ast.Constant
+        # implement here => ast.Constant
+        ctx.pyast_tree = ast.Constant(False)
     else:
         raise NotImplementedError("Other rules not implemented for " +
                                   "Atom node at the moment")
