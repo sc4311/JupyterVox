@@ -6,6 +6,7 @@ sys.path.append(ast2pyast_path)
 
 # system packages
 import argparse
+import re
 
 # AST tree generation/conversion packages
 from converter import antlr2pyast
@@ -13,12 +14,13 @@ import ast
 
 ####### functions to print an AST tree
 def str_node(node):
-    if isinstance(node, ast.Module):
+    #if isinstance(node, ast.Module):
         # for module, just print its class name and type_ignores
         # otherwise, the pointer addresses will never match between trees
-        s = "Module(type_ignores=" + repr(node.type_ignores) + ")"
-        return s
-    elif isinstance(node, ast.AST):
+        # s = "Module(type_ignores=" + repr(node.type_ignores) + ")"
+        # return s   
+    #elif isinstance(node, ast.AST):
+    if isinstance(node, ast.AST):
         fields = [(name, str_node(val)) for name, val in ast.iter_fields(node) if name not in ('left', 'right')]
         rv = '%s(%s' % (node.__class__.__name__, ', '.join('%s=%s' % field for field in fields))
         return rv + ')'
@@ -60,6 +62,29 @@ def test_pyast(line):
     return pyast_tree_str
 
 ############### functions for comparing two tree outputs
+
+def are_nodes_same(node1:str, node2:str):
+    '''
+    Compare if two node output are the same.
+    Return True if same, False is not
+    '''
+    # Notes:
+    # 1. Need to remove object address when comparing
+
+    # strip white spaces
+    node1 = node1.strip()
+    node2 = node2.strip()
+
+    # remove object address with format "0xXXXXXXX..."
+    addr_regex="0x[0-9a-f]+"
+    node1 = re.sub(addr_regex, '', node1)
+    node2 = re.sub(addr_regex, '', node2)
+
+    # compare strings
+    same = (node1 == node2)
+
+    return same
+
 # compare if two trees are the same
 tree2_start_col = 50 # beginning position (in chars/cols) to print tree2
 def compare_and_print_trees(tree1, tree2, print_tree):
@@ -74,7 +99,7 @@ def compare_and_print_trees(tree1, tree2, print_tree):
     for i in range(len(tree1)):
         # compare if two trees are the same or not at this line
         same = "Same"
-        if tree1[i].strip() != tree2[i].strip():
+        if not are_nodes_same(tree1[i], tree2[i]):
             same = "Diff"
             same_tree = False
         if print_tree: print(str(same) + ":  ", end='')    

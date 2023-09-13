@@ -16,6 +16,8 @@ import ast
 from . import atom_name_terminals
 from . import expr
 from . import basic_rules
+from . import flow_stmts
+from . import test_stmts
 
 class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
@@ -45,24 +47,24 @@ class antlr2pyast_listener(Python3ParserListener):
 
     # Exit a parse tree produced by Python3Parser#not_test.
     def exitNot_test(self, ctx:Python3Parser.Not_testContext):
-        basic_rules.convert_not_test(self, ctx)
+        test_stmts.convert_not_test(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#and_test.
     def exitAnd_test(self, ctx:Python3Parser.And_testContext):
-        basic_rules.convert_and_test(self, ctx)
+        test_stmts.convert_and_test(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#or_test.
     def exitOr_test(self, ctx:Python3Parser.Or_testContext):
-        basic_rules.convert_or_test(self, ctx)
+        test_stmts.convert_or_test(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#test.
     def exitTest(self, ctx:Python3Parser.TestContext):
-        basic_rules.convert_test(self, ctx)
+        test_stmts.convert_test(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#testlist_star_expr.
     def exitTestlist_star_expr(self,
                                ctx:Python3Parser.Testlist_star_exprContext):
-        basic_rules.convert_testlist_star_expr(self, ctx)
+        test_stmts.convert_testlist_star_expr(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#expr_stmt.
     def exitExpr_stmt(self, ctx:Python3Parser.Expr_stmtContext):
@@ -79,3 +81,15 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#single_input.
     def exitSingle_input(self, ctx:Python3Parser.Single_inputContext):
         basic_rules.convert_single_input(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#return_stmt.
+    def exitReturn_stmt(self, ctx:Python3Parser.Return_stmtContext):
+        flow_stmts.convert_return(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#flow_stmt.
+    def exitFlow_stmt(self, ctx:Python3Parser.Flow_stmtContext):
+        flow_stmts.convert_flow_stmt(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#testlist.
+    def exitTestlist(self, ctx:Python3Parser.TestlistContext):
+        test_stmts.convert_testlist(self, ctx)

@@ -8,3 +8,5 @@ a;b;c;12;36.4
 ~-++~-c
 "hello""world"" ""12"
 True + False
+return 4, 5
+return a

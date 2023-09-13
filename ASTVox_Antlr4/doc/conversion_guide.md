@@ -39,7 +39,7 @@
 
 ## 2.4 expr
 ### 2.4.1 expr; atom_expr
-1. exprContext.pyast_tree <= exprContext.children[0].atom_expr (copy child)
+1. exprContext.pyast_tree <= exprContext.children[0].pyast_tree (copy child)
 ### 2.4.2 expr: expr binaryOp expr
 1. ExprContext.pyast_tree <= ast.BinOp(left expr, ast.Add/ast.Mult etc., right expr)
 2. Covers
@@ -75,4 +75,24 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 1. single_inputContext.pyast_tree <= ast.Module(body=single_inputContext.Children[0].pyast_tree)
 ### 2.7.3 single_input: compound_stmt NEWLINE;
 1. Not handled yet
+
+## 2.8 flow_stmt
+### 2.8.1 flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt;
+1. Flow_stmtContext.pyast_tree <= Flow_stmtContext.children[0].pyast_tree (child copy)
+2. Flow_stmt is just a intermediate non-terminal
+
+## 2.9 return_stmt
+### 2.9.1 return_stmt: 'return' testlist?;
+1. Return_stmtContext.pyast_tree <= ast.Return
+2. for ast.Return.value
+    1. if no return value, value <= None
+    2. if return on value, value <= Return_stmtContext.children[1]
+    3. if return a list of values, value <= ast.Tuple
+         1. ast.Tuple.elts <= Return_stmtContext.children[1]
+         2. basically copy testlist's pyast_tree, which is a list
+
+## 2.10 testlist
+### 2.10.1 testlist: test (',' test)* ','?;
+1. TestlistContext.pyast_tree <= [] (just a list)
+2. the pyast_tree of each child of testlistContext is an item in the list
 
