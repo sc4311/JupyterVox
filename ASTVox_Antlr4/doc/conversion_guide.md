@@ -93,6 +93,9 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.10 testlist
 ### 2.10.1 testlist: test (',' test)* ','?;
-1. TestlistContext.pyast_tree <= [] (just a list)
-2. the pyast_tree of each child of testlistContext is an item in the list
+1. If there is just one child
+    1.  TestlistContext.pyast_tree <= TestlistContext.children[0].pyast_tree (copy_child)
+2. If there are more than one child
+    1. TestlistContext.pyast_tree <= [] (just a list)
+    2. the pyast_tree of each child of testlistContext is an item in the list
 

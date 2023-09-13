@@ -19,8 +19,13 @@ def convert_return(listener, ctx:Python3Parser.Return_stmtContext):
     # return without return value
     value = None
   elif ctx.getChildCount() == 2:
-    # return has values
-    value = ctx.children[1].pyast_tree
+    # return has values 
+    if ctx.children[1].getChildCount() == 1:
+      # only one return value, pass on the value's tree
+      value = ctx.children[1].pyast_tree
+    else:
+      # more than one return values, put the return value in an ast.Tuple
+      value = ast.Tuple(ctx.children[1].pyast_tree, ast.Load())
   else:
     raise ValueError("I though return_stmt can have 2 children at most, ",
                      "however the children count is", ctx.getChildCount())

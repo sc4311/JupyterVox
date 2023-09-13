@@ -26,10 +26,9 @@ def convert_testlist(listener, ctx:Python3Parser.TestlistContext):
       if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
         list_tests.append(child.pyast_tree)
 
-    # create the Tuple node
-    # return values should always be load, right?
-    ctx.pyast_tree = ast.Tuple(list_tests, ast.Load())
-
+    # return the list as the tree
+    ctx.pyast_tree = list_tests
+    
   return
 
 # Grammar:
