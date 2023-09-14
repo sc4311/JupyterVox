@@ -139,3 +139,24 @@ def convert_expr(listener, ctx:Python3Parser.ExprContext):
         raise NotImplementedError("More than one child is not supported for " +
                                   "Expr node at the moment, count is " +
                                   str(ctx.getChildCount()))
+
+# Convert exprlist to Python AST node or list
+def convert_exprlist(listener, ctx:Python3Parser.ExprlistContext):
+    '''
+    Convert exprlist to Python AST node or list
+    Rule: exprlist: (expr|star_expr) (',' (expr|star_expr))* ','?;
+    '''
+
+    if ctx.getChildCount() == 1:
+        # just one expr, copy the child's tree node
+        ctx.pyast_tree = ctx.children[0].pyast_tree
+    else:
+        # more than one child, make a list
+        expr_list = []
+        for i in range(ctx.getChildCount()):
+            if not isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl):
+                # sometimes ';' is also included in the children
+                expr_list.append(ctx.children[i].pyast_tree)
+        ctx.pyast_tree = expr_list
+
+    return

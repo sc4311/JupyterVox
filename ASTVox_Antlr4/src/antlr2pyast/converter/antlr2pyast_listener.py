@@ -18,6 +18,7 @@ from . import expr
 from . import basic_rules
 from . import flow_stmts
 from . import test_stmts
+from . import loop_stmts
 
 class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
@@ -93,3 +94,19 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#testlist.
     def exitTestlist(self, ctx:Python3Parser.TestlistContext):
         test_stmts.convert_testlist(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#block.
+    def exitBlock(self, ctx:Python3Parser.BlockContext):
+        basic_rules.convert_block(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#for_stmt.
+    def exitFor_stmt(self, ctx:Python3Parser.For_stmtContext):
+        loop_stmts.convert_for_stmt(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#exprlist.
+    def exitExprlist(self, ctx:Python3Parser.ExprlistContext):
+        expr.convert_exprlist(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#compound_stmt.
+    def exitCompound_stmt(self, ctx:Python3Parser.Compound_stmtContext):
+        basic_rules.convert_compound_stmt(self, ctx)

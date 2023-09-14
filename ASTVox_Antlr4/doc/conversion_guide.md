@@ -74,7 +74,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.7.2 single_input: simple_stmts
 1. single_inputContext.pyast_tree <= ast.Module(body=single_inputContext.Children[0].pyast_tree)
 ### 2.7.3 single_input: compound_stmt NEWLINE;
-1. Not handled yet
+1. single_inputContext.pyast_tree <= ast.Module(body=single_inputContext.Children[0].pyast_tree)
 
 ## 2.8 flow_stmt
 ### 2.8.1 flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt;
@@ -99,3 +99,40 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
     1. TestlistContext.pyast_tree <= [] (just a list)
     2. the pyast_tree of each child of testlistContext is an item in the list
 
+## 2.11 block
+### 2.11.1 block: simple_stmts
+1. BlockContext.pyast_tree <= BlockContext.children[0].pyast_tree (copy_child)
+### 2.11.2 block: NEWLINE INDENT stmt+ DEDENT;
+1. BlockContext.pyast_tree = []
+2. Each item is the pyast_tree of a stmt
+### 2.11.3 block: epsilon | NEWLINE epsilon
+1. BlockContext.pyast_tree = None
+2. This is a special error case, where the block is none. This should only happen when we are parsing on the first line of a compound statment, e.g., the "for ..." line of a for loop
+    1. block: epsilon is for cases like "for i in j:"
+    2. block: NEWLINE epsilon is for cases like "for i in j:\n"
+
+## 2.12 for
+### 2.12.1 for_stmt: 'for' exprlist 'in' testlist ':' block ('else' ':' block)?;
+1. ForContext.pyast_tree <= ast.For
+    1. target:
+        1. If exprlist has only one child, target <= exprlist.pyast_tree, convert ctx to ast.Store
+        2. If exprlist has more children, target <= ast.Tuple(elts=exprlist.pyast_tree)
+    2. iter:
+        1. If testlist has only one child, iter <= testlist.pyast_tree, 
+        2. If testlist has more children, iter <= ast.Tuple(elts=testlist.pyast_tree)  
+    3. body:
+        1. If block has only one child, body <= [block.pyast_tree] (one item list) 
+        2. If block has more children, body <= block.pyast_tree (list of stmts)
+### 2.12.2 Grammar from 'else' is not handled yet
+
+## 2.13 exprlist
+### 2.13.1 exprlist: (expr|star_expr) (',' (expr|star_expr))* ','?;   
+1. If there is just one child
+    1.  ExprlistContext.pyast_tree <= ExprlistContext.children[0].pyast_tree (copy_child)
+2. If there are more than one child
+    1. ExprlistContext.pyast_tree <= [] (just a list)
+    2. the pyast_tree of each child of ExprlistContext is an item in the list
+
+## 2.14 compound_stmt
+### 2.14.1  compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt | match_stmt;
+1. Compound_stmtContext.pyast_tree <= Compound_stmtContext.children[0].pyast_tree (copy_child)     
