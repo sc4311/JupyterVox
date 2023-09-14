@@ -128,11 +128,36 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ## 2.13 exprlist
 ### 2.13.1 exprlist: (expr|star_expr) (',' (expr|star_expr))* ','?;   
 1. If there is just one child
-    1.  ExprlistContext.pyast_tree <= ExprlistContext.children[0].pyast_tree (copy_child)
+    1.  ExprlistContext.pyast_tree <= ExprlistContext.children[0].pyast_tree (copy child)
 2. If there are more than one child
     1. ExprlistContext.pyast_tree <= [] (just a list)
     2. the pyast_tree of each child of ExprlistContext is an item in the list
 
 ## 2.14 compound_stmt
 ### 2.14.1  compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt | match_stmt;
-1. Compound_stmtContext.pyast_tree <= Compound_stmtContext.children[0].pyast_tree (copy_child)     
+1. Compound_stmtContext.pyast_tree <= Compound_stmtContext.children[0].pyast_tree (copy_child)   
+
+## 2.15 comp_op
+### 2.15.1 comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not';
+1. Comp_opContext.pyast_tree <= ast.Eq, NotEq, Lt, LtE, Gt, GtE, Is, IsNot, In, NotIn, based on the actual operator
+
+## 2.16 while_stmt
+### 2.16.1  while_stmt: 'while' test ':' block ('else' ':' block)?;
+1. While_stmtContext.pyast_tree <= ast.While
+    1. test: While_stmtContext.children[1].pyast_tree
+    2. body: 
+        1. If block has only one child, body <= [block.pyast_tree] (one item list) 
+        2. If block has more children, body <= block.pyast_tree (list of stmts)
+    3. orelse:
+        1. If the second block has only one child, orelse <= [block.pyast_tree] (one item list) 
+        2. If the second block has more children, orelse <= block.pyast_tree (list of stmts)
+        3. If no "else", orelse <= [] (empty list)
+
+## 2.17 comparison
+### 2.15.1 comparison: expr (comp_op expr)*;
+1. if only one expr, ComparisonContext.pyast_tree <= ComparisonContext.children[0].pyast_tree (copy child)
+2. if more than one child
+    1. ComparisonContext.pyast_tree <= ast.Compare
+        1. left <= first epxr's pyast_tree
+        2. ops <= [all comp_ops' pyast_tree] (list of comp_ops' pyast_tree)
+        3. comparators <= [all the rest exprs' pyast_tree] (list of the rest exprs' pyast_tree)

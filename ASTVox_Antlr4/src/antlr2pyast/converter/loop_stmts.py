@@ -1,7 +1,7 @@
 # Antlr4 to Python AST
-# Conversion function for control flow statements, including
-#   flow_stmt
-#   return
+# Conversion function for loops, including
+#   for_stmt
+#   while_stmt
 
 import antlr4
 from antlr_parser.Python3Lexer import Python3Lexer
@@ -52,5 +52,39 @@ def convert_for_stmt(listener, ctx:Python3Parser.BlockContext):
   # there are also "orelse" and "type_comment" in ast.For, not sure how to use
   # these two for now... so I set "orelse" to []
   ctx.pyast_tree = ast.For(target, iter, body, [])
+
+  return
+
+# convert while_stmt to ast.While
+def convert_while_stmt(listener, ctx:Python3Parser.While_stmtContext):
+  '''
+  Convert while_stmt to ast.While
+  rule: while_stmt: 'while' test ':' block ('else' ':' block)?;
+  '''
+
+  # get the "test" field
+  test = ctx.children[1].pyast_tree
+
+  # get the "body" field
+  if type(ctx.children[3].pyast_tree) is list:
+    body = ctx.children[3].pyast_tree
+  else:
+    # childrent[3] is not a list, convert to list
+    body = [ctx.children[3].pyast_tree]
+
+  # get the "else" block, if there is one
+  if ctx.getChildCount() != 7:
+    # no "else" block
+    orelse = []
+  else:
+    # has "else" block
+    if type(ctx.children[6].pyast_tree) is list:
+      orelse = ctx.children[6].pyast_tree
+    else:
+      # childrent[6] is not a list, convert to list
+      orelse = [ctx.children[6].pyast_tree]
+
+  # generate the ast.While node
+  ctx.pyast_tree = ast.While(test, body, orelse)
 
   return

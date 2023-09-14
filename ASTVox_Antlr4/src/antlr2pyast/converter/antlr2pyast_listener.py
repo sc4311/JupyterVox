@@ -114,3 +114,7 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#comp_op.
     def exitComp_op(self, ctx:Python3Parser.Comp_opContext):
         test_stmts.convert_comp_op(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#while_stmt.
+    def exitWhile_stmt(self, ctx:Python3Parser.While_stmtContext):
+        loop_stmts.convert_while_stmt(self, ctx)
