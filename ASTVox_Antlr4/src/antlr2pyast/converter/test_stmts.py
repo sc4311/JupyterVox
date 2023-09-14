@@ -1,7 +1,13 @@
 # Antlr4 to Python AST
 # Conversion function for control test* statements, including
 #   testlist
-#   return
+#   testlist_star
+#   not_test
+#   and_test
+#   or_test
+#   test
+#   compare
+#   comp_op
 
 import antlr4
 from antlr_parser.Python3Lexer import Python3Lexer
@@ -126,3 +132,72 @@ def convert_testlist_star_expr(listener,
     # listener.pyast_trees[ctx] = listener.pyast_trees[child]
     ctx.pyast_tree = child.pyast_tree
     return
+
+# Convert comparison to child's tree (if only one child), or ast.Compare (if
+# this is really a comparion)
+def convert_comparison(listener, ctx:Python3Parser.ComparisonContext):
+    '''
+    Convert comparison to child's tree (if only one child), or ast.Compare (if
+    this is really a comparion)
+    rule: comparison: expr (comp_op expr)*;
+    '''
+
+    if ctx.getChildCount() == 1:
+        # just one child, copy child's AST node
+        child = ctx.children[0]
+        #listener.pyast_trees[ctx] = listener.pyast_trees[child]
+        ctx.pyast_tree = child.pyast_tree
+
+    else:
+        # more than one child, need to convert to ast.Compare
+        # get the left field
+        left = ctx.children[0].pyast_tree
+
+        # get the rest of the operators and comparators
+        ops = []
+        comparators = []
+        for i in range(1, ctx.getChildCount(), 2):
+          ops.append(ctx.children[i].pyast_tree)
+          comparators.append(ctx.children[i+1].pyast_tree)
+
+        # construct the ast.Compare node
+        ctx.pyast_tree = ast.Compare(left, ops, comparators)
+    
+    return
+
+# Convert comp_op to ast.Eq, ast.NotEq ...
+def convert_comp_op(listener, ctx:Python3Parser.Comp_opContext):
+  '''
+  Convert comp_op to ast.Eq, ast.NotEq ...
+  comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not';
+  '''
+
+  child = ctx.children[0]
+  # generate compare operator node 
+  if child.getText() == '<':
+    op_node = ast.Lt()
+  elif child.getText() == '>':
+    op_node = ast.Gt()
+  elif child.getText() == '==':
+    op_node = ast.Eq()
+  elif child.getText() == '>=':
+    op_node = ast.GtE()
+  elif child.getText() == '<=':
+    op_node = ast.LtE()
+  elif child.getText() == '<>':
+    op_node = ast.NotEq()
+  elif child.getText() == '!=':
+    op_node = ast.NotEq()
+  elif child.getText() == 'in':
+    op_node = ast.In()
+  elif child.getText() == 'not': # should be not in
+    op_node = ast.NotIn()
+  elif child.getText() == 'is':
+    if ctx.getChildCount() == 1: #"is"
+      op_node = ast.Is()
+    else: # "is" "not"
+      op_node = ast.IsNot() 
+
+  ctx.pyast_tree = op_node
+
+  return

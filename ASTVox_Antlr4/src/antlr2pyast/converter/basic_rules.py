@@ -10,25 +10,6 @@ from antlr_parser.Python3Parser import Python3Parser
 import ast
 
 # Grammar:
-#   comparison: expr (comp_op expr)*;
-def convert_comparison(listener, ctx:Python3Parser.ComparisonContext):
-    # should have no more than 3 child
-    if ctx.getChildCount() > 3:
-        raise ValueError("Comparison node has more than three children, "
-                         + "count is " + str(ctx.getChildCount()))
-
-    # only handles one the case with one child now
-    if ctx.getChildCount() != 1:
-        raise NotImplementedError("More than one child is not supported for " +
-                                  "Comparison node at the moment")
-
-    # copy child's AST node
-    child = ctx.children[0]
-    #listener.pyast_trees[ctx] = listener.pyast_trees[child]
-    ctx.pyast_tree = child.pyast_tree
-    return
-
-# Grammar:
 # expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 #                     ('=' (yield_expr|testlist_star_expr))*);
 def convert_expr_stmt(listener, ctx:Python3Parser.Expr_stmtContext):

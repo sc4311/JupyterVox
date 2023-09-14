@@ -13,3 +13,4 @@ return a
 for i,j in a,b: c+d; f*7; return 4, 6
 for i in a: return 5
 # for i,j in a,b: # should work for Antlr4, not Python AST
+a<b>6==7!=8>=12<=89 is b is not 10 in a not in c

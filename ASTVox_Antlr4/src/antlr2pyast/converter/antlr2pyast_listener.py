@@ -44,7 +44,7 @@ class antlr2pyast_listener(Python3ParserListener):
 
     # Exit a parse tree produced by Python3Parser#comparison.
     def exitComparison(self, ctx:Python3Parser.ComparisonContext):
-        basic_rules.convert_comparison(self, ctx)
+        test_stmts.convert_comparison(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#not_test.
     def exitNot_test(self, ctx:Python3Parser.Not_testContext):
@@ -110,3 +110,7 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#compound_stmt.
     def exitCompound_stmt(self, ctx:Python3Parser.Compound_stmtContext):
         basic_rules.convert_compound_stmt(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#comp_op.
+    def exitComp_op(self, ctx:Python3Parser.Comp_opContext):
+        test_stmts.convert_comp_op(self, ctx)
