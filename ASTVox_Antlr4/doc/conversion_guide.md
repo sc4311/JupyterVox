@@ -45,6 +45,14 @@
 ### 2.2.4 atom: '[' testlist_comp? ']'
 1. AtomContext.pyast_tree <= ast.List
 2. ast.List.elts <= AtomContext.children[1].pyast_tree
+### 2.2.4 atom: '{' dictorsetmaker? '}'
+1. If there are "keys" in dictorsetmaker, 
+    1. AtomContext.pyast_tree <= ast.Dict
+        1. keys = dictorsetmaker.pyast_tree["keys"]
+        2. values = dictorsetmaker.pyast_tree["values"]
+1. If there are no "keys" in dictorsetmaker, i.e., dictorsetmaker.pyast_tree["keys"] is None
+    1. AtomContext.pyast_tree <= ast.Set
+        1. elts = dictorsetmaker.pyast_tree["values"]
 ### 2.2.x Other not implemented yet
 
 ## 2.3 atom_expr
@@ -214,3 +222,16 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.22.1 testlist_comp: (test|star_expr) ( (',' (test|star_expr))* ','? );
 1. Testlist_compContext.pyast_tree <= [..] (a list)
 2. Each test or star_expr child's pyast_tree is a item in the list 
+
+## 2.22 dictorsetmaker
+### 2.22.1 dictorsetmaker: ((test ':' test | '**' expr)(comp_for | (',' (test ':' test | '**' expr))* ','?)) 
+1. For making a dictonary
+2. DictorsetmakerContext.pyast_tree <= {"keys":[...], "values":[...]} (a dict)
+3. Keys is a list of the pyast_trees of the "test"s before ':'
+4. Values is a list of the pyast_trees of the "test"s after ':'
+### 2.22.1 dictorsetmaker: (((test | star_expr)(comp_for | (',' (test | star_expr))* ','?))
+1. For making a set
+2. DictorsetmakerContext.pyast_tree <= {"keys":None, "values":[...]} (a dict)
+4. Values is a list of the pyast_trees of the "test"s or exprs
+### 2.22.x Comp_for and "**" expr not handled
+1. Not sure what "**" is, does not parse with them in Antlr4 and Python AST

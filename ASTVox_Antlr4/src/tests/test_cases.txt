@@ -37,5 +37,7 @@ a,b,c = e,d,f = 11, g, 13
 [a]
 [12]
 [a,b,12,True]
+{a, b, "12", True, 13.38}
+{"keys":1, "values":2, a:b}
 
 

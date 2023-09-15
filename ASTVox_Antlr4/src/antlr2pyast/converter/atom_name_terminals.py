@@ -107,6 +107,17 @@ def convert_atom(listener, ctx:Python3Parser.AtomContext):
         # rule 6: atom: '[' testlist_comp? ']'
         # returns an ast.List node
         ctx.pyast_tree = ast.List(ctx.children[1].pyast_tree, ast.Load())
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.OPEN_BRACE):
+        # rule 7: atom: '{' dictorsetmaker? '}'
+        # returns an ast.Dict or ast.Set node
+        if ctx.children[1].pyast_tree["keys"] is None:
+            # making a set
+            ctx.pyast_tree = ast.Set(ctx.children[1].pyast_tree["values"])
+        else:
+            # making dictionary
+            ctx.pyast_tree = ast.Dict(ctx.children[1].pyast_tree["keys"],
+                                     ctx.children[1].pyast_tree["values"])
     else:
         raise NotImplementedError("Other rules not implemented for " +
                                   "Atom node at the moment")
@@ -155,3 +166,72 @@ def convert_atom_expr(listener, ctx:Python3Parser.Atom_exprContext):
     #listener.pyast_trees[ctx] = listener.pyast_trees[child]
     ctx.pyast_tree = child.pyast_tree
     return
+
+# convert dictorsetmaker to a dict of keys and values for making a dictionary
+def gen_dict_keys_values(ctx:Python3Parser.DictorsetmakerContext):
+    '''
+    Convert dictorsetmaker to a dict of keys and values for dictionary
+    construction.
+    Rule: dictorsetmaker: ( ((test ':' test | '**' expr)
+                   (comp_for | (',' (test ':' test | '**' expr))* ','?))
+    Comp_for is not handles at the moment.
+    Returns {"keys":[...], "values":[...]} for dict construction
+    '''
+
+    keys = []
+    values = []
+
+    for i in range(0, ctx.getChildCount(), 4):
+        if isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl):
+            continue # skip ',', probably not necessary
+
+        keys.append(ctx.children[i].pyast_tree)
+        values.append(ctx.children[i+2].pyast_tree)
+
+    return {"keys":keys, "values":values}
+
+# convert dictorsetmaker to a dict of keys and values for making a set
+def gen_set_values(ctx:Python3Parser.DictorsetmakerContext):
+    '''
+    Convert dictorsetmaker to a dict of keys and values for making a set
+    Rule: dictorsetmaker: (
+                  ((test | star_expr)
+                   (comp_for | (',' (test | star_expr))* ','?)) );
+    Comp_for is not handles at the moment.
+    Returns {"keys":None, "values":[...]} for set construction
+    '''
+    keys = None
+    values = []
+
+    for child in ctx.children:
+        if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
+            continue # skip ','
+
+        values.append(child.pyast_tree)
+
+    return {"keys":keys, "values":values}
+
+# convert dictorsetmaker to a dict of keys and values for dictionary or set
+def convert_dictorsetmaker(listener, ctx:Python3Parser.DictorsetmakerContext):
+    '''
+    Convert dictorsetmaker to a dict of keys and values
+    Rule: dictorsetmaker: ( ((test ':' test | '**' expr)
+                   (comp_for | (',' (test ':' test | '**' expr))* ','?)) |
+                  ((test | star_expr)
+                   (comp_for | (',' (test | star_expr))* ','?)) );
+    This rule allows for set construction, where there are not keys;
+    or allows for dict construction, where there are keys.
+    Comp_for is not handles at the moment.
+    Returns {"keys":None, "values":[...]} for set construction
+    Returns {"keys":[...], "values":[...]} for dict construction
+    '''
+
+    if (ctx.getChildCount() > 2 and
+        isinstance(ctx.children[1], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[1].getSymbol().type == Python3Lexer.COLON):
+        # making a dictionary
+        ctx.pyast_tree = gen_dict_keys_values(ctx)
+    else:
+        # making a set
+        ctx.pyast_tree = gen_set_values(ctx)
+        

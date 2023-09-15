@@ -134,3 +134,7 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#testlist_comp.
     def exitTestlist_comp(self, ctx:Python3Parser.Testlist_compContext):
         test_stmts.convert_testlist_comp(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#dictorsetmaker.
+    def exitDictorsetmaker(self, ctx:Python3Parser.DictorsetmakerContext):
+        atom_name_terminals.convert_dictorsetmaker(self, ctx)
