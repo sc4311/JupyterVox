@@ -158,9 +158,15 @@ def convert_block(listener, ctx:Python3Parser.BlockContext):
         # the tree is a list
         stmt_list = []
         for i in range(2,ctx.getChildCount()):
-            if not isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl):
+            if not isinstance(ctx.children[i],
+                              antlr4.tree.Tree.TerminalNodeImpl):
                 # sometimes ';' is also included in the children
-                stmt_list.append(ctx.children[i].pyast_tree)
+                if type(ctx.children[i].pyast_tree) is list:
+                    # when a stmt is derived from simple_stmts, it may be a
+                    # list itself
+                    stmt_list = stmt_list + ctx.children[i].pyast_tree
+                else:
+                    stmt_list.append(ctx.children[i].pyast_tree)
 
         ctx.pyast_tree = stmt_list
     else:
@@ -180,3 +186,14 @@ def convert_compound_stmt(self, ctx:Python3Parser.Compound_stmtContext):
     ctx.pyast_tree = ctx.children[0].pyast_tree
     
     return
+
+# convert stmt to corresponding Python AST node
+def convert_stmt(listener, ctx:Python3Parser.StmtContext):
+  '''
+  Convert stmt to corresponding Python AST node
+  rule: stmt: simple_stmts | compound_stmt;
+  Just coyp the child's pyast_tree
+  '''
+  ctx.pyast_tree = ctx.children[0].pyast_tree
+
+  return

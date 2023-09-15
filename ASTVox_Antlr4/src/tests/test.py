@@ -156,7 +156,9 @@ if not (args.filename is None):
     correct_cnt = 0
     incorrect_test_cases = []
     for line in test_f:
-        # line = line.rstrip('\n')
+        # preprocess the line to replace \n, \t with the actual \n and \t
+        line = line.replace("\\n", '\n')
+        line = line.replace("\\t", '\t')
         if line.startswith('#'): # comments, skip
             continue;
 

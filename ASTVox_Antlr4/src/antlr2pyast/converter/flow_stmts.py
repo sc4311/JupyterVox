@@ -1,6 +1,7 @@
 # Antlr4 to Python AST
 # Conversion function for control flow statements, including
 #   flow_stmt
+#   if_stmt
 #   return
 
 import antlr4
@@ -69,3 +70,67 @@ def convert_testlist(listener, ctx:Python3Parser.TestlistContext):
     ctx.pyast_tree = ast.Tuple(list_tests, ast.Load())
 
   return
+
+# Convert BlockContext to the "body" field in Python AST nodes.
+def convert_block_to_body(block:Python3Parser.BlockContext):
+  '''
+  Convert BlockContext to the "body" field in Python AST nodes.
+  In Python AST nodes, the "body" is usually a list. However, the BlockContext's
+  pyast_tree may be a single tree node if there is only one statement in the 
+  block. Hence the conversion. 
+  Returns the list for "body".
+  '''
+  if type(block.pyast_tree) is list:
+      return block.pyast_tree
+  else:
+      # block is not a list, convert to list
+      return [block.pyast_tree]
+
+# convert if_stmt to ast.If
+def convert_if_stmt(listener, ctx:Python3Parser.If_stmtContext):
+  '''
+  convert if_stmt to ast.If
+  rule: if_stmt: 'if' test ':' block ('elif' test ':' block)* ('else' ':' block)?;
+
+  Because Python AST treat elIf* as nested, we also need to construct the tree
+  recursively
+  '''
+
+  # get the top level of test and body
+  test = ctx.children[1].pyast_tree
+  body = convert_block_to_body(ctx.children[3])
+
+  # construct the ast.If node for the top level, ignore 'orelse" for now
+  top_if_node = ast.If(test, body, [])
+  ctx.pyast_tree = top_if_node
+
+  # if there is no elif or else, just return
+  if ctx.getChildCount() == 4:
+    return
+
+  # process the elif and else until the list is done
+  i = 4 # index to read children of if_stmt
+  pre_if_node = top_if_node # previous level of ast.If node
+  while True:
+    if ctx.children[i].getText() == "elif":
+      # elif translates to another ast.If node
+      test = ctx.children[i+1].pyast_tree
+      body = convert_block_to_body(ctx.children[i+3])
+      cur_if_node = ast.If(test, body, [])
+
+      # append current if node to previous if node's orelse field
+      pre_if_node.orelse = [cur_if_node]
+
+      # prepare for next level of ast.If node
+      pre_if_node = cur_if_node
+      i = i + 4 # advance to next elif or else block
+
+    elif ctx.children[i].getText() == "else":
+      # append the "else"  body to previous level's ast.If node's orelse
+      body = convert_block_to_body(ctx.children[i+2])
+      pre_if_node.orelse = body
+      break
+
+    else:
+      raise ValueError("Keyword is not elif or else, but " + 
+                       ctx.children[i].getText())

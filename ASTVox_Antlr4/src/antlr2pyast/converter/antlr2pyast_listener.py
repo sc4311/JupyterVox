@@ -118,3 +118,11 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#while_stmt.
     def exitWhile_stmt(self, ctx:Python3Parser.While_stmtContext):
         loop_stmts.convert_while_stmt(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#if_stmt.
+    def exitIf_stmt(self, ctx:Python3Parser.If_stmtContext):
+        flow_stmts.convert_if_stmt(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#stmt.
+    def exitStmt(self, ctx:Python3Parser.StmtContext):
+        basic_rules.convert_stmt(self, ctx)
