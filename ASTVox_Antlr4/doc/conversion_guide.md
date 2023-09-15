@@ -161,3 +161,20 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
         1. left <= first epxr's pyast_tree
         2. ops <= [all comp_ops' pyast_tree] (list of comp_ops' pyast_tree)
         3. comparators <= [all the rest exprs' pyast_tree] (list of the rest exprs' pyast_tree)
+
+## 2.18 if_stmt
+### 2.18.1 if_stmt: 'if' test ':' block ('elif' test ':' block)* ('else' ':' block)?;
+1. If_stmtContext.pyast_tree <= ast.If
+    1. test = If_stmtContext.children[1].pyast_tree
+    2. body = If_stmtContext.children[1].pyast_treee
+    3. orelse
+        1. if no elif or else, orelse <= [] (empty list)
+        2. if elif, orelse <= ast.If (elif is nested, ie, next elif's node is stored in this elif's orelse)
+            1. test = If_stmtContext.children[5].pyast_tree
+            2. body = If_stmtContext.children[7].pyast_tree
+            3. orelse, same with the above else. Again, elif is nested, ie, next elif's node is stored in this elif's orelse
+        3. if "else", orelse = last_block.pyast_tree
+
+## 2.19 stmt
+### 2.14.1  stmt: simple_stmts | compound_stmt;
+1. StmtContext.pyast_tree <= StmtContext.children[0].pyast_tree (copy_child)   
