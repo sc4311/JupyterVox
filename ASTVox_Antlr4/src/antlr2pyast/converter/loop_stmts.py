@@ -18,8 +18,8 @@ def convert_for_stmt(listener, ctx:Python3Parser.BlockContext):
   rules: for_stmt: 'for' exprlist 'in' testlist ':' block ('else' ':' block)?;
   '''
 
-  if ctx.getChildCount() != 6:
-    raise NotImplementedError("Can't handle \"else\" in for loop's block yet\n")
+  #if ctx.getChildCount() != 6:
+  #  raise NotImplementedError("Can't handle \"else\" in for loop's block yet\n")
 
   # generate the "target" from the exprlist (children[1])
   if ctx.children[1].getChildCount() == 1:
@@ -48,10 +48,22 @@ def convert_for_stmt(listener, ctx:Python3Parser.BlockContext):
     # childrent[5] is not a list, convert to list
     body = [ctx.children[5].pyast_tree]
 
+  # get the "else" block, if there is one
+  if ctx.getChildCount() != 9:
+    # no "else" block
+    orelse = []
+  else:
+    # has "else" block
+    if type(ctx.children[8].pyast_tree) is list:
+      orelse = ctx.children[8].pyast_tree
+    else:
+      # childrent[6] is not a list, convert to list
+      orelse = [ctx.children[8].pyast_tree]
+
   # construct the ast.For node
   # there are also "orelse" and "type_comment" in ast.For, not sure how to use
   # these two for now... so I set "orelse" to []
-  ctx.pyast_tree = ast.For(target, iter, body, [])
+  ctx.pyast_tree = ast.For(target, iter, body, orelse)
 
   return
 

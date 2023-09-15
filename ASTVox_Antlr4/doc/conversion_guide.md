@@ -123,8 +123,11 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
     3. body:
         1. If block has only one child, body <= [block.pyast_tree] (one item list) 
         2. If block has more children, body <= block.pyast_tree (list of stmts)
-### 2.12.2 Grammar from 'else' is not handled yet
-
+    3. orelse:
+        1. If the second block has only one child, orelse <= [block.pyast_tree] (one item list) 
+        2. If the second block has more children, orelse <= block.pyast_tree (list of stmts)
+        3. If no "else", orelse <= [] (empty list)
+        
 ## 2.13 exprlist
 ### 2.13.1 exprlist: (expr|star_expr) (',' (expr|star_expr))* ','?;   
 1. If there is just one child
@@ -166,14 +169,18 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.18.1 if_stmt: 'if' test ':' block ('elif' test ':' block)* ('else' ':' block)?;
 1. If_stmtContext.pyast_tree <= ast.If
     1. test = If_stmtContext.children[1].pyast_tree
-    2. body = If_stmtContext.children[1].pyast_treee
+    2. body 
+        1. If block (If_stmtContext.children[1]) has only one child, body <= [block.pyast_tree] (one item list) 
+        2. If block (If_stmtContext.children[1]) has more children, body <= block.pyast_tree (list of stmts)
     3. orelse
         1. if no elif or else, orelse <= [] (empty list)
         2. if elif, orelse <= ast.If (elif is nested, ie, next elif's node is stored in this elif's orelse)
             1. test = If_stmtContext.children[5].pyast_tree
             2. body = If_stmtContext.children[7].pyast_tree
             3. orelse, same with the above else. Again, elif is nested, ie, next elif's node is stored in this elif's orelse
-        3. if "else", orelse = last_block.pyast_tree
+        3. if "else", 
+            1. If last block has only one child, body <= [block.pyast_tree] (one item list) 
+            2. If last block has more children, body <= block.pyast_tree (list of stmts)
 
 ## 2.19 stmt
 ### 2.14.1  stmt: simple_stmts | compound_stmt;

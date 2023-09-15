@@ -22,3 +22,4 @@ if a>b:\n\tereturn\nelif a:\n\treturn\nelif a:\n\treturn\nelse:\n\treturn
 while a>10:\n\treturn\nelse:\n\treturn\n
 # while a<b>6: # should work for Antlr4, not Python AST
 # if ac>12<db: # should work for Antlr4, not Python AST
+for i in a:\n\treturn 5\nelse:\n\ta+b\n\treturn
