@@ -4,6 +4,14 @@
 2. Float string => ast.Constant(value:float)
 
 # 2. Non-terminal Tokens
+
+## 2.0 General Guidelines
+### 2.0.1 List type of tokens
+1. List type of tokens are those drived from one or two repeated items, e.g., simple_stmts: simple_stmt (';' simple_stmt)* ';'? NEWLINE;
+2. Should always return a list as the pyast_tree
+3. This may not hold for all list-typed tokens, if they are implemented before 09/15/2023, e.g., testlist
+4. Should rework on testlist to fix it.
+
 ## 2.1 name
 ### 2.1.1 name: NAME
 1. NameContext.pyast_tree <= ast.Name(id = NameContext.children[0].getText(), 
@@ -57,6 +65,10 @@
 ## 2.5 expr_stmt:
 ### 2.5.1 expr_stmt: testlist_star_expr
 1. Epxr_stmtContext.pyast_tree <= ast.Expr(Epxr_stmtContext.children[0].pyast_tree)
+### 2.5.2 expr_stmt : testlist_star_expr '=' testlist_star_expr
+1. Epxr_stmtContext.pyast_tree <= ast.Assign
+    1. targets <= [the pyast_tree of every testlist_star_expr except the last one]
+    2. value <= the last testlist_star_expr's pyast_tree
 ### 2.5.x Other parts of the rule not handled
 Full rule:<br/>
 expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
@@ -184,4 +196,14 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.19 stmt
 ### 2.14.1  stmt: simple_stmts | compound_stmt;
-1. StmtContext.pyast_tree <= StmtContext.children[0].pyast_tree (copy_child)   
+1. StmtContext.pyast_tree <= StmtContext.children[0].pyast_tree (copy_child) 
+
+## 2.20 star_expr
+### 2.20.1  star_expr: '*' expr;
+1. Star_exprContext.pyast_tree <= ast.Starred
+    1. value = Star_exprContext.children[1].pyast_tree (expr's ast node)
+
+## 2.21 testlist_star_expr
+### 2.21.1 testlist_star_expr: (test|star_expr) (',' (test|star_expr))* ','?;
+1. Testlist_star_exprContext.pyast_tree <= [..] (a list)
+    1. each test or star_expr child's pyast_tree is a item in the list

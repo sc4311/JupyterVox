@@ -10,28 +10,6 @@ from antlr_parser.Python3Parser import Python3Parser
 import ast
 
 # Grammar:
-# expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
-#                     ('=' (yield_expr|testlist_star_expr))*);
-def convert_expr_stmt(listener, ctx:Python3Parser.Expr_stmtContext):
-    # should have no more than 3 child
-    if ctx.getChildCount() > 3:
-        raise ValueError("Expr_stmt node has more than three children, "
-                         + "count is " + str(ctx.getChildCount()))
-
-    # only handles one the case with one child now
-    if ctx.getChildCount() != 1:
-        raise NotImplementedError("More than one child is not supported for " +
-                                  "Expr_stmt node at the moment")
-
-    # generate an ast.Expr node
-    child = ctx.children[0]
-    # ast_node = ast.Expr(listener.pyast_trees[child])
-    # listener.pyast_trees[ctx] = ast_node
-    ast_node = ast.Expr(child.pyast_tree)
-    ctx.pyast_tree = ast_node
-    return
-
-# Grammar:
 #    simple_stmt: (expr_stmt | del_stmt | pass_stmt | flow_stmt |
 #             import_stmt | global_stmt | nonlocal_stmt | assert_stmt);
 def convert_simple_stmt(listener, ctx:Python3Parser.Simple_stmtContext):

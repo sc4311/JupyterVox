@@ -23,3 +23,12 @@ while a>10:\n\treturn\nelse:\n\treturn\n
 # while a<b>6: # should work for Antlr4, not Python AST
 # if ac>12<db: # should work for Antlr4, not Python AST
 for i in a:\n\treturn 5\nelse:\n\ta+b\n\treturn
+a,c,12
+b = c
+a,b,c = e,d,f = 11, g, 13
+*a = *b = c,b,d = *c
+*a = b
+*a = *b
+*a = *b = e,f = 12, 13
+*a
+

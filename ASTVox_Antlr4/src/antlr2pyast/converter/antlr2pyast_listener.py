@@ -65,11 +65,11 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#testlist_star_expr.
     def exitTestlist_star_expr(self,
                                ctx:Python3Parser.Testlist_star_exprContext):
-        test_stmts.convert_testlist_star_expr(self, ctx)
+        expr.convert_testlist_star_expr(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#expr_stmt.
     def exitExpr_stmt(self, ctx:Python3Parser.Expr_stmtContext):
-        basic_rules.convert_expr_stmt(self, ctx)
+        expr.convert_expr_stmt(self, ctx)
 
     # Exit a parse tree produced by Python3Parser#simple_stmt.
     def exitSimple_stmt(self, ctx:Python3Parser.Simple_stmtContext):
@@ -126,3 +126,7 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#stmt.
     def exitStmt(self, ctx:Python3Parser.StmtContext):
         basic_rules.convert_stmt(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#star_expr.
+    def exitStar_expr(self, ctx:Python3Parser.Star_exprContext):
+        expr.convert_star_expr(self, ctx)
