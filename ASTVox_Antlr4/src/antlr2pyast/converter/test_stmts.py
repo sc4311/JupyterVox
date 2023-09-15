@@ -17,23 +17,24 @@ from antlr_parser.Python3ParserListener import Python3ParserListener
 # PyAST package
 import ast
 
-# convert testlist to a single node or ast.Tuple list node (a list of tests)
+# convert testlist to a list of tests
 # rule: testlist: test (',' test)* ','?;
 def convert_testlist(listener, ctx:Python3Parser.TestlistContext):
 
-  if ctx.getChildCount() == 1:
-    # only one child, use the child Python AST node
-    ctx.pyast_tree = ctx.children[0].pyast_tree
-  else:
-    # more than one child, create an ast.Tuple node to store the children
-    list_tests = []
-    for child in ctx.children:
-      # need to check child, since ',' can also be a child
-      if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
-        list_tests.append(child.pyast_tree)
+  # if ctx.getChildCount() == 1:
+  #   # only one child, use the child Python AST node
+  #   ctx.pyast_tree = ctx.children[0].pyast_tree
+  # else:
+  
+  # more than one child, create an ast.Tuple node to store the children
+  list_tests = []
+  for child in ctx.children:
+    # need to check child, since ',' can also be a child
+    if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
+      list_tests.append(child.pyast_tree)
 
-    # return the list as the tree
-    ctx.pyast_tree = list_tests
+  # return the list as the tree
+  ctx.pyast_tree = list_tests
     
   return
 

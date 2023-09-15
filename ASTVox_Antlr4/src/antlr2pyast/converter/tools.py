@@ -32,26 +32,27 @@ def update_load_store(node:ast.AST, is_load = True):
 
   return
 
-# generate the Python AST node for testlist_star_expr, when it is used as a
-# target or value in expressions
-def testlistStarExpr_to_target_value(
-    ctx:Python3Parser.Testlist_star_exprContext,
+# Convert a list of Python AST nodes into a single AST node
+# or an ast.Tuple.
+def list_to_node_or_tuple(
+    nodes:list,
     is_load = True):
   '''
-  Generate the Python AST node for testlist_star_expr, when it is used as a
-  target or value in assignment statements.
-  If one item in testlist_star_expr, return that item's Python AST node.
-  If more then one items, return a ast.Tuple.
+  Convert a list of Python AST nodes into a single AST node or an ast.Tuple.
+  This is usually needed when the list is used as a target or value of an AST
+  node.
+  If there is one item in the list, return that item's Python AST node.
+  If there are more then one items, return a ast.Tuple.
   '''
 
   # need to correct the load/store context for all children
   load_or_store = ast.Load() if is_load else ast.Store()
-  for n in ctx.pyast_tree:
+  for n in nodes:
     update_load_store(n, is_load)
 
-  if len(ctx.pyast_tree) == 1:
-    ast_node = ctx.pyast_tree[0]
+  if len(nodes) == 1:
+    ast_node = nodes[0]
   else:
-    ast_node = ast.Tuple(ctx.pyast_tree, load_or_store)
+    ast_node = ast.Tuple(nodes, load_or_store)
 
   return ast_node

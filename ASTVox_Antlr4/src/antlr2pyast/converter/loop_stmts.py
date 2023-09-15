@@ -11,6 +11,9 @@ from antlr_parser.Python3ParserListener import Python3ParserListener
 # PyAST package
 import ast
 
+# sibling packages
+from . import tools
+
 # Convert for_stmt to ast.For
 def convert_for_stmt(listener, ctx:Python3Parser.BlockContext):
   '''
@@ -18,27 +21,16 @@ def convert_for_stmt(listener, ctx:Python3Parser.BlockContext):
   rules: for_stmt: 'for' exprlist 'in' testlist ':' block ('else' ':' block)?;
   '''
 
-  #if ctx.getChildCount() != 6:
-  #  raise NotImplementedError("Can't handle \"else\" in for loop's block yet\n")
-
   # generate the "target" from the exprlist (children[1])
-  if ctx.children[1].getChildCount() == 1:
-    target = ctx.children[1].pyast_tree
-    # may need to change ctx to ast.Store(), if ctx exist
-    if hasattr(target, 'ctx'):
-      target.ctx = ast.Store()
-  else:
-    target = ast.Tuple(elts=ctx.children[1].pyast_tree, ctx=ast.Store())
-    # may need to change very element's ctx to ast.Store(), if context exist
-    for n in ctx.children[1].pyast_tree:
-      if hasattr(n, 'ctx'):
-        n.ctx = ast.Store()
+  target = tools.list_to_node_or_tuple(ctx.children[1].pyast_tree,
+                                       is_load=False)
 
   # generate the "iter" from the testlist (children[3])
-  if ctx.children[3].getChildCount() == 1:
-    iter = ctx.children[3].pyast_tree
-  else:
-    iter = ast.Tuple(elts=ctx.children[3].pyast_tree, ctx=ast.Load())
+  # if ctx.children[3].getChildCount() == 1:
+  #   iter = ctx.children[3].pyast_tree
+  # else:
+  #   iter = ast.Tuple(elts=ctx.children[3].pyast_tree, ctx=ast.Load())
+  iter = tools.list_to_node_or_tuple(ctx.children[3].pyast_tree, is_load=True)
 
   # generate the "body" from the block (children[5])
   # seems body is always a list

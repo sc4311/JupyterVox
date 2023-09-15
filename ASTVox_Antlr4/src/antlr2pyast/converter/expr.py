@@ -150,17 +150,18 @@ def convert_exprlist(listener, ctx:Python3Parser.ExprlistContext):
     Rule: exprlist: (expr|star_expr) (',' (expr|star_expr))* ','?;
     '''
 
-    if ctx.getChildCount() == 1:
-        # just one expr, copy the child's tree node
-        ctx.pyast_tree = ctx.children[0].pyast_tree
-    else:
-        # more than one child, make a list
-        expr_list = []
-        for i in range(ctx.getChildCount()):
-            if not isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl):
-                # sometimes ';' is also included in the children
-                expr_list.append(ctx.children[i].pyast_tree)
-        ctx.pyast_tree = expr_list
+    # if ctx.getChildCount() == 1:
+    #     # just one expr, copy the child's tree node
+    #     ctx.pyast_tree = ctx.children[0].pyast_tree
+    # else:
+    #     # more than one child, make a list
+    expr_list = []
+    for i in range(ctx.getChildCount()):
+        if not isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl):
+            # sometimes ';' is also included in the children
+            expr_list.append(ctx.children[i].pyast_tree)
+
+    ctx.pyast_tree = expr_list
 
     return
 
@@ -174,8 +175,8 @@ def gen_ast_expr_from_expr_stmt(ctx:Python3Parser.Expr_stmtContext):
   # should have only one child, with type of Testlist_star_expr
   child = ctx.children[0]
 
-  ast_node = ast.Expr(tools.testlistStarExpr_to_target_value(child,
-                                                             is_load=True))
+  ast_node = ast.Expr(tools.list_to_node_or_tuple(child.pyast_tree,
+                                                  is_load=True))
 
   return ast_node
 
@@ -194,12 +195,12 @@ def gen_ast_assign_from_expr_stmt(ctx:Python3Parser.Expr_stmtContext):
 
   # process the statement for targets
   for i in range(0, ctx.getChildCount()-1, 2):
-    node = tools.testlistStarExpr_to_target_value(ctx.children[i],
-                                                  is_load=False)
+    node = tools.list_to_node_or_tuple(ctx.children[i].pyast_tree,
+                                       is_load=False)
     targets.append(node)
 
   # generate the value from the last child
-  value = tools.testlistStarExpr_to_target_value(ctx.children[-1], is_load=True)
+  value = tools.list_to_node_or_tuple(ctx.children[-1].pyast_tree, is_load=True)
 
   ast_node = ast.Assign(targets, value)
 

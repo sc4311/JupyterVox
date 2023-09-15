@@ -9,8 +9,7 @@
 ### 2.0.1 List type of tokens
 1. List type of tokens are those drived from one or two repeated items, e.g., simple_stmts: simple_stmt (';' simple_stmt)* ';'? NEWLINE;
 2. Should always return a list as the pyast_tree
-3. This may not hold for all list-typed tokens, if they are implemented before 09/15/2023, e.g., testlist
-4. Should rework on testlist to fix it.
+3. This may not hold for all list-typed tokens, if they are implemented before 09/15/2023
 
 ## 2.1 name
 ### 2.1.1 name: NAME
@@ -105,11 +104,8 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.10 testlist
 ### 2.10.1 testlist: test (',' test)* ','?;
-1. If there is just one child
-    1.  TestlistContext.pyast_tree <= TestlistContext.children[0].pyast_tree (copy_child)
-2. If there are more than one child
-    1. TestlistContext.pyast_tree <= [] (just a list)
-    2. the pyast_tree of each child of testlistContext is an item in the list
+1. TestlistContext.pyast_tree <= [...] (just a list)
+2. the pyast_tree of each child of testlistContext is an item in the list
 
 ## 2.11 block
 ### 2.11.1 block: simple_stmts
@@ -142,11 +138,8 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
         
 ## 2.13 exprlist
 ### 2.13.1 exprlist: (expr|star_expr) (',' (expr|star_expr))* ','?;   
-1. If there is just one child
-    1.  ExprlistContext.pyast_tree <= ExprlistContext.children[0].pyast_tree (copy child)
-2. If there are more than one child
-    1. ExprlistContext.pyast_tree <= [] (just a list)
-    2. the pyast_tree of each child of ExprlistContext is an item in the list
+1. ExprlistContext.pyast_tree <= [...] (just a list)
+2. the pyast_tree of each child of ExprlistContext is an item in the list
 
 ## 2.14 compound_stmt
 ### 2.14.1  compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt | match_stmt;

@@ -12,6 +12,9 @@ from antlr_parser.Python3ParserListener import Python3ParserListener
 # PyAST package
 import ast
 
+# sibling packages
+from . import tools
+
 # convert Return_stmt to ast.Return
 # rule: return_stmt: 'return' testlist?;
 def convert_return(listener, ctx:Python3Parser.Return_stmtContext):
@@ -21,12 +24,8 @@ def convert_return(listener, ctx:Python3Parser.Return_stmtContext):
     value = None
   elif ctx.getChildCount() == 2:
     # return has values 
-    if ctx.children[1].getChildCount() == 1:
-      # only one return value, pass on the value's tree
-      value = ctx.children[1].pyast_tree
-    else:
-      # more than one return values, put the return value in an ast.Tuple
-      value = ast.Tuple(ctx.children[1].pyast_tree, ast.Load())
+    value = tools.list_to_node_or_tuple(ctx.children[1].pyast_tree,
+                                        is_load=True)
   else:
     raise ValueError("I though return_stmt can have 2 children at most, ",
                      "however the children count is", ctx.getChildCount())
