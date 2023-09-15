@@ -36,6 +36,15 @@
 ### 2.2.3 atom:"True" | "False"
 1. AtomContext.pyast_tree <= ast.Constant
     1. value <= True or False, based on the actual statement text
+### 2.2.4 atom: '(' (testlist_comp)? ')'
+1. If there is one item in testlist_comp, 
+    1. AtomContext.pyast_tree <= AtomContext.children[1].pyast_tree (copy child)
+2. If there are more than one items in testlis_comp,
+    1. AtomContext.pyast_tree <= ast.Tuple
+    2. ast.Tuple.elts <= AtomContext.children[1].pyast_tree
+### 2.2.4 atom: '[' testlist_comp? ']'
+1. AtomContext.pyast_tree <= ast.List
+2. ast.List.elts <= AtomContext.children[1].pyast_tree
 ### 2.2.x Other not implemented yet
 
 ## 2.3 atom_expr
@@ -199,4 +208,9 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ## 2.21 testlist_star_expr
 ### 2.21.1 testlist_star_expr: (test|star_expr) (',' (test|star_expr))* ','?;
 1. Testlist_star_exprContext.pyast_tree <= [..] (a list)
-    1. each test or star_expr child's pyast_tree is a item in the list
+2. Each test or star_expr child's pyast_tree is a item in the list
+
+## 2.22 testlist_comp
+### 2.22.1 testlist_comp: (test|star_expr) ( (',' (test|star_expr))* ','? );
+1. Testlist_compContext.pyast_tree <= [..] (a list)
+2. Each test or star_expr child's pyast_tree is a item in the list 

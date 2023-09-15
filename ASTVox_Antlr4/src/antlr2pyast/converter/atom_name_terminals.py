@@ -10,6 +10,9 @@ from antlr_parser.Python3ParserListener import Python3ParserListener
 # PyAST package
 import ast
 
+# sibling packages
+from . import tools
+
 # convert a NUMBER to ast.Constant
 def gen_ast_num_constant(ctx:antlr4.tree.Tree.TerminalNodeImpl):
     # extract the value, a bit hacky
@@ -86,10 +89,24 @@ def convert_atom(listener, ctx:Python3Parser.AtomContext):
         ctx.pyast_tree = ast.Constant(True)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
           first_child.getSymbol().type == Python3Lexer.FALSE):
-        # rule 4: atom: "True"
+        # rule 4: atom: "False"
         # child a is False, convert it to ast.Constant
         # implement here => ast.Constant
         ctx.pyast_tree = ast.Constant(False)
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.OPEN_PAREN and
+          isinstance(ctx.children[1], Python3Parser.Testlist_compContext)):
+        # rule 5: atom: '(' (testlist_comp)? ')'
+        # handles the testlist_comp, yield_expr unimplemented yet
+        # return a simple node if testlist_comp has only one item,
+        # otherwise returns a tuple
+        ctx.pyast_tree = tools.list_to_node_or_tuple(ctx.children[1].pyast_tree,
+                                                     is_load=True)
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.OPEN_BRACK):
+        # rule 6: atom: '[' testlist_comp? ']'
+        # returns an ast.List node
+        ctx.pyast_tree = ast.List(ctx.children[1].pyast_tree, ast.Load())
     else:
         raise NotImplementedError("Other rules not implemented for " +
                                   "Atom node at the moment")

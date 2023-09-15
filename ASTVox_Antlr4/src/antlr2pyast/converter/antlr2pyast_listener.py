@@ -130,3 +130,7 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#star_expr.
     def exitStar_expr(self, ctx:Python3Parser.Star_exprContext):
         expr.convert_star_expr(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#testlist_comp.
+    def exitTestlist_comp(self, ctx:Python3Parser.Testlist_compContext):
+        test_stmts.convert_testlist_comp(self, ctx)

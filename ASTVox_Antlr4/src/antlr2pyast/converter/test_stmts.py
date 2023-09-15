@@ -183,3 +183,32 @@ def convert_comp_op(listener, ctx:Python3Parser.Comp_opContext):
   ctx.pyast_tree = op_node
 
   return
+
+# convert testlist_comp to a list of AST nodes of test or star_expr
+def convert_testlist_comp(listener, ctx:Python3Parser.Testlist_compContext):
+  '''
+  Convert testlist_comp to a list of AST nodes for test or star_expr.
+  Rule: testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* ','? );
+
+  Only handles the case without comp_for, i.e,
+  testlist_comp: (test|star_expr) ((',' (test|star_expr))* ','? );
+
+  Returns a list of AST nodes
+  '''
+
+  # append each children's pyast_tree to the list
+  test_list = []
+  for child in ctx.children:
+    if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
+      # this is a ','
+      continue
+
+    if isinstance(child, Python3Parser.Comp_forContext):
+      raise NotImplementedError("Comp for (async for loops) are not handled yet")
+
+    # should be test or star_expr now
+    test_list.append(child.pyast_tree)
+
+  ctx.pyast_tree = test_list
+
+  return
