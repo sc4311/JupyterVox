@@ -79,7 +79,11 @@ def convert_block_to_body(block:Python3Parser.BlockContext):
   pyast_tree may be a single tree node if there is only one statement in the 
   block. Hence the conversion. 
   Returns the list for "body".
+
+  Note: this function may not be necessary. Block's pyast_tree seems to
+  be always a list.
   '''
+  
   if type(block.pyast_tree) is list:
       return block.pyast_tree
   else:

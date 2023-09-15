@@ -140,13 +140,6 @@ def convert_block(listener, ctx:Python3Parser.BlockContext):
         # this branch is for line such as "for i in j:\n"
         ctx.pyast_tree = None
         return
-    
-    # if not child, return an None node tree
-    # This should only happen when we are parsing on the first line of
-    # a compound statment, e.g., the "for ..." line of a for loop
-    if ctx.getChildCount() == 0:
-        ctx.pyast_tree = None
-        return
 
     # check which rule we are handling to determine what to do
     if isinstance(ctx.children[0], Python3Parser.Simple_stmtsContext):
