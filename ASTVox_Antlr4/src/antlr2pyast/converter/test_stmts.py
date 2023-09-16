@@ -38,114 +38,143 @@ def convert_testlist(listener, ctx:Python3Parser.TestlistContext):
     
   return
 
-# Grammar:
-#    not_test: 'not' not_test | comparison;
+# Convert not_test to Python AST node: astUaryOP, if it is "not" test;
+# or the child's ast node, if it does not have "not" in it.
 def convert_not_test(listener, ctx:Python3Parser.Not_testContext):
-    # should have no more than 3 child
-    if ctx.getChildCount() > 3:
-        raise ValueError("Not_test node has more than three children, "
-                         + "count is " + str(ctx.getChildCount()))
-
-    # only handles one the case with one child now
-    if ctx.getChildCount() != 1:
-        raise NotImplementedError("More than one child is not supported for " +
-                                  "Not_test node at the moment")
-
-    # copy child's AST node
+  '''
+  Convert not_test to Python AST node: ast.UaryOP, if it is "not" test:
+  or the child's ast node, if it does not have "not" in it.
+  Rule:  not_test: 'not' not_test | comparison;
+  '''
+  
+  if ctx.getChildCount() == 1:
+    # for rule not_test: comparison, copy child's AST node
     child = ctx.children[0]
     # listener.pyast_trees[ctx] = listener.pyast_trees[child]
     ctx.pyast_tree = child.pyast_tree
-    return
+  else:
+    # for rule not_test: 'not' not_test, generate the ast.UnaryOp node
+    ctx.pyast_tree = ast.UnaryOp(ast.Not(), ctx.children[1].pyast_tree)
 
-# Grammar:
-#   and_test: not_test ('and' not_test)*;
+  return
+
+# Convert and_test to Python AST node: ast.BoolOp, if there is "and"; 
+# or the child's ast node, if it does not have "and"
 def convert_and_test(listener, ctx:Python3Parser.And_testContext):
-    # should have no more than 3 child
-    if ctx.getChildCount() > 3:
-        raise ValueError("And_test node has more than three children, "
-                         + "count is " + str(ctx.getChildCount()))
-
-    # only handles one the case with one child now
-    if ctx.getChildCount() != 1:
-        raise NotImplementedError("More than one child is not supported for " +
-                                  "And_test node at the moment")
-
-    # copy child's AST node
+  '''
+  Convert and_test to Python AST node: ast.BoolOp, if there is "and"; 
+  or the child's ast node, if it does not have "and"
+  Rule: and_test: not_test ('and' not_test)*;
+  '''
+  
+  # only handles one the case with one child now
+  if ctx.getChildCount() == 1:  
+    # rule and_test: not_test, copy child's AST node
     child = ctx.children[0]
     # listener.pyast_trees[ctx] = listener.pyast_trees[child]
     ctx.pyast_tree = child.pyast_tree
-    return
+  else:
+    # rule and_test: and_test: not_test ('and' not_test)+
+    # translate to ast.BoolOp
+    values = []
+    # add the first operand to values
+    values.append(ctx.children[0].pyast_tree)
+    # add the rest of the operands
+    for i in range(2, ctx.getChildCount(), 2):
+      values.append(ctx.children[i].pyast_tree)
+    # create the ast.BoolOp node
+    ctx.pyast_tree = ast.BoolOp(ast.And(), values)
+    
+  return
 
-# Grammar:
-#    or_test: and_test ('or' and_test)*;
+# Convert and_test to Python AST node: ast.BoolOp, if there is "or"; 
+# or the child's ast node, if it does not have "or"
 def convert_or_test(listener, ctx:Python3Parser.Or_testContext):
-    # should have no more than 3 child
-    if ctx.getChildCount() > 3:
-        raise ValueError("Or_test node has more than three children, "
-                         + "count is " + str(node.getChildCount()))
+  '''
+  Convert or_test to Python AST node: ast.BoolOp, if there is "or"; 
+  or the child's ast node, if it does not have "or".
+  Rule: or_test: and_test ('or' and_test)*;
+  '''
 
-    # only handles one the case with one child now
-    if ctx.getChildCount() != 1:
-        raise NotImplementedError("More than one child is not supported for " +
-                                  "Or_test node at the moment")
-
-    # copy child's AST node
+  # only handles one the case with one child now
+  if ctx.getChildCount() == 1:  
+    # rule or_test: and_test, copy child's AST node
     child = ctx.children[0]
     # listener.pyast_trees[ctx] = listener.pyast_trees[child]
     ctx.pyast_tree = child.pyast_tree
-    return
+  else:
+    # rule or_test: and_test: and_test ('or' and_test)+
+    # translate to ast.BoolOp
+    values = []
+    # add the first operand to values
+    values.append(ctx.children[0].pyast_tree)
+    # add the rest of the operands
+    for i in range(2, ctx.getChildCount(), 2):
+      values.append(ctx.children[i].pyast_tree)
+    # create the ast.BoolOp node
+    ctx.pyast_tree = ast.BoolOp(ast.Or(), values)
+    
+  return
 
-# Grammar:
-#    test: or_test ('if' or_test 'else' test)? | lambdef;
+
+# Convert test to the corresponding Python AST node. If there is only or_test,
+# copy the child's AST node; if there is 'if' ... 'else' ..., convert to
+# ast.IfExp. lambdef is not handled yet?
 def convert_test(listener, ctx:Python3Parser.TestContext):
-    # should have no more than 3 child
-    if ctx.getChildCount() > 3:
-        raise ValueError("Test node has more than three children, "
-                         + "count is " + str(node.getChildCount()))
-
-    # only handles one the case with one child now
-    if ctx.getChildCount() != 1:
-        raise NotImplementedError("More than one child is not supported for " +
-                                  "Test node at the moment")
-
-    # copy child's AST node
+  '''
+  Convert test to the corresponding Python AST node. If there is only or_test,
+  copy the child's AST node; if there is 'if' ... 'else' ..., convert to
+  ast.IfExp. lambdef is not handled yet?
+  Rule: test: or_test ('if' or_test 'else' test)? | lambdef;
+  '''
+  
+  if ctx.getChildCount() == 1:
+    # rule test: or_test | lambdef, copy child's AST node
     child = ctx.children[0]
     # listener.pyast_trees[ctx] = listener.pyast_trees[child]
     ctx.pyast_tree = child.pyast_tree
-    return
+  else:
+    # rule test: or_test ('if' or_test 'else' test)?, convert to ast.IfExp
+    body = ctx.children[0].pyast_tree
+    test = ctx.children[2].pyast_tree
+    orelse = ctx.children[4].pyast_tree
+
+    ctx.pyast_tree = ast.IfExp(test, body, orelse)
+    
+  return
 
 
 # Convert comparison to child's tree (if only one child), or ast.Compare (if
 # this is really a comparion)
 def convert_comparison(listener, ctx:Python3Parser.ComparisonContext):
-    '''
-    Convert comparison to child's tree (if only one child), or ast.Compare (if
-    this is really a comparion)
-    rule: comparison: expr (comp_op expr)*;
-    '''
+  '''
+  Convert comparison to child's tree (if only one child), or ast.Compare (if
+  this is really a comparison)
+  rule: comparison: expr (comp_op expr)*;
+  '''
 
-    if ctx.getChildCount() == 1:
-        # just one child, copy child's AST node
-        child = ctx.children[0]
-        #listener.pyast_trees[ctx] = listener.pyast_trees[child]
-        ctx.pyast_tree = child.pyast_tree
+  if ctx.getChildCount() == 1:
+    # just one child, copy child's AST node
+    child = ctx.children[0]
+    #listener.pyast_trees[ctx] = listener.pyast_trees[child]
+    ctx.pyast_tree = child.pyast_tree
 
-    else:
-        # more than one child, need to convert to ast.Compare
-        # get the left field
-        left = ctx.children[0].pyast_tree
+  else:
+    # more than one child, need to convert to ast.Compare
+    # get the left field
+    left = ctx.children[0].pyast_tree
 
-        # get the rest of the operators and comparators
-        ops = []
-        comparators = []
-        for i in range(1, ctx.getChildCount(), 2):
-          ops.append(ctx.children[i].pyast_tree)
-          comparators.append(ctx.children[i+1].pyast_tree)
+    # get the rest of the operators and comparators
+    ops = []
+    comparators = []
+    for i in range(1, ctx.getChildCount(), 2):
+      ops.append(ctx.children[i].pyast_tree)
+      comparators.append(ctx.children[i+1].pyast_tree)
 
-        # construct the ast.Compare node
-        ctx.pyast_tree = ast.Compare(left, ops, comparators)
+    # construct the ast.Compare node
+    ctx.pyast_tree = ast.Compare(left, ops, comparators)
     
-    return
+  return
 
 # Convert comp_op to ast.Eq, ast.NotEq ...
 def convert_comp_op(listener, ctx:Python3Parser.Comp_opContext):

@@ -39,5 +39,14 @@ a,b,c = e,d,f = 11, g, 13
 [a,b,12,True]
 {a, b, "12", True, 13.38}
 {"keys":1, "values":2, a:b, **c}
-
+{a, b, "12", True, 13.38,}
+{"keys":1, "values":2, a:b, **c,}
+not a
+not not not a*b+c
+a and b
+a or b
+a1 and a2 or a3 or not not not a*12 and a or c
+a if b else c
+x = a or b if a or b else a
+while a or b and c: return
 

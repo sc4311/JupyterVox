@@ -62,7 +62,8 @@ def gen_ast_binop(listener, ctx:Python3Parser.ExprContext):
 
     return binop_node
 
-# generate AST node based on unary operation type
+# generate AST node based on unary operation type.
+# Note, "not" operator is handled by the not_test symbol
 def gen_ast_unary_operations(op_text):
     if op_text == "+":
         ast_node = ast.UAdd()

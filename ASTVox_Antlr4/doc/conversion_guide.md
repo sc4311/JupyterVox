@@ -234,3 +234,36 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 2. DictorsetmakerContext.pyast_tree <= {"keys":None, "values":[...]} (a dict)
 4. Values is a list of the pyast_trees of the "test"s or exprs
 ### 2.22.x Comp_for not handled
+
+## 2.23 not_test
+### 2.23.1 not_test: comparison
+1. Or_testContext.pyast_tree <= Or_testContext.children[0].pyast_tree (copy_child) 
+### 2.23.2 not_test: 'not' not_test
+1. Or_testContext.pyast_tree <= ast.UnaryOp()
+    1. op <= ast.Not()
+    2. operand <= Or_testContext.children[1].pyast_tree
+
+## 2.24 and_test
+### 2.24.1 and_test: not_test
+1. And_testContext.pyast_tree <= And_testContext.children[0].pyast_tree (copy_child) 
+### 2.24.2 and_test: not_test ('and' not_test)+
+1. And_testContext.pyast_tree <= ast.BoolOp()
+    1. op <= ast.And()
+    2. values <= [the pyast_tree of all no_test children] (a list)
+
+## 2.25 or_test
+### 2.25.1 or_test: and_test
+1. Or_testContext.pyast_tree <= Or_testContext.children[0].pyast_tree (copy_child) 
+### 2.25.2 or_test: and_test ('or' and_test)+
+1. Or_testContext.pyast_tree <= ast.BoolOp()
+    1. op <= ast.Or()
+    2. values <= [the pyast_tree of all and_test children] (a list)
+
+## 2.26 test
+### 2.26.1 test: or_test | lambdef;
+1. TestContext.pyast_tree <= TestContext.children[0].pyast_tree (copy_child) 
+### 2.26.2 test: or_test ('if' or_test 'else' test)
+1. Or_testContext.pyast_tree <= ast.IfExp()
+    1. body <= TestContext.children[0].pyast_tree
+    2. test <= TestContext.children[2].pyast_tree
+    3. orelse <= TestContext.children[4].pyast_tree
