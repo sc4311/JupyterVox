@@ -181,12 +181,25 @@ def gen_dict_keys_values(ctx:Python3Parser.DictorsetmakerContext):
     keys = []
     values = []
 
-    for i in range(0, ctx.getChildCount(), 4):
-        if isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl):
-            continue # skip ',', probably not necessary
-
-        keys.append(ctx.children[i].pyast_tree)
-        values.append(ctx.children[i+2].pyast_tree)
+    # process each part of the comma-separated dict list to get keys and values
+    i = 0
+    while i < ctx.getChildCount():
+        if isinstance(ctx.children[i], Python3Parser.TestContext):
+            # this dict item is test ':' test
+            keys.append(ctx.children[i].pyast_tree)
+            values.append(ctx.children[i+2].pyast_tree)
+            i += 4 # advance to next dict item, skip 4, including ','
+        elif (isinstance(ctx.children[i],
+                         antlr4.tree.Tree.TerminalNodeImpl) and
+              ctx.children[i].getSymbol().type == Python3Lexer.POWER):
+            # this dict item is "**" expr
+            keys.append(None)
+            values.append(ctx.children[i+1].pyast_tree)
+            i += 3 # advance to next dict item, skip 3, including ','
+        else:
+            raise ValueError("Unknown dictionary item type for Dictorsetmaker" +
+                             " node is type " +
+                             ctx.children[i].__class__.__name__ )
 
     return {"keys":keys, "values":values}
 
@@ -226,10 +239,20 @@ def convert_dictorsetmaker(listener, ctx:Python3Parser.DictorsetmakerContext):
     Returns {"keys":[...], "values":[...]} for dict construction
     '''
 
+    # check for comp_for, this is just for reporting the correct error message
+    for c in ctx.children:
+        if isinstance(c, Python3Parser.Comp_forContext):
+            raise NotImplementedError("comp_for is not handled yet for" +
+                                      " dictorsetmaker")
+    
     if (ctx.getChildCount() > 2 and
         isinstance(ctx.children[1], antlr4.tree.Tree.TerminalNodeImpl) and
         ctx.children[1].getSymbol().type == Python3Lexer.COLON):
-        # making a dictionary
+        # making a dictionary, starting with test:test
+        ctx.pyast_tree = gen_dict_keys_values(ctx)
+    elif (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
+          ctx.children[0].getSymbol().type == Python3Lexer.POWER):
+        # making a dictionary, starting with **expr
         ctx.pyast_tree = gen_dict_keys_values(ctx)
     else:
         # making a set

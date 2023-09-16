@@ -227,11 +227,10 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.22.1 dictorsetmaker: ((test ':' test | '**' expr)(comp_for | (',' (test ':' test | '**' expr))* ','?)) 
 1. For making a dictonary
 2. DictorsetmakerContext.pyast_tree <= {"keys":[...], "values":[...]} (a dict)
-3. Keys is a list of the pyast_trees of the "test"s before ':'
-4. Values is a list of the pyast_trees of the "test"s after ':'
+3. Keys is a list of the pyast_trees of the "test"s before ':', or None if the item is '**' expr
+4. Values is a list of the pyast_trees of the "test"s after ':', or the expr if the item is '**' expr
 ### 2.22.1 dictorsetmaker: (((test | star_expr)(comp_for | (',' (test | star_expr))* ','?))
 1. For making a set
 2. DictorsetmakerContext.pyast_tree <= {"keys":None, "values":[...]} (a dict)
 4. Values is a list of the pyast_trees of the "test"s or exprs
-### 2.22.x Comp_for and "**" expr not handled
-1. Not sure what "**" is, does not parse with them in Antlr4 and Python AST
+### 2.22.x Comp_for not handled
