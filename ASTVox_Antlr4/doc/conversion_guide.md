@@ -29,29 +29,29 @@
 ### 2.2.2 atom: NUMBER
 1. AtomContext.pyast_tree <= ast.Constant(AtomContext.children[0]), see 1.1 NUMBER
 ### 2.2.3 atom:STRING+
-1. AtomContext.pyast_tree <= ast.Constant
+1. AtomContext.pyast_tree <= ast.Constant, fields are,
     1. value <= concatenated string tokens
     2. A separate list "original_strings" is also added to the ast.Constant node with individual strings in STRING+
     3. String is processes to remove leading and trailing " and '
 ### 2.2.3 atom:"True" | "False"
-1. AtomContext.pyast_tree <= ast.Constant
+1. AtomContext.pyast_tree <= ast.Constant, fields are,
     1. value <= True or False, based on the actual statement text
 ### 2.2.4 atom: '(' (testlist_comp)? ')'
 1. If there is one item in testlist_comp, 
     1. AtomContext.pyast_tree <= AtomContext.children[1].pyast_tree (copy child)
 2. If there are more than one items in testlis_comp,
-    1. AtomContext.pyast_tree <= ast.Tuple
+    1. AtomContext.pyast_tree <= ast.Tuple, fields are,
     2. ast.Tuple.elts <= AtomContext.children[1].pyast_tree
 ### 2.2.4 atom: '[' testlist_comp? ']'
 1. AtomContext.pyast_tree <= ast.List
 2. ast.List.elts <= AtomContext.children[1].pyast_tree
 ### 2.2.4 atom: '{' dictorsetmaker? '}'
 1. If there are "keys" in dictorsetmaker, 
-    1. AtomContext.pyast_tree <= ast.Dict
+    1. AtomContext.pyast_tree <= ast.Dict, fields are,
         1. keys = dictorsetmaker.pyast_tree["keys"]
         2. values = dictorsetmaker.pyast_tree["values"]
 1. If there are no "keys" in dictorsetmaker, i.e., dictorsetmaker.pyast_tree["keys"] is None
-    1. AtomContext.pyast_tree <= ast.Set
+    1. AtomContext.pyast_tree <= ast.Set, fields are,
         1. elts = dictorsetmaker.pyast_tree["values"]
 ### 2.2.x Other not implemented yet
 
@@ -112,7 +112,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ## 2.9 return_stmt
 ### 2.9.1 return_stmt: 'return' testlist?;
 1. Return_stmtContext.pyast_tree <= ast.Return
-2. for ast.Return.value
+2. for ast.Return.value, fields are,
     1. if no return value, value <= None
     2. if return on value, value <= Return_stmtContext.children[1]
     3. if return a list of values, value <= ast.Tuple
@@ -138,7 +138,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.12 for
 ### 2.12.1 for_stmt: 'for' exprlist 'in' testlist ':' block ('else' ':' block)?;
-1. ForContext.pyast_tree <= ast.For
+1. ForContext.pyast_tree <= ast.For, fields are,
     1. target:
         1. If exprlist has only one child, target <= exprlist.pyast_tree, convert ctx to ast.Store
         2. If exprlist has more children, target <= ast.Tuple(elts=exprlist.pyast_tree)
@@ -168,7 +168,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.16 while_stmt
 ### 2.16.1  while_stmt: 'while' test ':' block ('else' ':' block)?;
-1. While_stmtContext.pyast_tree <= ast.While
+1. While_stmtContext.pyast_tree <= ast.While, fields are,
     1. test: While_stmtContext.children[1].pyast_tree
     2. body: 
         1. If block has only one child, body <= [block.pyast_tree] (one item list) 
@@ -182,14 +182,14 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.15.1 comparison: expr (comp_op expr)*;
 1. if only one expr, ComparisonContext.pyast_tree <= ComparisonContext.children[0].pyast_tree (copy child)
 2. if more than one child
-    1. ComparisonContext.pyast_tree <= ast.Compare
+    1. ComparisonContext.pyast_tree <= ast.Compare, fields are,
         1. left <= first epxr's pyast_tree
         2. ops <= [all comp_ops' pyast_tree] (list of comp_ops' pyast_tree)
         3. comparators <= [all the rest exprs' pyast_tree] (list of the rest exprs' pyast_tree)
 
 ## 2.18 if_stmt
 ### 2.18.1 if_stmt: 'if' test ':' block ('elif' test ':' block)* ('else' ':' block)?;
-1. If_stmtContext.pyast_tree <= ast.If
+1. If_stmtContext.pyast_tree <= ast.If, fields are,
     1. test = If_stmtContext.children[1].pyast_tree
     2. body 
         1. If block (If_stmtContext.children[1]) has only one child, body <= [block.pyast_tree] (one item list) 
@@ -210,7 +210,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.20 star_expr
 ### 2.20.1  star_expr: '*' expr;
-1. Star_exprContext.pyast_tree <= ast.Starred
+1. Star_exprContext.pyast_tree <= ast.Starred, fields are,
     1. value = Star_exprContext.children[1].pyast_tree (expr's ast node)
 
 ## 2.21 testlist_star_expr
@@ -239,7 +239,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.23.1 not_test: comparison
 1. Or_testContext.pyast_tree <= Or_testContext.children[0].pyast_tree (copy_child) 
 ### 2.23.2 not_test: 'not' not_test
-1. Or_testContext.pyast_tree <= ast.UnaryOp()
+1. Or_testContext.pyast_tree <= ast.UnaryOp(), fields are,
     1. op <= ast.Not()
     2. operand <= Or_testContext.children[1].pyast_tree
 
@@ -247,7 +247,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.24.1 and_test: not_test
 1. And_testContext.pyast_tree <= And_testContext.children[0].pyast_tree (copy_child) 
 ### 2.24.2 and_test: not_test ('and' not_test)+
-1. And_testContext.pyast_tree <= ast.BoolOp()
+1. And_testContext.pyast_tree <= ast.BoolOp(), fields are,
     1. op <= ast.And()
     2. values <= [the pyast_tree of all no_test children] (a list)
 
@@ -255,7 +255,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.25.1 or_test: and_test
 1. Or_testContext.pyast_tree <= Or_testContext.children[0].pyast_tree (copy_child) 
 ### 2.25.2 or_test: and_test ('or' and_test)+
-1. Or_testContext.pyast_tree <= ast.BoolOp()
+1. Or_testContext.pyast_tree <= ast.BoolOp(), fields are,
     1. op <= ast.Or()
     2. values <= [the pyast_tree of all and_test children] (a list)
 
@@ -263,7 +263,66 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.26.1 test: or_test | lambdef;
 1. TestContext.pyast_tree <= TestContext.children[0].pyast_tree (copy_child) 
 ### 2.26.2 test: or_test ('if' or_test 'else' test)
-1. Or_testContext.pyast_tree <= ast.IfExp()
+1. Or_testContext.pyast_tree <= ast.IfExp(), fields are,
     1. body <= TestContext.children[0].pyast_tree
     2. test <= TestContext.children[2].pyast_tree
     3. orelse <= TestContext.children[4].pyast_tree
+
+## 2.27 tfpdef
+### 2.27.1 tfpdef: name (':' test)?;
+1. TfpdefContext.pyast_tree <= ast.arg, fields are,
+    1. arg: TfpdefContext.children[0].getText()
+    2. annotation: TfpdefContext.children[2].pyast_tree
+
+## 2.28 typedargslist
+### 2.28.1 typedargslist: (tfpdef ('=' test)? (',' tfpdef ('=' test)?)* (',' ('*' tfpdef? (',' tfpdef ('=' test)?)* (',' ('**' tfpdef ','? )? )? | '**' tfpdef ','? )? )? | '*' tfpdef? (',' tfpdef ('=' test)?)* (',' ('**' tfpdef ','? )? )? | '**' tfpdef ','?);
+1. This grammar is super complex. But there are basically four cases:
+    1. normal args + *vararg + kwonly args + **kwarg
+    2. normal args + **kwarg
+    3. *kwarg + kwonly args + **kwarg
+    4. **kwarg
+2. TypedargslistContext.pyast_tree = ast.arguments(), fields are,
+    1. posonlyargs == [] (empty list, Antlr4 grammar does not handle it at the moment)
+    2. args = [...], defaults = [...], for normal arguments
+        1. normal args are: (tfpdef ('=' test)? (',' tfpdef ('=' test)?)*
+        2. all pyast_trees of tfpdef's go into the args list
+        3. all pyast_trees of test's go into the default list
+        4. if no normal args, both lists are empty
+    3. vararg
+        1. vararg is: '*' tfpdef
+        2. vararg <= tfpdef.pyast_tree, should be an ast.arg typed object
+        3. None, if vararg does not exist
+    4. kwonlyargs = [...], kw_defaults =[...], for keyword-only variables
+        1. kwonly args are: (tfpdef ('=' test)? (',' tfpdef ('=' test)?)*, that are defined after *vararg
+        2. all pyast_trees of tfpdef's go into the kwonlyargs list
+        3. all pyast_trees of test's go into the kw_defaults list
+        4. if a keyword only argumetn does not have default value, None is used for the kw_defaults list
+        4. if no keyword-only args, both lists are empty
+    5. kwarg
+        1. kwarg is: '**' tfpdef
+        2. kwarg <= tfpdef.pyast_tree, should be an ast.arg typed object
+        3. None, if kwarg does not exist
+    
+## 2.29 parameters
+### 2.29.1 parameters: '(' typedargslist? ')';
+1. ParametersContext.pyast_tree <= ParametersContext.children[1].pyast_tree (copy_child) 
+
+## 2.30 funcdef
+### 2.30.1 funcdef: 'def' name parameters ':' block;
+1. FuncdefContext.pyast_tree <= ast.FuncdefContext, fields are,
+    1. name: FuncdefContext.children[1].getText()
+    2. args: FuncdefContext.children[2].pyast_tree
+    3. body: FuncdefContext.children[4].pyast_tree 
+    4. decorator_list: [] empty list, not sure how to handle this
+    5. returns <= None
+### 2.30.2 funcdef: 'def' name parameters ('->' test)? ':' block;
+1. FuncdefContext.pyast_tree <= ast.FuncdefContext, fields are,
+    1. name: FuncdefContext.children[1].getText()
+    2. args: FuncdefContext.children[2].pyast_tree
+    3. body: FuncdefContext.children[6].pyast_tree 
+    4. decorator_list: [] empty list, not sure how to handle this
+    5. returns: FuncdefContext.children[4].pyast_tree 
+
+
+
+

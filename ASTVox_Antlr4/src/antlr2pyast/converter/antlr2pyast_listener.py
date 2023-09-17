@@ -19,11 +19,11 @@ from . import basic_rules
 from . import flow_stmts
 from . import test_stmts
 from . import loop_stmts
+from . import funcdef
 
 class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
         #self.pyast_trees = {}
-
         return
         
     # Exit a parse tree produced by Python3Parser#atom.
@@ -138,3 +138,19 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#dictorsetmaker.
     def exitDictorsetmaker(self, ctx:Python3Parser.DictorsetmakerContext):
         atom_name_terminals.convert_dictorsetmaker(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#tfpdef.
+    def exitTfpdef(self, ctx:Python3Parser.TfpdefContext):
+        funcdef.convert_tfpdef(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#typedargslist.
+    def exitTypedargslist(self, ctx:Python3Parser.TypedargslistContext):
+        funcdef.convert_typedargslist(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#parameters.
+    def exitParameters(self, ctx:Python3Parser.ParametersContext):
+        funcdef.convert_parameters(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#funcdef.
+    def exitFuncdef(self, ctx:Python3Parser.FuncdefContext):
+        funcdef.convert_funcdef(self, ctx)
