@@ -175,9 +175,11 @@ def gen_ast_expr_from_expr_stmt(ctx:Python3Parser.Expr_stmtContext):
   '''
   # should have only one child, with type of Testlist_star_expr
   child = ctx.children[0]
-
+  # Note that is_load is none, load/store contexts should not be changed
+  # here
   ast_node = ast.Expr(tools.list_to_node_or_tuple(child.pyast_tree,
-                                                  is_load=True))
+                                                  is_load=True,
+                                                  update_children=False))
 
   return ast_node
 

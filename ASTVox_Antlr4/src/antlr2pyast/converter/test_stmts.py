@@ -219,25 +219,55 @@ def convert_testlist_comp(listener, ctx:Python3Parser.Testlist_compContext):
   Convert testlist_comp to a list of AST nodes for test or star_expr.
   Rule: testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* ','? );
 
-  Only handles the case without comp_for, i.e,
-  testlist_comp: (test|star_expr) ((',' (test|star_expr))* ','? );
+  There are two cases:
+  1. (test|star_expr) (comp_for);
+  2. (test|star_expr) ((',' (test|star_expr))* ','? )
 
-  Returns a list of AST nodes
+
+  The generate pyast_tree is different for two cases
+  case 1: a dict of {"elt": node, "generators": list}
+  case 2: a list of Python Ast nodes
   '''
 
-  # append each children's pyast_tree to the list
-  test_list = []
-  for child in ctx.children:
-    if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
-      # this is a ','
-      continue
+  if isinstance(ctx.children[-1], Python3Parser.Comp_forContext):
+    # case 1: test|star_expr comp_for.
+    # This creates a list comprehension, i.e., 
+    # this creates an elt and a list of generators to be used by
+    # the parent, which can be a ListComp or GeneratorExp
+    elt = ctx.children[0].pyast_tree
+    generators = ctx.children[1].pyast_tree["comprehensions"]
 
-    if isinstance(child, Python3Parser.Comp_forContext):
-      raise NotImplementedError("Comp for (async for loops) are not handled yet")
+    ctx.pyast_tree = {"elt": elt, "generators":generators}
+  else:
+    # case 2: (test|star_expr) ((',' (test|star_expr))* ','? )
+    # This case is the normal list construction with items
+    # append each children's pyast_tree to the list
+    test_list = []
+    for child in ctx.children:
+      if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
+        # this is a ','
+        continue
 
-    # should be test or star_expr now
-    test_list.append(child.pyast_tree)
+      # should be test or star_expr now
+      test_list.append(child.pyast_tree)
 
-  ctx.pyast_tree = test_list
+    ctx.pyast_tree = test_list
 
   return
+
+# Convert test_nocond to corresponding Python AST node, basically copy
+# child's tree
+def convert_test_nocond(listener, ctx:Python3Parser.Test_nocondContext):
+  '''
+  Convert test_nocond to corresponding Python AST node, basically copy
+  child's tree.
+  rule: test_nocond: or_test | lambdef_nocond;
+  '''
+
+  ctx.pyast_tree = ctx.children[0].pyast_tree
+
+  return
+
+
+  
+  

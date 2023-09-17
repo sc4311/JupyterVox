@@ -60,6 +60,65 @@ def convert_atom_strings(listener, ctx:Python3Parser.AtomContext):
 
   return ast_node
 
+# convert atom to ast.List or ast.ListComp
+def convert_atom_list_listcomp(listener, ctx:Python3Parser.AtomContext):
+    '''
+    convert atom to ast.List or ast.ListComp
+        
+    rule: atom: '[' testlist_comp? ']'
+    testlist_comp has two potential values, a list of items or a dict for
+    list comprehension
+    case1: list of items => ast.List()
+    case2: list comprehension => ast.LisComp()
+    case3: nothing => return empty list
+    '''
+    if ctx.getChildCount() == 2:
+        # empty list
+        ctx.pyast_tree = ast.List([], ast.Load())
+    elif type(ctx.children[1].pyast_tree) is list:
+        # creating list with items
+        # returns an ast.List node
+        ctx.pyast_tree = ast.List(ctx.children[1].pyast_tree, ast.Load())
+    else:
+        # creating list with comprehensions
+        # returns an ast.LitComp node
+        ctx.pyast_tree = ast.ListComp(ctx.children[1].pyast_tree["elt"],
+                                      ctx.children[1].pyast_tree["generators"])
+
+    return
+
+# convert atom that has a parenthesis-ed statement
+def convert_atom_paren_stmt(listener, ctx:Python3Parser.AtomContext):
+    '''
+    convert atom that has a parenthesis-ed statement
+    Rule: atom: '(' (yield_expr|testlist_comp)? ')'
+    handles the testlist_comp, yield_expr unimplemented yet
+    Three cases:
+    case 1: testlist_comp is a list => return a simple node if testlist_comp
+            has only one item, otherwise returns a tuple
+    case 2: testlist_comp is a dict => return a ast.GeneratorExp
+    case 3: yield_expr: unhandled
+    case 4: nothing: a tuple with empty list
+    '''
+
+    if isinstance(ctx.children[0], Python3Parser.Yield_exprContext):
+        raise NotImplementedError("yield_expr not handled in atom")
+
+    if ctx.getChildCount() == 2:
+        # empty list
+        ctx.pyast_tree = ast.Tuple([], ast.Load())
+    elif type(ctx.children[1].pyast_tree) is list:
+        # testlist_comp is a list => return a simple node if testlist_comp
+        # has only one item, otherwise returns a tuple
+        ctx.pyast_tree = tools.list_to_node_or_tuple(ctx.children[1].pyast_tree,
+                                                     is_load=True)
+    else:
+        # testlist_comp is a dict => return a ast.GeneratorExp
+        ctx.pyast_tree = ast.GeneratorExp(ctx.children[1].pyast_tree["elt"],
+                                      ctx.children[1].pyast_tree["generators"])
+
+    return
+        
 # convert an atom node from Anltr4 tree to Python AST tree
 def convert_atom(listener, ctx:Python3Parser.AtomContext):
     # should have more than one child and the type of the first child
@@ -94,30 +153,27 @@ def convert_atom(listener, ctx:Python3Parser.AtomContext):
         # implement here => ast.Constant
         ctx.pyast_tree = ast.Constant(False)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
-          first_child.getSymbol().type == Python3Lexer.OPEN_PAREN and
-          isinstance(ctx.children[1], Python3Parser.Testlist_compContext)):
+          first_child.getSymbol().type == Python3Lexer.OPEN_PAREN):
         # rule 5: atom: '(' (testlist_comp)? ')'
         # handles the testlist_comp, yield_expr unimplemented yet
         # return a simple node if testlist_comp has only one item,
         # otherwise returns a tuple
-        ctx.pyast_tree = tools.list_to_node_or_tuple(ctx.children[1].pyast_tree,
-                                                     is_load=True)
+        convert_atom_paren_stmt(listener, ctx)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
           first_child.getSymbol().type == Python3Lexer.OPEN_BRACK):
         # rule 6: atom: '[' testlist_comp? ']'
-        # returns an ast.List node
-        ctx.pyast_tree = ast.List(ctx.children[1].pyast_tree, ast.Load())
+        # testlist_comp has two potential values, a list of items or
+        # a dict for list comprehension
+        convert_atom_list_listcomp(listener, ctx)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
           first_child.getSymbol().type == Python3Lexer.OPEN_BRACE):
         # rule 7: atom: '{' dictorsetmaker? '}'
-        # returns an ast.Dict or ast.Set node
-        if ctx.children[1].pyast_tree["keys"] is None:
-            # making a set
-            ctx.pyast_tree = ast.Set(ctx.children[1].pyast_tree["values"])
+        if ctx.getChildCount() == 2:
+            # if dictorsetmaker does not exit, return empty dict
+            ctx.pyast_tree = ast.Dict([], [])
         else:
-            # making dictionary
-            ctx.pyast_tree = ast.Dict(ctx.children[1].pyast_tree["keys"],
-                                     ctx.children[1].pyast_tree["values"])
+            # dictorsetmaker exists, return child's pyast_tree
+            ctx.pyast_tree = ctx.children[1].pyast_tree
     else:
         raise NotImplementedError("Other rules not implemented for " +
                                   "Atom node at the moment")
@@ -201,7 +257,10 @@ def gen_dict_keys_values(ctx:Python3Parser.DictorsetmakerContext):
                              " node is type " +
                              ctx.children[i].__class__.__name__ )
 
-    return {"keys":keys, "values":values}
+    # create the ast.Dict node
+    ast_node = ast.Dict(keys, values)
+    
+    return ast_node
 
 # convert dictorsetmaker to a dict of keys and values for making a set
 def gen_set_values(ctx:Python3Parser.DictorsetmakerContext):
@@ -213,16 +272,18 @@ def gen_set_values(ctx:Python3Parser.DictorsetmakerContext):
     Comp_for is not handles at the moment.
     Returns {"keys":None, "values":[...]} for set construction
     '''
-    keys = None
-    values = []
+    elts = []
 
     for child in ctx.children:
         if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
             continue # skip ','
 
-        values.append(child.pyast_tree)
+        elts.append(child.pyast_tree)
 
-    return {"keys":keys, "values":values}
+    # create the ast.Set node
+    ast_node = ast.Set(elts)
+    
+    return ast_node
 
 # convert dictorsetmaker to a dict of keys and values for dictionary or set
 def convert_dictorsetmaker(listener, ctx:Python3Parser.DictorsetmakerContext):
@@ -233,28 +294,62 @@ def convert_dictorsetmaker(listener, ctx:Python3Parser.DictorsetmakerContext):
                   ((test | star_expr)
                    (comp_for | (',' (test | star_expr))* ','?)) );
     This rule allows for set construction, where there are not keys;
-    or allows for dict construction, where there are keys.
-    Comp_for is not handles at the moment.
-    Returns {"keys":None, "values":[...]} for set construction
-    Returns {"keys":[...], "values":[...]} for dict construction
+    or allows for dict construction, where there are keys;
+    or dict/set comprehension, where there are comp_for.
+
+    Four cases;
+    1. dict construction:
+       dictorsetmaker: 
+       (test ':' test | '**' expr)  (',' (test ':' test | '**' expr))* ','?)
+    2. set construction:
+       dictorsetmaker: 
+       (test | star_expr) (',' (test | star_expr))* ','?
+    3. dict comprehension:
+       dictorsetmaker: 
+       (test ':' test | '**' expr)  comp_for
+    4. set comprehension:
+       dictorsetmaker: 
+       (test ':' test | '**' expr)  comp_for
+    
+    Conversion results:
+    case 1: ast.Dict
+    case 2: ast.Set
+    case 3: ast.DictComp
+    case 4: ast.SetComp
+
+    Note, this, "{**x for x in numbers}", is valid for Antlr4 grammar,
+    not PyAST grammar
     '''
 
-    # check for comp_for, this is just for reporting the correct error message
-    for c in ctx.children:
-        if isinstance(c, Python3Parser.Comp_forContext):
-            raise NotImplementedError("comp_for is not handled yet for" +
-                                      " dictorsetmaker")
-    
-    if (ctx.getChildCount() > 2 and
-        isinstance(ctx.children[1], antlr4.tree.Tree.TerminalNodeImpl) and
-        ctx.children[1].getSymbol().type == Python3Lexer.COLON):
-        # making a dictionary, starting with test:test
+    if (ctx.getChildCount() == 4 and
+        isinstance(ctx.children[-1], Python3Parser.Comp_forContext)):
+        # case 3, making a dict comprehension, create an ast.DictComp node
+        key = ctx.children[0].pyast_tree
+        value = ctx.children[2].pyast_tree
+        generators = ctx.children[3].pyast_tree["comprehensions"]
+        ctx.pyast_tree = ast.DictComp(key, value, generators)
+        
+    elif (ctx.getChildCount() == 2 and
+        isinstance(ctx.children[-1], Python3Parser.Comp_forContext)):
+        # case 4,  making a set comprehension, create an ast.SetComp node
+        elt = ctx.children[0].pyast_tree
+        generators = ctx.children[1].pyast_tree["comprehensions"]
+        ctx.pyast_tree = ast.SetComp(elt, generators)
+        
+    elif (ctx.getChildCount() > 2 and
+          isinstance(ctx.children[1], antlr4.tree.Tree.TerminalNodeImpl) and
+          ctx.children[1].getText() == ':'):
+        # case 1, making a dictionary, starting with test:test
         ctx.pyast_tree = gen_dict_keys_values(ctx)
+        
     elif (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
           ctx.children[0].getSymbol().type == Python3Lexer.POWER):
-        # making a dictionary, starting with **expr
+        # case 1, making a dictionary, starting with **expr
         ctx.pyast_tree = gen_dict_keys_values(ctx)
+        
     else:
-        # making a set
+        # case 2, making a set
         ctx.pyast_tree = gen_set_values(ctx)
+    
+        
         

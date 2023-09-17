@@ -121,6 +121,10 @@ def print_converted_tree(tree1):
 
 # convert the tree and compare with the standard Python AST tree
 def convert_and_compare(stmt, test_case_cnt, print_tree):
+
+    # print test case first
+    print("Test case", test_case_cnt, ":", stmt.rstrip('\n'))
+    
     # generate the tree/outputs for converted tree
     converted_tree_str = test_antlr4_conversion(stmt)
 
@@ -146,7 +150,6 @@ def convert_and_compare(stmt, test_case_cnt, print_tree):
         print()
     else:
         # if Python parsing has no error, print and compare trees
-        print("Test case", test_case_cnt, ":", stmt.rstrip('\n'))
         same_tree = compare_and_print_trees(pyast_tree_str, converted_tree_str,
                                             print_tree)
         print("Test case", test_case_cnt, "passed:", same_tree)

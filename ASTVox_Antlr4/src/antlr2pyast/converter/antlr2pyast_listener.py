@@ -20,6 +20,7 @@ from . import flow_stmts
 from . import test_stmts
 from . import loop_stmts
 from . import funcdef
+from . import comprehensions
 
 class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
@@ -154,3 +155,21 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#funcdef.
     def exitFuncdef(self, ctx:Python3Parser.FuncdefContext):
         funcdef.convert_funcdef(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#test_nocond.
+    def exitTest_nocond(self, ctx:Python3Parser.Test_nocondContext):
+        test_stmts.convert_test_nocond(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#comp_iter.
+    def exitComp_iter(self, ctx:Python3Parser.Comp_iterContext):
+        comprehensions.convert_comp_iter(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#comp_for.
+    def exitComp_for(self, ctx:Python3Parser.Comp_forContext):
+        comprehensions.convert_comp_for(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#comp_if.
+    def exitComp_if(self, ctx:Python3Parser.Comp_ifContext):
+        comprehensions.convert_comp_if(self, ctx)
+
+
