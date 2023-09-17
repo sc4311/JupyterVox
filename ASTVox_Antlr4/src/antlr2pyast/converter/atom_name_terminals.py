@@ -205,25 +205,104 @@ def convert_name(listener, ctx:Python3Parser.NameContext):
 
     return
 
+# generate ast.Call, ast.Subscript, ast.Attribute based on the trailer type
+def gen_node_based_on_trailer(node:ast.AST, trailer:dict):
+    '''
+    generate ast.Call, ast.Subscript, ast.Attribute based on the trailer type
+    '''
+
+    if trailer["type"] == "arglist":
+        # function call, create ast.Call
+        func = node 
+        # process the arguments, put to normal args and keyword args
+        args = []
+        keywords = []
+        for n in trailer["values"]:
+            if isinstance(n, ast.keyword):
+                keywords.append(n)
+            elif isinstance(n, ast.Starred):
+                args.append(n)
+            elif isinstance(n, ast.GeneratorExp):
+                args.append(n)
+            else: # all other nodes
+                args.append(n)
+        # create the ast.Call node
+        ast_node = ast.Call(func, args, keywords)
+    elif trailer["type"] == "field":
+        # field attribute access, create a ast.Attribute node
+        value = node
+        attr = trailer["values"][0].id
+        ast_node = ast.Attribute(value, attr, ast.Load())
+    else:
+        raise NotImplementedError("Other type of trailer not implemented yet")
+
+    return ast_node
+
 # Grammar: atom_expr: AWAIT? atom trailer*;
 def convert_atom_expr(listener, ctx:Python3Parser.Atom_exprContext):
     '''
-    Convert atom_expr to ast.Await, or ast.Call, or pass on child's node
+    Convert atom_expr to corresponding Python AST node
+    Rule: atom_expr: AWAIT? atom trailer*;
+
+    Possible base cases based on trailer and AWAIT:
+    1. atom_expr: AWAIT ... => ast.Await
+    2. atom_expr: atom => pass on child node
+    3. atom_expr: atom '(' arglist ')' => ast.Call
+    4. atom_expr: atom '[' subscriptionlist ']' => ast.Subscript
+    5. atom_expr: atom '.' name => ast.Attribute
+
+    This has to be recursively processed.
+    AWAIT is at the topest level.
+    First atom trailer at the *lowest* level.
+    Then the rest trailer gradually increase from the lowest level.
+    E.g., atom trailer1 trailer2 trailer3 has the ast node for trailer3 at
+    the top level, trailer2 at the 2nd level, atom trailer1 at the
+    lowest level
     '''
-    # should have no more than 3 child
-    if ctx.getChildCount() > 3:
-        raise ValueError("Atom_expr node has more than three children, " +
-                         "count is " + str(ctx.getChildCount()))
 
-    # only handles one the case with one child now
-    if ctx.getChildCount() != 1:
-        raise NotImplementedError("More than one child is not supported for " +
-                                  "Atom_expr node at the moment")
+    # This has to be recursively processed.
+    # AWAIT is at the topest level
+    # first atom trailer at the *lowest* level
+    # then the rest trailer gradually increase from the lowest level
+    # e.g., atom trailer1 trailer2 trailer3 has the ast node for trailer3 at
+    # the top level, trailer2 at the 2nd level, atom trailer1 at the
+    # lowest level
 
-    # copy child's AST node
-    child = ctx.children[0]
-    #listener.pyast_trees[ctx] = listener.pyast_trees[child]
-    ctx.pyast_tree = child.pyast_tree
+    # get the index i for accessing the nodes
+    if (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[0].getText() == 'await'):
+        i = 1 # skip the AWAIT
+    else:
+        i = 0 # no AWAIT
+
+    # build the lowest level of AST node
+    if isinstance(ctx.children[-1], Python3Parser.AtomContext):
+        # there is no trailer in this atom_expr
+        # children[i] should also be the last child
+        ast_node = ctx.children[i].pyast_tree
+        i += 1 # advance the index, skip atom, should be no more child after
+    else:
+        # there is at least one trailer
+        ast_node = gen_node_based_on_trailer(ctx.children[i].pyast_tree,
+                                             ctx.children[i+1].pyast_tree)
+        
+        i += 2 # advance the index, skip atom trailer, may be more children
+
+    # recursively build higher level of AST nodes if there are more trailers
+    current_top_node = ast_node
+    while i < ctx.getChildCount():
+        current_top_node = gen_node_based_on_trailer(current_top_node,
+                                             ctx.children[i].pyast_tree)
+
+        i += 1
+
+    # create ast.Await node if there is AWAIT
+    if (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[0].getText() == 'await'):
+        current_top_node = ast.Await(current_top_node)
+
+    ctx.pyast_tree = current_top_node
+    
     return
 
 # convert dictorsetmaker to a dict of keys and values for making a dictionary
@@ -354,9 +433,47 @@ def convert_dictorsetmaker(listener, ctx:Python3Parser.DictorsetmakerContext):
         # case 2, making a set
         ctx.pyast_tree = gen_set_values(ctx)
 
-# 
-def exitTrailer(self, ctx:Python3Parser.TrailerContext):
-    raise NotImplementedError("Working in progress")
+# convert trailer to a dict with type (arglist, sublist, field) and
+# a list of values
+def convert_trailer(listener, ctx:Python3Parser.TrailerContext):
+    '''
+    Convert trailer to a dict with type (arglist, sublist, field) and
+    a list of values
+    Rule:
+    1. trailer: '(' arglist? ')'
+       convert to dict {"type":"arglist", "values": arglist}
+    2. trailer: '[' subscriptlist ']'
+       convert to dict {"type":"subscriptlist", "values": subscriptlist}
+    3. trailer: '.' name
+       convert to dict {"type":"field", "values": [name]}
+    
+    '''
+
+    if (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[0].getText() == '('):
+        # case 1, arglist
+        if ctx.getChildCount() == 2:
+            # just "()"
+            args = []
+        else:
+            # is "( arglist )"
+            args = ctx.children[1].pyast_tree
+        ctx.pyast_tree = {"type":"arglist",
+                          "values": args}
+    elif (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[0].getText() == '['):
+        # case 2, subscriptionlist
+        ctx.pyast_tree = {"type":"subscriptionlist",
+                          "values": ctx.children[1].pyast_tree}
+    elif (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[0].getText() == '.'):
+        # case 3, field access
+        ctx.pyast_tree = {"type":"field",
+                          "values": [ctx.children[1].pyast_tree]}
+    else:
+        raise ValueError("Unknown trailer composition\n")
+
+    return
     
         
         

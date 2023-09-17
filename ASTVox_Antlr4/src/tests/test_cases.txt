@@ -80,3 +80,14 @@ class a (*a): return
 class a (b, *a, **b, a=17): return
 class a (**b): return
 class a (a=17):
+a(12,15,"xxx")
+func(a, b=c, *d, **e)(b=c, *d, **e)
+await f(a, c, d)
+func()
+a.b(a,12, *a, **b).c
+a.filed_a
+a.call_func(c).c.d
+call1(12, *a).c.field
+a.b.c
+a.b
+a.b(*a).c.d(**b).e
