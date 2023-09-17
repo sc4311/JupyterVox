@@ -323,7 +323,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
     4. decorator_list: [] empty list, not sure how to handle this
     5. returns: FuncdefContext.children[4].pyast_tree 
 ### 2.30.3 Bug:
-Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "def  f(a=1,b):return" will failed with Python AST.
+Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "def  f(a=1,b):return" will fail with Python AST.
 
 
 
