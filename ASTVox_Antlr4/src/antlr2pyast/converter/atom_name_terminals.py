@@ -207,6 +207,9 @@ def convert_name(listener, ctx:Python3Parser.NameContext):
 
 # Grammar: atom_expr: AWAIT? atom trailer*;
 def convert_atom_expr(listener, ctx:Python3Parser.Atom_exprContext):
+    '''
+    Convert atom_expr to ast.Await, or ast.Call, or pass on child's node
+    '''
     # should have no more than 3 child
     if ctx.getChildCount() > 3:
         raise ValueError("Atom_expr node has more than three children, " +
@@ -350,6 +353,10 @@ def convert_dictorsetmaker(listener, ctx:Python3Parser.DictorsetmakerContext):
     else:
         # case 2, making a set
         ctx.pyast_tree = gen_set_values(ctx)
+
+# 
+def exitTrailer(self, ctx:Python3Parser.TrailerContext):
+    raise NotImplementedError("Working in progress")
     
         
         

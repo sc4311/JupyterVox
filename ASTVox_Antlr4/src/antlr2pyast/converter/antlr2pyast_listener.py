@@ -21,6 +21,7 @@ from . import test_stmts
 from . import loop_stmts
 from . import funcdef
 from . import comprehensions
+from . import classdef
 
 class antlr2pyast_listener(Python3ParserListener):
     def __init__(self):
@@ -171,5 +172,22 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#comp_if.
     def exitComp_if(self, ctx:Python3Parser.Comp_ifContext):
         comprehensions.convert_comp_if(self, ctx)
+        
+    # Exit a parse tree produced by Python3Parser#arglist.
+    def exitArglist(self, ctx:Python3Parser.ArglistContext):
+        classdef.convert_arglist(self, ctx)
 
+    # Exit a parse tree produced by Python3Parser#argument.
+    def exitArgument(self, ctx:Python3Parser.ArgumentContext):
+        classdef.convert_argument(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#classdef.
+    def exitClassdef(self, ctx:Python3Parser.ClassdefContext):
+        classdef.convert_classdef(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#trailer.
+    def exitTrailer(self, ctx:Python3Parser.TrailerContext):
+        atom_name_terminals.convert_trailer(self, ctx)
+
+    
 

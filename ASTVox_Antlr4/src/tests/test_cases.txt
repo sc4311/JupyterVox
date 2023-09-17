@@ -74,4 +74,9 @@ def func5 (a, b, *a, b=1, c:float, **args):
 {}
 {x: x**2 for x in numbers}
 {x for x in numbers}
-
+class a (b, *a, **b, a=17):
+class a (b): return
+class a (*a): return
+class a (b, *a, **b, a=17): return
+class a (**b): return
+class a (a=17):
