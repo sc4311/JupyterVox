@@ -19,7 +19,7 @@ from . import tools
 def convert_arglist(listener, ctx:Python3Parser.ArglistContext):
   '''
   convert arglist to a list
-  Rue: arglist: argument (',' argument)* ','?;
+  Rule: arglist: argument (',' argument)* ','?;
   '''
 
   args= []
@@ -88,8 +88,8 @@ def convert_argument(listener, ctx:Python3Parser.ArgumentContext):
 # convert classdef to ast.ClassDef
 def convert_classdef(listener, ctx:Python3Parser.ClassdefContext):
   '''
-  convert classdef to ast.ClassDef
-  rule: lassdef: 'class' name ('(' arglist? ')')? ':' block;
+  Convert classdef to ast.ClassDef
+  Rule: classdef: 'class' name ('(' arglist? ')')? ':' block;
   '''
 
   name = ctx.children[1].getText() # class name

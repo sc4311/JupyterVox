@@ -325,9 +325,81 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 ### 2.30.3 Bug:
 Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "def  f(a=1,b):return" will fail with Python AST.
 
-## 2.29 test_nocond
-### 2.29.1 test_nocond: or_test | lambdef_nocond;
+## 2.31 test_nocond
+### 2.31.1 test_nocond: or_test | lambdef_nocond;
 1. Test_nocondContext.pyast_tree <= Test_nocondContext.children[1].pyast_tree (copy_child) 
+
+## 2.32 comp_if
+### 2.32.1 comp_if: 'if' test_nocond comp_iter?;
+1. comp_ifContext.pyast_tree <= {"ifs":[...], "comprehensions":[...]}
+    1. Intuitively, the "comprenhensions" list includes the comprehensions in the "generators" field of an ast.ListComp/SetComp/GeneratorExp/DictComp list. This "comprenhensions" list is inherited from the list of comp_iter. i.e.,
+        1. "comprehensions":[...] <= comp_iter.pyast_tree["comprehensions"]
+        2. if not comp_iter, "comprehensions" is an empty list [].
+    2. The "ifs":[...] includes the "if" statements from children comp_if tokens, which will be used by an upper-level comp_for node as the "ifs" field of and ast.comprehension node.
+        1. a new item (denoted as new_if) for "ifs" list is copied from test_nocond.pyast_tree
+        2. if no comp_iter, "ifs" is a just [new_if] 
+        3. if there is comp_iter, "ifs" is [new_if] + comp_iter.pyast_tree["ifs"]. Note new_if is at the beginning of the new list.
+
+## 2.33 comp_for
+### 2.33.1 comp_for: ASYNC? 'for' exprlist 'in' or_test comp_iter?;
+1. comp_forContext.pyast_tree <= {"ifs":[], "comprehensions":[...]}
+    1. "ifs" is always an empty list.
+        1. If there are "ifs" from comp_iters, they are used to construct the ast.comprehension node (see blow).
+    2. comp_for creates a new ast.comprehension node (denoted as new_comp). The fields of new_comp are,
+        1. target <= exprlist.pyast_tree
+        2. iter <= or_test.pyast_tree
+        3. ifs <= comp_iter.pyast_tree["ifs"] if comp_iter exists; otherwise, ifs<=[] (empty list)
+        4. is_async <= 1 if ASYNC is there, 0 if no ASYNC
+    3. if no comp_iter, "comprehensions" is a just [new_comp] 
+    4. if there is comp_iter, "comprehensions" is [new_comp] + comp_iter.pyast_tree["comprehensions"]. Note new_if is at the beginning of the new list.
+
+
+## 2.34 comp_iter
+### 2.34.1 comp_iter: comp_for | comp_if
+1. Comp_iterContext.pyast_tree <= Comp_iterContext.children[0].pyast_tree (copy_child) 
+2. Note that both comp_for and comp_if are translated into a dict with two lists, i.e., {"ifs":[...], "comprehensions":[...]}. Hence, comp_iter also returns these two lists.
+    * Intuitively, the "comprenhensions" list includes the comprehensions in the "generators" field of an ast.ListComp/SetComp/GeneratorExp/DictComp list.
+    * The "ifs":[...] includes the "if" statements from children comp_if tokens, which will be used by an upper-level comp_for node as the "ifs" field of and ast.comprehension node.
+    * The problem with comp_iter, comp_for and comp_if is that they are generated as a tree of nodes in ANTLR4, however, they are supposed to be one the same-level in Python AST and the actual code being parsed. So we have to copy the ifs and comprehensions lists from the children comp_iter/comp_for/comp_if nodes.
+
+## 2.35 argument
+## 2.35.1 argument: test 
+1. ArgumentContext.pyast_tree <= ArgumentContext.children[0].pyast_tree (copy_child) 
+## 2.35.2 argument: test comp_for
+1. ArgumentContext.pyast_tree <= ast.GeneratorExp, fields are
+    1. elt = ArgumentContext.children[0].pyast_tree
+    2. generators = ArgumentContext.children[1].pyast_tree["comprehensions"]
+## 2.35.3 argument: test '=' test
+1. ArgumentContext.pyast_tree <= ast.keyword, fields are
+    1. arg = ArgumentContext.children[0].getText()
+    2. value = ArgumentContext.children[2].pyast_tree
+## 2.35.4 argument: '**' test 
+1. ArgumentContext.pyast_tree <= ast.keyword, fields are
+    1. arg = None
+    2. value = ArgumentContext.children[1].pyast_tree
+## 2.35.5 argument: '*' test 
+1. ArgumentContext.pyast_tree <= ast.Starred, fields are
+    1. value <= ArgumentContext.children[1].pyast_tree
+    2. ctx <= ast.Load()
+
+## 2.36 arglist
+### 2.36.1 arglist: argument (',' argument)* ','?;
+1. ArglistContext.pyast_tree <= [..],
+    1. each item in arglist is each argument.pyast_tree
+    2. bascially return the lisf of arguments
+
+## 2.37 classdef
+### 2.37.1 classdef: 'class' name ('(' arglist? ')')? ':' block;
+1. classdefContext.pyast_tree <= ast.ClassDef, fields are,
+    1. name <= name.getText()
+    2. body <= block.pyast_tree
+    3. keywords: 
+        1. any ast.keyword items in arglist.pyast_tree (which is a list)
+    4. bases:
+        1. any other typed (i.e., ast.keyword) items in arglist.pyast_tree (which is a list)
+    5. decorator_list <= [] (empty list, decorators are parsed to higher level nodes in the AST tree)
+
+
 
 
 
