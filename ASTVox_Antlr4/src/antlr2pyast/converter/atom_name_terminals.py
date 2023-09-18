@@ -229,10 +229,17 @@ def gen_node_based_on_trailer(node:ast.AST, trailer:dict):
         # create the ast.Call node
         ast_node = ast.Call(func, args, keywords)
     elif trailer["type"] == "field":
-        # field attribute access, create a ast.Attribute node
+        # field attribute access, create an ast.Attribute node
         value = node
         attr = trailer["values"][0].id
         ast_node = ast.Attribute(value, attr, ast.Load())
+    elif trailer["type"] == "subscriptionlist":
+        # subscriptionlist for list/dict access, create an ast.Subscript 
+        value = node
+        slice_field = tools.list_to_node_or_tuple(trailer["values"],
+                                                  is_load = True,
+                                                  update_children = True)
+        ast_node = ast.Subscript(value, slice_field, ast.Load())
     else:
         raise NotImplementedError("Other type of trailer not implemented yet")
 
@@ -475,5 +482,97 @@ def convert_trailer(listener, ctx:Python3Parser.TrailerContext):
 
     return
     
+# convert_sliceop to ast.Node
+def convert_sliceop(self, ctx:Python3Parser.SliceopContext):
+    '''
+    convert_sliceop to ast.Node
+    Rule: sliceop: ':' test?;
+
+    This is the step in the subscript slice (i.e., lower:upper:step)
+    If there is test, pass on its pyast_tree
+    If there is no test, pass on None
+    '''
+
+    if ctx.getChildCount() == 1:
+        # no test
+        ctx.pyast_tree = None
+    else:
+        # has test
+        ctx.pyast_tree = ctx.children[1].pyast_tree
+
+    return
+    
+
+# convert subscript_ to a ast.Slice or pass one child node
+def convert_subscript_(self, ctx:Python3Parser.Subscript_Context):
+    '''
+    convert subscript_ to a ast.Slice or pass one child node
+    Rules:
+    case 1. subscript_: test, pass on child's pyast_tree
+    case 2. subscript_: test ':' test sliceop;, convert to ast.Slice
+                        Note that, except for ':' all other fields can be
+                        missing. The fields correspond to lower:upper:step
+    '''
+
+    if (ctx.getChildCount() == 1 and
+        isinstance(ctx.children[0], Python3Parser.TestContext)):
+        # case 1. subscript_: test, pass on child's pyast_tree
+        ctx.pyast_tree = ctx.children[0].pyast_tree
+    else:
+        # case 2. subscript_: test? ':' test? sliceop?;, convert to ast.Slice
+
+        # find the lower bound
+        if isinstance(ctx.children[0], Python3Parser.TestContext):
+            # there is lower bound
+            lower = ctx.children[0].pyast_tree
+            upper_at = 2 # upper bound at children[2]
+        else:
+            # there is no lower bound
+            lower = None
+            upper_at = 1 # upper bound at children[1]
+
+        # find the upper bound
+        if upper_at >= ctx.getChildCount():
+            # there is no upper bound
+            upper = None
+        elif isinstance(ctx.children[upper_at], Python3Parser.TestContext):
+            # there is upper bound
+            upper = ctx.children[upper_at].pyast_tree
+        else:
+            # there is no upper bound, but step
+            upper = None
+            
+
+        # find the step
+        if isinstance(ctx.children[-1], Python3Parser.SliceopContext):
+            # has sliceop node
+            step = ctx.children[-1].pyast_tree
+        else:
+            # no sliceop node
+            step = None
+
+        # create the ast.Slice node
+        ctx.pyast_tree = ast.Slice(lower, upper, step)
+
+    return
+
+# convert subscriptlist to a list
+def convert_subscriptlist(self, ctx:Python3Parser.SubscriptlistContext):
+    '''
+    convert subscriptlist to a list of substript_ pyast_trees
+    Rule: subscriptlist: subscript_ (',' subscript_)* ','?;
+    '''
+
+    sublist = []
+
+    for child in ctx.children:
+        if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
+            continue # skip ','
+        
+        sublist.append(child.pyast_tree)
+
+    ctx.pyast_tree = sublist
+
+    return
         
         

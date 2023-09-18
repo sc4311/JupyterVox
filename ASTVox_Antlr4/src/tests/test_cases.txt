@@ -83,11 +83,18 @@ class a (a=17):
 a(12,15,"xxx")
 func(a, b=c, *d, **e)(b=c, *d, **e)
 await f(a, c, d)
-func()
+y = func()
 a.b(a,12, *a, **b).c
 a.filed_a
 a.call_func(c).c.d
-call1(12, *a).c.field
+m,n = call1(12, *a).c.field
 a.b.c
 a.b
 a.b(*a).c.d(**b).e
+a[1]
+a.b[1, 2, 1:2:3]
+a.func(a,b)[:]
+a[::].c
+a[:1:].func(a=12)
+a[::1].func(**b).c[:12]
+x = a[:1:1].b["string"].c.func1()[a]

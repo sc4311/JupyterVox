@@ -189,5 +189,16 @@ class antlr2pyast_listener(Python3ParserListener):
     def exitTrailer(self, ctx:Python3Parser.TrailerContext):
         atom_name_terminals.convert_trailer(self, ctx)
 
-    
+
+    # Exit a parse tree produced by Python3Parser#sliceop.
+    def exitSliceop(self, ctx:Python3Parser.SliceopContext):
+        atom_name_terminals.convert_sliceop(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#subscript_.
+    def exitSubscript_(self, ctx:Python3Parser.Subscript_Context):
+        atom_name_terminals.convert_subscript_(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#subscriptlist.
+    def exitSubscriptlist(self, ctx:Python3Parser.SubscriptlistContext):
+        atom_name_terminals.convert_subscriptlist(self, ctx)
 
