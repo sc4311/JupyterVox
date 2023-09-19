@@ -10,62 +10,126 @@
 1. List type of tokens are those drived from one or two repeated items, e.g., simple_stmts: simple_stmt (';' simple_stmt)* ';'? NEWLINE;
 2. Should always return a list as the pyast_tree
 3. This may not hold for all list-typed tokens, if they are implemented before 09/15/2023
+### 2.0.2 Load/Store contexts
+1. ctx is defaulted to ast.Load()
+2. all ctx in a subtree will be changed if that tree is determined to be written (e.g., left hand of an assignment statement)
 
 ## 2.1 name
 ### 2.1.1 name: NAME
-1. NameContext.pyast_tree <= ast.Name(id = NameContext.children[0].getText(), 
-                                      ast.Load())
+1. name.pyast_tree <= ast.Name, fields are
+    1. id = NAME.getText(), 
+    2. ast.Load())
 ### 2.1.2 name: '_'
 1. Not sure if this is right
-2. NameContext.pyast_tree <= ast.Name(id = NameContext.children[0].getText(), 
-                                      ast.Load())
+2. name.pyast_tree <= ast.Name, fields are
+    1. id = NAME.getText(), 
+    2. ast.Load())
 ### 2.1.2 name: 'match'
 1. Not sure if this is right
-2. NameContext.pyast_tree <= ast.Name(id = NameContext.children[0].getText(), 
-                                      ast.Load())
+2. name.pyast_tree <= ast.Name, fields are
+    1. id = NAME.getText(), 
+    2. ast.Load())
+    
 ## 2.2 atom
 ### 2.2.1 atom: name
-1. AtomContext.pyast_tree <= AtomContext.children[0].pyast_tree (copy child)
+1. atom.pyast_tree <= name.pyast_tree (copy child)
 ### 2.2.2 atom: NUMBER
-1. AtomContext.pyast_tree <= ast.Constant(AtomContext.children[0]), see 1.1 NUMBER
+1. atom.pyast_tree <= ast.Constant(NUMBER), see 1.1 NUMBER
 ### 2.2.3 atom:STRING+
-1. AtomContext.pyast_tree <= ast.Constant, fields are,
+1. atom.pyast_tree <= ast.Constant, fields are,
     1. value <= concatenated string tokens
     2. A separate list "original_strings" is also added to the ast.Constant node with individual strings in STRING+
     3. String is processes to remove leading and trailing " and '
-### 2.2.3 atom:"True" | "False"
-1. AtomContext.pyast_tree <= ast.Constant, fields are,
+### 2.2.3 atom: "True" | "False"
+1. atom.pyast_tree <= ast.Constant, fields are,
     1. value <= True or False, based on the actual statement text
 ### 2.2.4 atom: '(' (testlist_comp)? ')'
-1. If there is one item in testlist_comp, 
-    1. AtomContext.pyast_tree <= AtomContext.children[1].pyast_tree (copy child)
-2. If there are more than one items in testlis_comp,
-    1. AtomContext.pyast_tree <= ast.Tuple, fields are,
-    2. ast.Tuple.elts <= AtomContext.children[1].pyast_tree
+1. If there is no testlist_com
+    1. atom.pyast_tree <= ast.Tuple, fields are,
+        1. elts = [] (empty list)
+        2. ctx = ast.Load()
+2. If there is one item in testlist_comp, 
+    1. atom.pyast_tree <= testlist_comp.pyast_tree (copy child)
+3. If there are more than one items in testlis_comp,
+    1. atom.pyast_tree <= ast.Tuple, fields are,
+        1. elts <= testlist_comp.pyast_tree
+        2. ctx = ast.Load()
+4. if testlist_comp.pyast_treeis not a list but a dict, 
+    1. testlist_comp is derived with rule, "testlist_comp: test comp_for." This is a comprehension.
+    2. atom.pyast_tree <= ast.GeneratorExp, fields are,
+        1. elt = testlist_comp.pyast_tree["elt"]
+        2. generators = elt = testlist_comp.pyast_tree["generators"]
 ### 2.2.4 atom: '[' testlist_comp? ']'
-1. AtomContext.pyast_tree <= ast.List
-2. ast.List.elts <= AtomContext.children[1].pyast_tree
+1. If there is no testlist_com
+    1. atom.pyast_tree <= ast.List, fields are,
+        1. elts = [] (empty list)
+        2. ctx = ast.Load()
+2. If testlist_comp.pyast_tree is a list, 
+    1. atom.pyast_tree <= ast.List, fields are,
+        1. elts = testlist_comp.pyast_tree (copy ist)
+        2. ctx = ast.Load()
+4. if testlist_comp.pyast_tree is not a list but a dict, 
+    1. testlist_comp is derived with rule, "testlist_comp: test comp_for." This is a comprehension.
+    2. atom.pyast_tree <= ast.ListComp, fields are,
+        1. elt = testlist_comp.pyast_tree["elt"]
+        2. generators = elt = testlist_comp.pyast_tree["generators"]
 ### 2.2.4 atom: '{' dictorsetmaker? '}'
-1. If there are "keys" in dictorsetmaker, 
-    1. AtomContext.pyast_tree <= ast.Dict, fields are,
-        1. keys = dictorsetmaker.pyast_tree["keys"]
-        2. values = dictorsetmaker.pyast_tree["values"]
-1. If there are no "keys" in dictorsetmaker, i.e., dictorsetmaker.pyast_tree["keys"] is None
-    1. AtomContext.pyast_tree <= ast.Set, fields are,
-        1. elts = dictorsetmaker.pyast_tree["values"]
+1. There is no dictorsetmaker
+    1. atom.pyast_tree = ast.Dict, fields,
+        1. keys = [] (empty list)
+        2. values = [] (empty list)
+2. If there is dictorsetmaker, 
+    1. atom.pyast_tree = dictorsetmaker.pyast_tree (copy child)
+    2. ast.Dict/ast.DictComp/ast.Set/ast.SetComp is generated in dictorsetmaker
 ### 2.2.x Other not implemented yet
 
 ## 2.3 atom_expr
-### 2.3.1 atom_expr: AWAIT? atom trailer*
+1. the real grammar is atom_expr: AWAIT? atom trailer*
+2. the process is a bit complext, so I wills with basic cases, that there is no AWAIT, and only atom or only atom trailer 
+### 2.3.1 atom_expr: atom
 1. atom_expr.pyast_tree <= atom_expr.children[0].pyast_tree (copy child)
 2. basically rule: atom_expr: atom
 3. AWAIT? and trailer* not handled yet
+### 2.3.2 atom_expr: atom '(' arglist ')'
+1. That is, trailer is '(' arglist ')'
+2. atom_expr.pyast_tree <= ast.Call, fields are, 
+    1. func = atom.pyast_tree
+    2. keywards: [...] 
+        1. any ast.keyword items in arglist.pyast_tree (which is a list)
+    3. args: [...]
+        1. any other typed (i.e., ast.keyword) items in arglist.pyast_tree (which is a list)
+### 2.3.3 atom_expr: atom '[' subscriptionlist ']'
+1. That is, trailer is '[' subscriptionlist ']'
+2. atom_expr.pyast_tree <= ast.Subscript, fields are, 
+    1. value = atom.pyast_tree
+    2. slice_field: 
+        1. if subscriptionlist.pyast_tree has only one item, subscriptionlist.pyast_tree[0], 
+        2. if subscriptionlist.pyast_tree has more than one item2, ast.Tuple, fields are,
+            1. elts <= subscriptionlist.pyast_tree             
+### 2.3.4 atom_expr: atom '.' name
+1. That is, trailer is '.' name
+2. atom_expr.pyast_tree <= ast.Attribute, fields are, 
+    1. value <= atom.Attribute
+    2. attr <= name.getText() 
+### 2.3.5 atom_expr: atom trailer+
+1. recursively build the tree
+2. First atom trailer at the *lowest* level.
+3. Then the rest trailer gradually increase from the lowest level.
+4. E.g., atom trailer1 trailer2 trailer3 has the ast node for trailer3 at the top level, trailer2 at the 2nd level, atom trailer1 at the lowest level.
+5. E.g., for a()[1].c, the nodes order are (from top to bottom) ast.attribute => ast.Subscript=>ast.Call
+### 2.3.6 atom_expr: AWAIT atom trailer*
+1. atom_expr.pyast_tree <= ast.AWAIT, fields are,
+    1. value = the Python AST tree converted from "atom trailer*)
+
 
 ## 2.4 expr
 ### 2.4.1 expr; atom_expr
-1. exprContext.pyast_tree <= exprContext.children[0].pyast_tree (copy child)
-### 2.4.2 expr: expr binaryOp expr
-1. ExprContext.pyast_tree <= ast.BinOp(left expr, ast.Add/ast.Mult etc., right expr)
+1. expr.pyast_tree <= atom_expr.pyast_tree (copy child)
+### 2.4.2 expr: expr1 binaryOp expr2
+1. expr.pyast_tree <= ast.BinOp, fields are 
+    1. left = expr1.pyast_tree, 
+    2. op = ast.Add() or ast.Mult(), based on the binaryOp's text 
+    3. right = expr2.pyast_tree
 2. Covers
 > Expr:   | expr '**' expr <br/>
 >    | expr ('*'|'@'|'/'|'%'|'//') expr <br/>
@@ -75,14 +139,16 @@
 >    | expr '^' expr <br/>
 >    | expr '|' expr <br/>
 ### 2.4.3 expr: ('+'|'-'|'~')+ expr, i.e., UnaryOp 
-1. ExprContext.pyast_tree <= ast.UnaryOp(ast.UAdd/USub/Invert*, right epxr)
+1. expr.pyast_tree <= ast.UnaryOp, fields are,
+    1. op = ast.UAdd()/USub()/Invert*, 
+    2. operand = epxr.pyast_tree
 2. \* means nested tree
 
 ## 2.5 expr_stmt:
 ### 2.5.1 expr_stmt: testlist_star_expr
-1. Epxr_stmtContext.pyast_tree <= ast.Expr(Epxr_stmtContext.children[0].pyast_tree)
+1. expr_stmt.pyast_tree <= ast.Expr(testlist_star_expr.pyast_tree)
 ### 2.5.2 expr_stmt : testlist_star_expr '=' testlist_star_expr
-1. Epxr_stmtContext.pyast_tree <= ast.Assign
+1. expr_stmt.pyast_tree <= ast.Assign
     1. targets <= [the pyast_tree of every testlist_star_expr except the last one]
     2. value <= the last testlist_star_expr's pyast_tree
 ### 2.5.x Other parts of the rule not handled
@@ -92,27 +158,27 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.6 simple_stmts
 ### 2.6.1 simple_stmts: simple_stmt (';' simple_stmt)* ';'? NEWLINE;
-1. Simple_stmtsContext.pyast_tree = [Simple_stmtsContext.children[*].pyast_tree]
+1. simple_stmts.pyast_tree = [the pyast_tree of each simple_stmt]
 2. The tree is a list containing the trees of all simple_stmt children 
 3. ';' and NEWLINE are omitted from the list
 
 ## 2.7 single_input
 ### 2.7.1 single_input: NEWLINE
-1. single_inputContext.pyast_tree <= ast.Module(body=[]) (empty list for body)
+1. single_input.pyast_tree <= ast.Module(body=[]) (empty list for body)
 ### 2.7.2 single_input: simple_stmts
-1. single_inputContext.pyast_tree <= ast.Module(body=single_inputContext.Children[0].pyast_tree)
+1. single_input.pyast_tree <= ast.Module(body=simple_stmts].pyast_tree)
 ### 2.7.3 single_input: compound_stmt NEWLINE;
-1. single_inputContext.pyast_tree <= ast.Module(body=single_inputContext.Children[0].pyast_tree)
+1. single_input.pyast_tree <= ast.Module(body=compound_stmt.pyast_tree)
 
 ## 2.8 flow_stmt
 ### 2.8.1 flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt;
-1. Flow_stmtContext.pyast_tree <= Flow_stmtContext.children[0].pyast_tree (child copy)
-2. Flow_stmt is just a intermediate non-terminal
+1. flow_stmt.pyast_tree <= Flow_stmtContext.children[0].pyast_tree (child copy)
+2. flow_stmt is just a intermediate non-terminal
 
 ## 2.9 return_stmt
 ### 2.9.1 return_stmt: 'return' testlist?;
-1. Return_stmtContext.pyast_tree <= ast.Return
-2. for ast.Return.value, fields are,
+1. return_stmt.pyast_tree <= ast.Return
+2. for ast.Return.value,
     1. if no return value, value <= None
     2. if return on value, value <= Return_stmtContext.children[1]
     3. if return a list of values, value <= ast.Tuple
@@ -121,24 +187,24 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.10 testlist
 ### 2.10.1 testlist: test (',' test)* ','?;
-1. TestlistContext.pyast_tree <= [...] (just a list)
+1. testlist.pyast_tree <= [...] (just a list)
 2. the pyast_tree of each child of testlistContext is an item in the list
 
 ## 2.11 block
 ### 2.11.1 block: simple_stmts
-1. BlockContext.pyast_tree <= BlockContext.children[0].pyast_tree (copy_child)
+1. block.pyast_tree <= BlockContext.children[0].pyast_tree (copy_child)
 ### 2.11.2 block: NEWLINE INDENT stmt+ DEDENT;
-1. BlockContext.pyast_tree = []
+1. block.pyast_tree = []
 2. Each item is the pyast_tree of a stmt
 ### 2.11.3 block: epsilon | NEWLINE epsilon
-1. BlockContext.pyast_tree = None
+1. block.pyast_tree = None
 2. This is a special error case, where the block is none. This should only happen when we are parsing on the first line of a compound statment, e.g., the "for ..." line of a for loop
     1. block: epsilon is for cases like "for i in j:"
     2. block: NEWLINE epsilon is for cases like "for i in j:\n"
 
 ## 2.12 for
 ### 2.12.1 for_stmt: 'for' exprlist 'in' testlist ':' block ('else' ':' block)?;
-1. ForContext.pyast_tree <= ast.For, fields are,
+1. for_stmt.pyast_tree <= ast.For, fields are,
     1. target:
         1. If exprlist has only one child, target <= exprlist.pyast_tree, convert ctx to ast.Store
         2. If exprlist has more children, target <= ast.Tuple(elts=exprlist.pyast_tree)
@@ -155,21 +221,21 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
         
 ## 2.13 exprlist
 ### 2.13.1 exprlist: (expr|star_expr) (',' (expr|star_expr))* ','?;   
-1. ExprlistContext.pyast_tree <= [...] (just a list)
+1. exprlist.pyast_tree <= [...] (just a list)
 2. the pyast_tree of each child of ExprlistContext is an item in the list
 
 ## 2.14 compound_stmt
 ### 2.14.1  compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt | match_stmt;
-1. Compound_stmtContext.pyast_tree <= Compound_stmtContext.children[0].pyast_tree (copy_child)   
+1. compound_stmt.pyast_tree <= Compound_stmtContext.children[0].pyast_tree (copy_child)   
 
 ## 2.15 comp_op
 ### 2.15.1 comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not';
-1. Comp_opContext.pyast_tree <= ast.Eq, NotEq, Lt, LtE, Gt, GtE, Is, IsNot, In, NotIn, based on the actual operator
+1. comp_op.pyast_tree <= ast.Eq, NotEq, Lt, LtE, Gt, GtE, Is, IsNot, In, NotIn, based on the actual operator
 
 ## 2.16 while_stmt
 ### 2.16.1  while_stmt: 'while' test ':' block ('else' ':' block)?;
-1. While_stmtContext.pyast_tree <= ast.While, fields are,
-    1. test: While_stmtContext.children[1].pyast_tree
+1. while_stmt.pyast_tree <= ast.While, fields are,
+    1. test: test.pyast_tree
     2. body: 
         1. If block has only one child, body <= [block.pyast_tree] (one item list) 
         2. If block has more children, body <= block.pyast_tree (list of stmts)
@@ -180,7 +246,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.17 comparison
 ### 2.15.1 comparison: expr (comp_op expr)*;
-1. if only one expr, ComparisonContext.pyast_tree <= ComparisonContext.children[0].pyast_tree (copy child)
+1. if only one expr, comparison.pyast_tree <= ComparisonContext.children[0].pyast_tree (copy child)
 2. if more than one child
     1. ComparisonContext.pyast_tree <= ast.Compare, fields are,
         1. left <= first epxr's pyast_tree
@@ -189,7 +255,7 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.18 if_stmt
 ### 2.18.1 if_stmt: 'if' test ':' block ('elif' test ':' block)* ('else' ':' block)?;
-1. If_stmtContext.pyast_tree <= ast.If, fields are,
+1. if_stmt.pyast_tree <= ast.If, fields are,
     1. test = If_stmtContext.children[1].pyast_tree
     2. body 
         1. If block (If_stmtContext.children[1]) has only one child, body <= [block.pyast_tree] (one item list) 
@@ -206,34 +272,58 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
 
 ## 2.19 stmt
 ### 2.14.1  stmt: simple_stmts | compound_stmt;
-1. StmtContext.pyast_tree <= StmtContext.children[0].pyast_tree (copy_child) 
+1. stmt.pyast_tree <= simple_stmts.pyast_tree or compound_stmt.pyast_tree (copy_child) 
 
 ## 2.20 star_expr
 ### 2.20.1  star_expr: '*' expr;
-1. Star_exprContext.pyast_tree <= ast.Starred, fields are,
+1. star_expr.pyast_tree <= ast.Starred, fields are,
     1. value = Star_exprContext.children[1].pyast_tree (expr's ast node)
 
 ## 2.21 testlist_star_expr
 ### 2.21.1 testlist_star_expr: (test|star_expr) (',' (test|star_expr))* ','?;
-1. Testlist_star_exprContext.pyast_tree <= [..] (a list)
+1. testlist_star_expr.pyast_tree <= [..] (a list)
 2. Each test or star_expr child's pyast_tree is a item in the list
 
 ## 2.22 testlist_comp
 ### 2.22.1 testlist_comp: (test|star_expr) ( (',' (test|star_expr))* ','? );
-1. Testlist_compContext.pyast_tree <= [..] (a list)
+1. testlist_comp.pyast_tree <= [..] (a list)
 2. Each test or star_expr child's pyast_tree is a item in the list 
+### 2.22.2 testlist_comp: (test|star_expr) comp_for
+1. testlist_comp.pyast_tree = {"elt": ..., "generators":[...]}
+    1. elt = test.pyast_tree or star_expr.pyast_tree
+    2. generators = comp_for.pyast_tree["comprehensions"]
 
 ## 2.22 dictorsetmaker
-### 2.22.1 dictorsetmaker: ((test ':' test | '**' expr)(comp_for | (',' (test ':' test | '**' expr))* ','?)) 
+### 2.22.1 dictorsetmaker: (test ':' test | '**' expr) (',' (test ':' test | '**' expr))* ','?)
 1. For making a dictonary
-2. DictorsetmakerContext.pyast_tree <= {"keys":[...], "values":[...]} (a dict)
-3. Keys is a list of the pyast_trees of the "test"s before ':', or None if the item is '**' expr
-4. Values is a list of the pyast_trees of the "test"s after ':', or the expr if the item is '**' expr
-### 2.22.1 dictorsetmaker: (((test | star_expr)(comp_for | (',' (test | star_expr))* ','?))
+2. dictorsetmaker.pyast_tree <= ast.Dict, fields are,
+    1. keys = [...], items are
+        1. for each "** expr", None
+        2. for each "test" before ":", test.pyast_tree
+    2. values = [...], items are
+        1. for each "** expr", expr.pyast_tree
+        2. for each "test" after ":", test.pyast_tree
+### 2.22.2 dictorsetmaker: test1 ':' test2 comp_for
+1. For making a dictonary with comprehension
+2. dictorsetmaker.pyast_tree <= ast.DictComp, fields are,
+    1. key = test1.pyast_tree
+    2. value = test2.pyast_tree
+    3. generators = comp_for.pyast_tree["comprehensions"]
+### 2.22.3 dictorsetmaker: **expr comp_for
+1. ** NOT HANDLE **
+2. This is valid for Antlr4's grammar, but not real Python
+### 2.22.4 dictorsetmaker: (test | star_expr) (',' (test | star_expr))* ','?)
 1. For making a set
-2. DictorsetmakerContext.pyast_tree <= {"keys":None, "values":[...]} (a dict)
-4. Values is a list of the pyast_trees of the "test"s or exprs
-### 2.22.x Comp_for not handled
+2. dictorsetmaker.pyast_tree <= ast.Set, fields are,
+    1. values = [...], items are
+        1. for each "** expr", expr.pyast_tree
+        2. for each "test", test.pyast_tree
+### 2.22.5 dictorsetmaker: (test | star_expr) comp_for
+1. For making a set with comprehension
+2. dictorsetmaker.pyast_tree <= ast.SetComp, fields are,
+    1. elt = test.pyast_tree, or star_expr.pyast_tree
+    2. generators = comp_for.pyast_tree["comprehensions"]
+
 
 ## 2.23 not_test
 ### 2.23.1 not_test: comparison
@@ -397,9 +487,44 @@ Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "
         1. any ast.keyword items in arglist.pyast_tree (which is a list)
     4. bases:
         1. any other typed (i.e., ast.keyword) items in arglist.pyast_tree (which is a list)
+        2. there should be no ast.GeneratorExp nodes in arglist, due to Python syntax.
     5. decorator_list <= [] (empty list, decorators are parsed to higher level nodes in the AST tree)
 
+## 2.38 trailer
+### 2.38.1 trailer: '(' arglist? ')'
+1. TrailerContext.pyast_tree <= {"type":"arglist", "values":[...]}
+    1. type <="arglist" (a string)
+    2. value <= the arglist.pyast_tree (which is a list)
+### 2.38.2 trailer: trailer: '[' subscriptlist ']'
+1. TrailerContext.pyast_tree <= {"type":"subscriptionlist", "values":[...]}
+    1. type <= "subscriptionlist" (a string)
+    2. value <= the subscriptlist.pyast_tree (which is a list)
+### 2.38.3 trailer: '.' name
+1. TrailerContext.pyast_tree <= {"type":"field", "values":[...]}
+    1. type <= "field" (a string)
+    2. value <= [name.pyast_tree]
 
+## 2.39 sliceop
+### 2.39.1 sliceop: ";";
+1. SliceopContext.pyast_tree <= None
+### 2.39.2 sliceop: ";" test;
+1. SliceopContext.pyast_tree <= test.pyast_tree
+
+## 2.40 subscript_
+### 2.40.1 subscript_: test;
+1. Subscript_Context.pyast_tree <= test.pyast_tree (copy_child) 
+### 2.40.2 sliceop: test1? ':' test2? sliceop?;
+1. Subscript_Context.pyast_tree <= ast.Slice, fields are
+    1. lower: test1.pyast_tree if there is test1; otherwise, None
+    2. upper: test2.pyast_tree if there is test2; otherwise, None
+    3. step: slicop.pyast_tree if there is sliceop; otherwise, None
+
+
+## 2.41 subscriptlist
+### 2.41.1 subscriptlist: subscript_ (',' subscript_)* ','?;
+1. SubscriptlistContext.pyast_tree <= [..],
+    1. each item in arglist is each subscript_.pyast_tree
+    2. bascially return the lisf of subscript_'s
 
 
 
