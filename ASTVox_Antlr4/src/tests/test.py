@@ -120,18 +120,26 @@ def print_converted_tree(tree1):
     return
 
 # convert the tree and compare with the standard Python AST tree
+# returns if
 def convert_and_compare(stmt, test_case_cnt, print_tree):
 
     # print test case first
     print("Test case", test_case_cnt, ":", stmt.rstrip('\n'))
     
     # generate the tree/outputs for converted tree
-    converted_tree_str = test_antlr4_conversion(stmt)
+    try:
+        converted_tree_str = test_antlr4_conversion(stmt)
+        antlr4_parse_error = False
+    except Exception as e:
+        # parsing error, this could be due to a completely unparse-able
+        # partial statement, e.g., "else:\n"
+        antlr4_parse_error = True
+        print(e)
 
     # generate the tree/outputs for Python AST tree
-    pyast_parse_erred = False
     try:
         pyast_tree_str = test_pyast(stmt)
+        pyast_parse_erred = False
     except:
         # Python AST parsing error should only have for
         # partial compound statements. We should still be
@@ -139,8 +147,11 @@ def convert_and_compare(stmt, test_case_cnt, print_tree):
         # print("Python AST Parsing error")
         pyast_parse_erred = True
 
-    if pyast_parse_erred:
-        # Python AST parsing error, assume the comparison is correct
+    if pyast_parse_erred and antlr4_parse_error:
+        # both parsing error, skip this one
+        same_tree = None
+    elif pyast_parse_erred and (not antlr4_parse_error):
+        # Only Python AST parsing error, assume the comparison is correct
         same_tree = True
         # print our tree if asked
         if print_tree:
@@ -148,14 +159,18 @@ def convert_and_compare(stmt, test_case_cnt, print_tree):
         print("Test case", test_case_cnt, "passed:", same_tree,
               ", Note: Python AST parsing error, assume passing")
         print()
+    elif (not pyast_parse_erred) and antlr4_parse_error:
+        # only antlr4 parsing error, assume the comparison is incorrect
+        same_tree = False
     else:
+        # both parsings are correct
         # if Python parsing has no error, print and compare trees
         same_tree = compare_and_print_trees(pyast_tree_str, converted_tree_str,
                                             print_tree)
         print("Test case", test_case_cnt, "passed:", same_tree)
         print()
 
-    return same_tree
+    return same_tree, pyast_parse_erred, antlr4_parse_error
     
 
 
@@ -181,6 +196,8 @@ if not (args.filename is None):
     test_case_cnt = 0
     correct_cnt = 0
     incorrect_test_cases = []
+    cannot_parse_cnt = 0
+    cannot_parse_test_cases = []
     for line in test_f:
         # preprocess the line to replace \n, \t with the actual \n and \t
         line = line.replace("\\n", '\n')
@@ -188,19 +205,30 @@ if not (args.filename is None):
         if line.startswith('#'): # comments, skip
             continue;
 
-        same_tree = convert_and_compare(line, test_case_cnt, args.print_tree)
-        if same_tree:
+        same_tree, pyast_parse_erred, antlr4_parse_error = convert_and_compare(
+            line, test_case_cnt, args.print_tree)
+        if same_tree is None:
+            # both parsing failed
+            cannot_parse_cnt += 1
+            cannot_parse_test_cases.append(line)
+        elif same_tree:
+            # conversion is correct
             correct_cnt += 1
+            test_case_cnt += 1
         else:
             incorrect_test_cases.append(line)
-        
-        test_case_cnt += 1
+            test_case_cnt += 1
 
     # print out overall results
     print("Correct/Total: {0}/{1}".format(correct_cnt, test_case_cnt))
     if correct_cnt < test_case_cnt:
         print("Incorrect test cases:")
         print(incorrect_test_cases)
+    # print out cannot parse cases
+    if cannot_parse_cnt != 0:
+        print("Number of test cases cannot parse:", cannot_parse_cnt)
+        print("Cannot parse test cases:")
+        print(cannot_parse_test_cases)
     
     # close test case file
     test_f.close()

@@ -8,6 +8,7 @@ import antlr4
 from antlr_parser.Python3Lexer import Python3Lexer
 from antlr_parser.Python3Parser import Python3Parser
 from antlr_parser.Python3ParserListener import Python3ParserListener
+from antlr4.error import ErrorListener
 
 # PyAST package
 import ast
@@ -201,4 +202,40 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#subscriptlist.
     def exitSubscriptlist(self, ctx:Python3Parser.SubscriptlistContext):
         atom_name_terminals.convert_subscriptlist(self, ctx)
+
+# custom error listener to suppress the output of early EOF error to console.
+# i.e., the partial statement error.
+class antlr2pyast_error_listener(ErrorListener.ErrorListener):
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        if offendingSymbol.type == -1:
+            # -1 is EOF, statement terminates early.
+            # not a problem for screen reader, we read partial statments 
+            pass
+        else:
+            print(msg)
+            raise Exception("Syntax Error")
+
+    # disable the default console output error listener
+    def disable_builtin_console_output(self, parser: Python3Parser):
+        for l in parser._listeners: #supress the console error reporting
+            if isinstance(l, antlr4.error.ErrorListener.ConsoleErrorListener):
+                parser._listeners.remove(l)
+                break
+
+  # ignore other errors for now
+  # def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact,
+  #                     ambigAlts, configs):
+  #   raise Exception("report ambiguity")
+
+  # def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex,
+  #                                 conflictingAlts, configs):
+  #   raise Exception("report attempting full context")
+
+  # def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex,
+  #                              prediction, configs):
+  #   raise Exception("report context sensitivity")
+
+
+    
 

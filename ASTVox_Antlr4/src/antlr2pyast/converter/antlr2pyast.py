@@ -7,15 +7,24 @@ from antlr_parser.Python3Parser import Python3Parser
 import ast
 
 # node/rule-specific translation functions
-#from antlr2pyast_listener import antlr2pyast_listener
 from .antlr2pyast_listener import antlr2pyast_listener
+from .antlr2pyast_listener import antlr2pyast_error_listener
 
 # generate the AST tree
 def generate_ast_tree(stmt):
+  # create the parser instance
   input_stream = antlr4.InputStream(stmt)
   lexer = Python3Lexer(input_stream)
   stream = antlr4.CommonTokenStream(lexer)
   parser = Python3Parser(stream)
+
+  # replace the default console printing error handler with our
+  # custom error listener
+  error_listener = antlr2pyast_error_listener()
+  error_listener.disable_builtin_console_output(parser)
+  parser.addErrorListener(error_listener)
+  
+  # start parsing
   tree = parser.single_input()
 
   return tree
