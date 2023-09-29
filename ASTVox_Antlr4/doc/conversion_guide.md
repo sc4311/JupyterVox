@@ -526,6 +526,28 @@ Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "
     1. each item in arglist is each subscript_.pyast_tree
     2. bascially return the lisf of subscript_'s
 
+## 2.42 dotted_as_name
+### 2.42.1 dotted_as_name: dotted_name ('as' name)?;
+1. Dotted_as_nameContext.pyast_tree <= ast.alias, fields
+    1. name <= dotted_name.getText()
+    2. asname 
+        1. if has "as" name, asname <= name.getText() (three child)
+        2. if no "as" name, asname <= None
+
+## 2.43 dotted_as_names
+### 2.43.1 dotted_as_names: dotted_as_name (',' dotted_as_name)*;
+1. Dotted_as_namesContext <= [...] (a list)
+    1. each item is one dotted_as_name. pyast_tree (should be an ast.alias node)
+
+## 2.44 import_name
+### 2.44.1 import_name: 'import' dotted_as_names;
+1. Import_nameContext <= ast.Import, fields are,
+    1. names = dotted_as_names.pyast_tree (a list of ast.alias nodeds)
+
+## 2.45 import_stmt
+### 2.45.1 import_stmt: import_name | import_from;
+1. Import_stmtContext.pyast_tree <= Import_stmtContext.children[0].pyast_tree (copy child, either ast.Import or ast.ImportFrom)
+
 
 
 

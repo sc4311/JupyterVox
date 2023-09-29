@@ -163,8 +163,82 @@ def convert_stmt(listener, ctx:Python3Parser.StmtContext):
   '''
   Convert stmt to corresponding Python AST node
   rule: stmt: simple_stmts | compound_stmt;
-  Just coyp the child's pyast_tree
+  Just copy the child's pyast_tree
   '''
   ctx.pyast_tree = ctx.children[0].pyast_tree
 
   return
+
+# convert dotted_as_name to an ast.alias node
+def convert_dotted_as_name(self, ctx:Python3Parser.Dotted_as_nameContext):
+    '''
+    Convert dotted_as_name to a Python ast.alias node
+    rule: dotted_as_name: dotted_name ('as' name)?;
+ython
+    Generates an ast.alias node, with fields,
+     name <= dotted_name.getText()
+     asname <= name.getText()
+
+    Note that I am not going to have a separate conversion function for
+    dotted_name since its getText() already returns what we need.
+    '''
+
+    # get the dotted name text
+    ast_node = ast. alias(ctx.children[0].getText(), None)
+
+    # if there is "as name", update the asname with the "as name" text
+    if ctx.getChildCount() == 3:
+        # there is "as"
+        ast_node.asname = ctx.children[2].getText()
+
+    ctx.pyast_tree = ast_node
+
+    return 
+
+# convert dotted_as_names to a list of ast.alias nodes
+def convert_dotted_as_names(self, ctx:Python3Parser.Dotted_as_namesContext):
+    '''
+    Convert dotted_as_names to a list of ast.alias nodes
+    rule: dotted_as_names: dotted_as_name (',' dotted_as_name)*;
+
+    Generates a list of ast.alias nodes, where an ast.alias corresponds to
+    a dotted_as_name
+    '''
+
+    aliases = []
+    for child in ctx.children:
+        if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
+            continue # skip coma ","
+
+        aliases.append(child.pyast_tree)
+
+    ctx.pyast_tree = aliases
+
+    return
+
+# convert import_name to a Python ast.Import node
+def convert_import_name(self, ctx:Python3Parser.Import_nameContext):
+    '''
+    Convert import_name to a Python ast.Import node
+    Rule: import_name: 'import' dotted_as_names;
+
+    Generate an ast.Import node with fields,
+    names = dotted_as_names.pyast_tree (it is a list)
+    '''
+
+    ctx.pyast_tree = ast.Import(ctx.children[1].pyast_tree)
+
+    return
+
+# Convert import_stmt to an ast.Import node or as.ImportFrom node
+def convert_import_stmt(self, ctx:Python3Parser.Import_stmtContext):
+    '''
+    Convert import_stmt to an ast.Import node or as.ImportFrom node
+    Rule: import_stmt: import_name | import_from;
+
+    Pass on child's pyast_tree
+    '''
+
+    ctx.pyast_tree = ctx.children[0].pyast_tree
+
+    return

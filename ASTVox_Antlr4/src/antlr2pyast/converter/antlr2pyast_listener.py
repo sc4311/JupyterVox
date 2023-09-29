@@ -203,6 +203,22 @@ class antlr2pyast_listener(Python3ParserListener):
     def exitSubscriptlist(self, ctx:Python3Parser.SubscriptlistContext):
         atom_name_terminals.convert_subscriptlist(self, ctx)
 
+    # Exit a parse tree produced by Python3Parser#dotted_as_name.
+    def exitDotted_as_name(self, ctx:Python3Parser.Dotted_as_nameContext):
+        basic_rules.convert_dotted_as_name(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#dotted_as_names.
+    def exitDotted_as_names(self, ctx:Python3Parser.Dotted_as_namesContext):
+        basic_rules.convert_dotted_as_names(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#import_name.
+    def exitImport_name(self, ctx:Python3Parser.Import_nameContext):
+        basic_rules.convert_import_name(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#import_stmt.
+    def exitImport_stmt(self, ctx:Python3Parser.Import_stmtContext):
+        basic_rules.convert_import_stmt(self, ctx)
+        
 # custom error listener to suppress the output of early EOF error to console.
 # i.e., the partial statement error.
 class antlr2pyast_error_listener(ErrorListener.ErrorListener):

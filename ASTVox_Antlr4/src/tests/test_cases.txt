@@ -98,3 +98,4 @@ a[::].c
 a[:1:].func(a=12)
 a[::1].func(**b).c[:12]
 x = a[:1:1].b["string"].c.func1()[a]
+import a.b.c as n , x.y.z as m, n.n.n as z, t.t.t
