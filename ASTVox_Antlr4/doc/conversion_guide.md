@@ -531,7 +531,7 @@ Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "
 1. Dotted_as_nameContext.pyast_tree <= ast.alias, fields
     1. name <= dotted_name.getText()
     2. asname 
-        1. if has "as" name, asname <= name.getText() (three child)
+        1. if has "as" name, asname <= name.getText() (third child)
         2. if no "as" name, asname <= None
 
 ## 2.43 dotted_as_names
@@ -547,6 +547,34 @@ Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "
 ## 2.45 import_stmt
 ### 2.45.1 import_stmt: import_name | import_from;
 1. Import_stmtContext.pyast_tree <= Import_stmtContext.children[0].pyast_tree (copy child, either ast.Import or ast.ImportFrom)
+
+## 2.46 import_as_name
+### 2.46.1 import_as_name: name ('as' name)?;
+1. Import_as_nameContext.pyast_tree <= ast.alias, fields are,
+    1. name <= first name.getText()
+    2. asname 
+        1. if has "as" name, asname <= 2nd name.getText() (third child)
+        2. if no "as" name, asname <= None
+
+## 2.47 import_as_names
+### 2.47.1 import_as_names: import_as_name (',' import_as_name)*;
+1. Import_as_namesContext <= [...] (a list)
+    1. each item is one import_as_name.pyast_tree (should be an ast.alias node)
+
+## 2.48 import_from
+### 2.47.1  import_from: ('from' (('.' | '...')* dotted_name | ('.' | '...')+) 'import' ('*' | '(' import_as_names ')' | import_as_names));
+1. Look like very complex, but not really. Basic two parts
+    1. from '.'* dotte_name?
+    2. import "*" | (' import_as_names ')' | import_as_names
+2. Import_as_namesContext <= ast.ImportFrom, fields are,
+    1. level <= the number of dots ('.'). Five dots (".....") means (relative directory) level 5.
+    2. module:
+        1. if there is dotted_name, module <= dotted_name.getText()
+        2. if there is no dotted_name, module <= None
+    3. names:
+        1. if import "\*", names <= [ast.alias(name = "*")]. i.e., alist with just on ast.alias node in it. The name of the alias is "*".
+        2. if import '(' import_as_names ')', or import import_as_names), names <= import_as_names.pyast_tree (a list of ast.alias nodes)
+
 
 
 

@@ -174,7 +174,7 @@ def convert_dotted_as_name(self, ctx:Python3Parser.Dotted_as_nameContext):
     '''
     Convert dotted_as_name to a Python ast.alias node
     rule: dotted_as_name: dotted_name ('as' name)?;
-ython
+
     Generates an ast.alias node, with fields,
      name <= dotted_name.getText()
      asname <= name.getText()
@@ -242,3 +242,125 @@ def convert_import_stmt(self, ctx:Python3Parser.Import_stmtContext):
     ctx.pyast_tree = ctx.children[0].pyast_tree
 
     return
+
+# Convert import_as_name to an ast.alias node
+def convert_import_as_name(self, ctx:Python3Parser.Import_as_nameContext):
+    '''
+    Convert import_as_name to an ast.alias node
+    rule: import_as_name: name ('as' name)?;
+
+    Generates an ast.alias node, with fields,
+     name <= first name.getText()
+     asname <= 2nd name.getText()
+    '''
+
+    # get the dotted name text
+    ast_node = ast. alias(ctx.children[0].getText(), None)
+
+    # if there is "as name", update the asname with the "as name" text
+    if ctx.getChildCount() == 3:
+        # there is "as"
+        ast_node.asname = ctx.children[2].getText()
+
+    ctx.pyast_tree = ast_node
+
+    return
+
+# Convert import_as_names to a list of ast.alias nodes
+def convert_import_as_names(self, ctx:Python3Parser.Import_as_namesContext):
+    '''
+    Convert import_as_names to a list of ast.alias nodes
+    rule: import_as_names: import_as_name (',' import_as_name)* ','?;
+
+    Generates a list with the pyast_tree of each import_as_name as the item.
+    Each item should be an ast.alias node
+    '''
+
+    aliases = []
+    for child in ctx.children:
+        if isinstance(child, antlr4.tree.Tree.TerminalNodeImpl):
+            continue # skip coma ","
+
+        aliases.append(child.pyast_tree)
+
+    ctx.pyast_tree = aliases
+
+    return
+
+# Convert import_from to an ast.ImportFrom node
+def convert_import_from(self, ctx:Python3Parser.Import_fromContext):
+    '''
+    Convert import_from to an ast.ImportFrom node
+    Rule: import_from: ('from' (('.' | '...')* dotted_name | ('.' | '...')+)
+              'import' ('*' | '(' import_as_names ')' | import_as_names));
+
+    This is another complex rule. But it basic has two parts
+    "from .* dotted_name"
+    and
+    "import * | import_as_names"
+
+    Generates an ast.ImportFrom node with fields
+    level <= the number of dots ('.')
+    module <= dotted_name.getText()
+    names <= import_as_names.pyast_tree (a list) or [ast.alias(name="*")]
+    '''
+
+    # process the first part from .* dotted_name
+    # process the dots to get the relative directory level
+    level = 0
+    i = 1 # i points the next child to process. Starting at 1 to skip "import"
+    # loop if current child is '.' or '...'
+    while (isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl) and
+           (ctx.children[i].getText() == '.' or
+            ctx.children[i].getText() == '...')): 
+        if ctx.children[i].getText() == '.':
+            level += 1
+        else: # "..." three dots
+            level += 3
+
+        i += 1 # go to next child
+
+    # process the dotted_name
+    if isinstance(ctx.children[i], Python3Parser.Dotted_nameContext):
+        # has dotted_name
+        module = ctx.children[i].getText()
+        i += 1 # go to next child
+    else:
+        # does not have dotted_name, module is None
+        module = None
+    
+    # process the "import ..." statement
+    if (not (isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl) and
+            ctx.children[i].getText() == "import")):
+        raise ValueError("Expecting keyword import in import_from")
+    i += 1 # go to next child
+
+    # three cases
+    if (isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[i].getText() == '*'):
+        # case 1: import *
+        ast_node = ast.alias("*", None)
+        names = [ast_node]
+    elif (isinstance(ctx.children[i], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[i].getText() == '('):
+        # case 2: import '(' import_as_names ')'
+        i += 1 # goto the import_as_names child
+        names = ctx.children[i].pyast_tree
+    elif isinstance(ctx.children[i], Python3Parser.Import_as_namesContext):
+        # case 3: import import_as_names
+        names = ctx.children[i].pyast_tree
+    else:
+        raise ValueError("Unknown import type in import_from, node is" +
+                         str(ctx.children[i]))
+
+    # create the ast.ImportFrom node
+    ast_node = ast.ImportFrom(module, names, level)
+    ctx.pyast_tree = ast_node
+
+    return 
+    
+    
+          
+          
+    
+        
