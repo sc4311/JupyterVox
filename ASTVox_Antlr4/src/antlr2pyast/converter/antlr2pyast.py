@@ -20,9 +20,9 @@ def generate_ast_tree(stmt):
 
   # replace the default console printing error handler with our
   # custom error listener
-  # error_listener = antlr2pyast_error_listener()
-  # error_listener.disable_builtin_console_output(parser)
-  # parser.addErrorListener(error_listener)
+  error_listener = antlr2pyast_error_listener()
+  error_listener.disable_builtin_console_output(parser)
+  parser.addErrorListener(error_listener)
   
   # start parsing
   tree = parser.single_input()

@@ -7,6 +7,7 @@ sys.path.append(ast2pyast_path)
 # system packages
 import argparse
 import re
+import traceback
 
 # AST tree generation/conversion packages
 from converter import antlr2pyast
@@ -134,7 +135,8 @@ def convert_and_compare(stmt, test_case_cnt, print_tree):
         # parsing error, this could be due to a completely unparse-able
         # partial statement, e.g., "else:\n"
         antlr4_parse_error = True
-        print(e)
+        traceback.print_exc()
+        #print(e)
 
     # generate the tree/outputs for Python AST tree
     try:
