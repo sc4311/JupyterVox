@@ -209,6 +209,34 @@ def gen_ast_assign_from_expr_stmt(ctx:Python3Parser.Expr_stmtContext):
 
   return ast_node
 
+# Generate an ast.AugAssign node from expr_stmt, when it is an Augmented
+# assignment.
+def gen_ast_augassign_from_expr_stmt(ctx:Python3Parser.Expr_stmtContext):
+  '''
+  Generate an ast.AugAssign node from expr_stmt, when it is an augmented
+  assignment.
+  This function is only for rule:
+  expr_stmt : testlist_star_expr augassign testlist
+  Returns the generated ast.AugAssign node.
+  '''
+
+  # generate the targets, this really should a node not a list
+  # need to use the list_to_node_or_tuple function to update to Store()
+  target = tools.list_to_node_or_tuple(ctx.children[0].pyast_tree,
+                                       is_load=False)
+  
+
+  # generate the ast node for the operator
+  op_text = ctx.children[1].getText().rstrip("=") # remove "=" from the operator
+  op = gen_ast_binary_operator(op_text)
+
+  # generate the value from testlist
+  value = tools.list_to_node_or_tuple(ctx.children[2].pyast_tree, is_load=True)
+
+  ast_node = ast.AugAssign(target, op, value)
+
+  return ast_node
+
 # Convert expr_stmt to Python AST node
 def convert_expr_stmt(listener, ctx:Python3Parser.Expr_stmtContext):
   '''
@@ -216,15 +244,16 @@ def convert_expr_stmt(listener, ctx:Python3Parser.Expr_stmtContext):
   for now.
   rule:  expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
                     ('=' (yield_expr|testlist_star_expr))*);
-  Only handles two cases now:
-  expr_stmt : testlist_star_expr, convert to ast.Expr
-  expr_stmt : testlist_star_expr '=' testlist_star_expr, convert to ast.Assign
+  Only handles three cases now:
+  1. expr_stmt: testlist_star_expr, convert to ast.Expr
+  2. expr_stmt: testlist_star_expr ('=' testlist_star_expr)+, convert to ast.Assign
+  3. expr_stmt: testlist_star_expr augassign testlist, convert to ast.AugAssign
   '''
 
   #print_ast_tree(ctx)
 
   if ctx.getChildCount() == 1:
-    # for rule, expr_stmt : testlist_star_expr
+    # case 1, expr_stmt : testlist_star_expr
     node = gen_ast_expr_from_expr_stmt(ctx)
     ctx.pyast_tree = node
   elif (ctx.getChildCount() >= 3 and
@@ -232,8 +261,15 @@ def convert_expr_stmt(listener, ctx:Python3Parser.Expr_stmtContext):
         isinstance(ctx.children[1], antlr4.tree.Tree.TerminalNodeImpl) and
         ctx.children[1].getSymbol().type == Python3Lexer.ASSIGN and
         isinstance(ctx.children[2], Python3Parser.Testlist_star_exprContext)):
-    # for rule, expr_stmt : testlist_star_expr ('=' testlist_star_expr)+
+    # case 2, expr_stmt : testlist_star_expr ('=' testlist_star_expr)+
     node = gen_ast_assign_from_expr_stmt(ctx)
+    ctx.pyast_tree = node
+  elif (ctx.getChildCount() == 3 and
+        isinstance(ctx.children[0], Python3Parser.Testlist_star_exprContext) and
+        isinstance(ctx.children[1], Python3Parser.AugassignContext) and
+        isinstance(ctx.children[2], Python3Parser.TestlistContext)):
+    # case 3, expr_stmt: testlist_star_expr augassign testlist
+    node = gen_ast_augassign_from_expr_stmt(ctx)
     ctx.pyast_tree = node
   else:
     raise NotImplementedError("Other rules not implemented for epxr_stmt")

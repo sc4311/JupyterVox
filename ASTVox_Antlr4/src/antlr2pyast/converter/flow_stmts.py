@@ -137,3 +137,23 @@ def convert_if_stmt(listener, ctx:Python3Parser.If_stmtContext):
     else:
       raise ValueError("Keyword is not elif or else, but " + 
                        ctx.children[i].getText())
+
+# convert break_stmt to ast.Break
+def convert_break_stmt(self, ctx:Python3Parser.Break_stmtContext):
+  '''
+  Convert break_stmt to ast.Break
+  Rule: break_stmt: 'break'; 
+  '''
+  ctx.pyast_tree = ast.Break()
+
+  return
+
+# convert continue_stmt to ast.Continue
+def convert_continue_stmt(self, ctx:Python3Parser.Continue_stmtContext):
+  '''
+  Convert continue_stmt to ast.Continue
+  Rule: continue_stmt: 'continue'; 
+  '''
+  ctx.pyast_tree = ast.Continue()  
+
+  return

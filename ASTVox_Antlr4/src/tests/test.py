@@ -127,6 +127,7 @@ def convert_and_compare(stmt, test_case_cnt, print_tree):
     # print test case first
     print("Test case", test_case_cnt, ":", stmt.rstrip('\n'))
     
+
     # generate the tree/outputs for converted tree
     try:
         converted_tree_str = test_antlr4_conversion(stmt)
@@ -201,6 +202,12 @@ if not (args.filename is None):
     cannot_parse_cnt = 0
     cannot_parse_test_cases = []
     for line in test_f:
+        # remove leading  white space, as Python AST cannot handle it. 
+        # this is reasonable, since indentation has meaning
+        line = line.lstrip()
+        if line == "":
+            continue # skip empty line
+
         # preprocess the line to replace \n, \t with the actual \n and \t
         line = line.replace("\\n", '\n')
         line = line.replace("\\t", '\t')

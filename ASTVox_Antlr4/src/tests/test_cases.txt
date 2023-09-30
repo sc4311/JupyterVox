@@ -101,3 +101,13 @@ x = a[:1:1].b["string"].c.func1()[a]
 import a.b.c as n , x.y.z as m, n.n.n as z, t.t.t
 from ....a.b.cc import b as n, x as y, t, tt as m
 from ..m.n import (x as y, y as z, z as none)
+sum += digit ** 3 
+temp //= 10\n 
+sum += digit ** order
+temp //= 10
+sum += digit ** order
+temp //= 10
+break
+continue
+for i in range(0,1): continue
+for i in range(1,2,3): break

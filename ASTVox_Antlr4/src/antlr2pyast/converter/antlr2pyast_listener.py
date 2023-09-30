@@ -230,6 +230,16 @@ class antlr2pyast_listener(Python3ParserListener):
     # Exit a parse tree produced by Python3Parser#import_from.
     def exitImport_from(self, ctx:Python3Parser.Import_fromContext):
         basic_rules.convert_import_from(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#break_stmt.
+    def exitBreak_stmt(self, ctx:Python3Parser.Break_stmtContext):
+        flow_stmts.convert_break_stmt(self, ctx)
+
+    # Exit a parse tree produced by Python3Parser#continue_stmt.
+    def exitContinue_stmt(self, ctx:Python3Parser.Continue_stmtContext):
+        flow_stmts.convert_continue_stmt(self, ctx)
+
+
         
 # custom error listener to suppress the output of early EOF error to console.
 # i.e., the partial statement error.
