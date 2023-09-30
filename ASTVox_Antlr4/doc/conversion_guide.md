@@ -151,6 +151,13 @@
 1. expr_stmt.pyast_tree <= ast.Assign
     1. targets <= [the pyast_tree of every testlist_star_expr except the last one]
     2. value <= the last testlist_star_expr's pyast_tree
+### 2.5.3 expr_stmt : testlist_star_expr augassign testlist
+1. expr_stmt.pyast_tree <= ast.AugAssign
+    1. target <= testlist_star_expr.pyast_tree (should be a node, if this pyast_tree is a list, should be an error)
+    2. op <= ast.Add/ast.Mult..., based on the text of augassign.getText()
+    3. value
+        1. if testlist.pyast_tree has more than one value in the list, value <= ast.Tuple, elts = testlist.pyast_tree
+        2. if testlist.pyast_tree has only one value in the list, value <= testlist.pyast_tree[0] 
 ### 2.5.x Other parts of the rule not handled
 Full rule:<br/>
 expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
@@ -574,6 +581,15 @@ Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "
     3. names:
         1. if import "\*", names <= [ast.alias(name = "*")]. i.e., alist with just on ast.alias node in it. The name of the alias is "*".
         2. if import '(' import_as_names ')', or import import_as_names), names <= import_as_names.pyast_tree (a list of ast.alias nodes)
+
+## 2.49 break_stmt
+### 2.49.1  break_stmt: 'break';
+1. Break_stmtContext.pyast_tree <= ast.Break()
+
+## 2.49 continue_stmt
+### 2.49.1  continue_stmt: 'break';
+1. Continue_stmtContext.pyast_tree <= ast.Continue()
+
 
 
 
