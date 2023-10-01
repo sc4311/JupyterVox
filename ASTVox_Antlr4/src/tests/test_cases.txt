@@ -111,3 +111,23 @@ break
 continue
 for i in range(0,1): continue
 for i in range(1,2,3): break
+def start_game():
+12, 13,
+[7,9,9,],
+grid[i][j] = 0
+movies_copy['cos_sim'] = cs_list
+"for i, in x: return"
+"for i,j, in x: return"
+a[1:2,3,]
+a[1:2,]
+[a,]
+[a,b,c,]
+{1,}
+{1,a,}
+{1:12,}
+{1:12,a:13,}
+a(12,)
+a(12,b,)
+class a (b,): return
+class a (b,12,): return	
+self.card_face = card_face

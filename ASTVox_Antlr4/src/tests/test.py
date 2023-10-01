@@ -237,7 +237,8 @@ if not (args.filename is None):
     if cannot_parse_cnt != 0:
         print("Number of test cases cannot parse:", cannot_parse_cnt)
         print("Cannot parse test cases:")
-        print(cannot_parse_test_cases)
+        for s in cannot_parse_test_cases:
+            print(s)	
     
     # close test case file
     test_f.close()
