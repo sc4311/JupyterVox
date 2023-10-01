@@ -162,6 +162,18 @@ def convert_exprlist(listener, ctx:Python3Parser.ExprlistContext):
             # sometimes ';' is also included in the children
             expr_list.append(ctx.children[i].pyast_tree)
 
+    # there is a strange corner case, where the statement ends with ',' in such
+    # case with just one item, we still need to convert the list to ast.Tuple
+    # later in the convert_for_stmt function. For example, "a, " should be
+    # converted to ast.Tuple instead just an ast.Name.
+    #
+    # I am adding a None object to the list for this case, so that
+    # the tools.list_to_node_or_tuple function knows to convert this to
+    # an ast.Tuple instead of single node
+    if (isinstance(ctx.children[-1], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[-1].getText() == ','):
+        expr_list.append(None)
+
     ctx.pyast_tree = expr_list
 
     return
@@ -203,7 +215,8 @@ def gen_ast_assign_from_expr_stmt(ctx:Python3Parser.Expr_stmtContext):
     targets.append(node)
 
   # generate the value from the last child
-  value = tools.list_to_node_or_tuple(ctx.children[-1].pyast_tree, is_load=True)
+  value = tools.list_to_node_or_tuple(ctx.children[-1].pyast_tree, is_load=True,
+                                      update_children = False)
 
   ast_node = ast.Assign(targets, value)
 
@@ -293,6 +306,19 @@ def convert_testlist_star_expr(listener,
         continue # skip ','
 
       expr_list.append(child.pyast_tree)
+
+    # there is a strange corner case, where the statement ends with ',' in such
+    # case with just one item, we still need to convert the list to ast.Tuple
+    # later in the convert_expr function. For example, "a, " should be
+    # converted to ast.Tuple instead just an ast.Name.
+    #
+    # I am adding a None object to the list for this case, so that expr
+    # knows it needs to generate an ast.Tuple instead of a object for the value
+    # field of expr. This generation of ast.Tuple is done in the
+    # tools.list_to_node_or_tuple function.
+    if (isinstance(ctx.children[-1], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[-1].getText() == ','):
+        expr_list.append(None)
 
     ctx.pyast_tree = expr_list
 

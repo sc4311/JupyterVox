@@ -1,7 +1,6 @@
 # Antlr4 to Python AST
 # Conversion function for control test* statements, including
 #   testlist
-#   testlist_star_expr
 #   not_test
 #   and_test
 #   or_test
@@ -219,10 +218,9 @@ def convert_testlist_comp(listener, ctx:Python3Parser.Testlist_compContext):
   Convert testlist_comp to a list of AST nodes for test or star_expr.
   Rule: testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* ','? );
 
-  There are two cases:
+  There are three cases:
   1. (test|star_expr) (comp_for);
   2. (test|star_expr) ((',' (test|star_expr))* ','? )
-
 
   The generate pyast_tree is different for two cases
   case 1: a dict of {"elt": node, "generators": list}

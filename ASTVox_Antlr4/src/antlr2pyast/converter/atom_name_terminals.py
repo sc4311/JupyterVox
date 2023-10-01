@@ -30,12 +30,14 @@ def gen_ast_num_constant(ctx:antlr4.tree.Tree.TerminalNodeImpl):
 # remove them here. However, there may be other preprocessing need, 
 # hence the separate function
 def atom_string_processing(text:str):
-  if text[0] == '\"':
-    return text.lstrip('\"').rstrip('\"')
-  elif text[0] == '\'':
-    return text.lstrip('\'').rstrip('\'')
-  else:
-    return text # should not reach here
+  # remove the first and last " or '
+  # text = text[1:-1]
+    
+  # using eval the string to remove special characters, including the beginning
+  # and ending " and '
+  text = eval(text)
+
+  return text
 
 # convert a list of strings (STRING+) to one string ast.Constant node
 # note that, the strings will also be saved into a list and add to the
@@ -44,7 +46,7 @@ def convert_atom_strings(listener, ctx:Python3Parser.AtomContext):
   
   combined_string=""
   original_strings=[]
-
+  
   for child in ctx.children:
     # check if child is STRING
     if not (isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and
@@ -570,6 +572,15 @@ def convert_subscriptlist(self, ctx:Python3Parser.SubscriptlistContext):
             continue # skip ','
         
         sublist.append(child.pyast_tree)
+
+    # for the corner case subscriptlist: subscript_ ',', i.e.,
+    # just one item follow by ','. We need to convert this subscriptlist
+    # to ast.Tuple instead of a single node. I am adding a None item to
+    # the list so that the function tools.list_to_node_or_tuple knows
+    # to generate a tuple.
+    if (isinstance(ctx.children[-1], antlr4.tree.Tree.TerminalNodeImpl) and
+        ctx.children[-1].getText() == ','):
+        sublist.append(None)
 
     ctx.pyast_tree = sublist
 

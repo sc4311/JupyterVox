@@ -9,10 +9,13 @@
 ### 2.0.1 List type of tokens
 1. List type of tokens are those drived from one or two repeated items, e.g., simple_stmts: simple_stmt (';' simple_stmt)* ';'? NEWLINE;
 2. Should always return a list as the pyast_tree
-3. This may not hold for all list-typed tokens, if they are implemented before 09/15/2023
+3. For some list, when there is a "," at the end of the statements, I added a None object to the list. So that the tools.list_to_node_or_tuple function knows it should still generate an ast.Tuple, even if there is just one real item in the list. The list tokens are,
+    1. exprlist, subscriptlist, testlist_star_expr, 
+    2. there are more, need to check 
 ### 2.0.2 Load/Store contexts
 1. ctx is defaulted to ast.Load()
 2. all ctx in a subtree will be changed if that tree is determined to be written (e.g., left hand of an assignment statement)
+3. ast.Subscript's value/slice and ast.Attribute's value should always be ast.Load(). This is enforced at the end of function tools.update_load_stor().
 
 ## 2.1 name
 ### 2.1.1 name: NAME
@@ -39,7 +42,7 @@
 1. atom.pyast_tree <= ast.Constant, fields are,
     1. value <= concatenated string tokens
     2. A separate list "original_strings" is also added to the ast.Constant node with individual strings in STRING+
-    3. String is processes to remove leading and trailing " and '
+    3. String is passed to eval() to remove leading/ending " and ', as well as other special characters.
 ### 2.2.3 atom: "True" | "False"
 1. atom.pyast_tree <= ast.Constant, fields are,
     1. value <= True or False, based on the actual statement text
@@ -102,6 +105,7 @@
 1. That is, trailer is '[' subscriptionlist ']'
 2. atom_expr.pyast_tree <= ast.Subscript, fields are, 
     1. value = atom.pyast_tree
+        1. Note that "value" node's ctx should always be ast.Load(), since list name is really just read-only. So the full sub-tree load/store ctx update function (tools.update_load_store)is fixed to always set value's ctx to ast.Load() at the end of the function.
     2. slice_field: 
         1. if subscriptionlist.pyast_tree has only one item, subscriptionlist.pyast_tree[0], 
         2. if subscriptionlist.pyast_tree has more than one item2, ast.Tuple, fields are,
@@ -402,7 +406,8 @@ expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
     
 ## 2.29 parameters
 ### 2.29.1 parameters: '(' typedargslist? ')';
-1. ParametersContext.pyast_tree <= ParametersContext.children[1].pyast_tree (copy_child) 
+1. if there is typedargslist, ParametersContext.pyast_tree <= ParametersContext.children[1].pyast_tree (copy_child) 
+2. if there is no typedargslist, ParametersContext.pyast_tree <= ast.arguments(), with all field being [] (empty list) or None 
 
 ## 2.30 funcdef
 ### 2.30.1 funcdef: 'def' name parameters ':' block;

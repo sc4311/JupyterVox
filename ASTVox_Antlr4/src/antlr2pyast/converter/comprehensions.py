@@ -54,13 +54,15 @@ def convert_comp_for(listener, ctx:Python3Parser.Comp_forContext):
   they should be the on the same level.
   '''
 
-  #  construct the ast.Comprehension node
+  #### construct the ast.Comprehension node
+  # if there is ASYNC, then the comprehension is async
   if (isinstance(ctx.children[0], antlr4.tree.Tree.TerminalNodeImpl) and
       ctx.children[0].getText() == "async"):
     is_async = 1
   else:
     is_async = 0
 
+  # get the for in the list
   if is_async:
     target = tools.list_to_node_or_tuple(ctx.children[2].pyast_tree,
                                          is_load=False)

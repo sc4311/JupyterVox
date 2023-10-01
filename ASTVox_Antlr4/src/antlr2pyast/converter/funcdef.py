@@ -155,7 +155,12 @@ def convert_parameters(self, ctx:Python3Parser.ParametersContext):
   Rule: parameters: '(' typedargslist? ')';
   '''
 
-  ctx.pyast_tree = ctx.children[1].pyast_tree
+  if ctx.getChildCount() == 3:
+    # has typedargslist
+    ctx.pyast_tree = ctx.children[1].pyast_tree
+  else:
+    # does not have typedargslist, generates an empty ast.arguments node
+    ctx.pyast_tree = ast.arguments([], [], None, [], [], None, [])
 
   return
 
