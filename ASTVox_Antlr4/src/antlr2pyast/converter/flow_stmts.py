@@ -157,3 +157,32 @@ def convert_continue_stmt(self, ctx:Python3Parser.Continue_stmtContext):
   ctx.pyast_tree = ast.Continue()  
 
   return
+
+# Convert raise_stmt to ast.Raise.
+def convert_raise_stmt(self, ctx:Python3Parser.Raise_stmtContext):
+  '''
+  Convert raise_stmt to ast.Raise.
+  Rule: raise_stmt: 'raise' (test ('from' test)?)?;
+  Generate an ast.Raise, with fields,
+  exc = 1st test.pyast_tree
+  cause = 2nd test.pyast_tree
+  '''
+
+  # get the first test if it exists
+  if ctx.getChildCount() > 1:
+    exc = ctx.children[1].pyast_tree
+  else:
+    exc = None
+
+  # get the first test if it exists
+  if ctx.getChildCount() == 4:
+    cause = ctx.children[3].pyast_tree
+  else:
+    cause = None
+
+  # construct the ast.Raise Object
+  ctx.pyast_tree = ast.Raise(exc, cause)
+
+  return
+   
+   

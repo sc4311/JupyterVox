@@ -239,6 +239,10 @@ class antlr2pyast_listener(Python3ParserListener):
     def exitContinue_stmt(self, ctx:Python3Parser.Continue_stmtContext):
         flow_stmts.convert_continue_stmt(self, ctx)
 
+    # Exit a parse tree produced by Python3Parser#raise_stmt.
+    def exitRaise_stmt(self, ctx:Python3Parser.Raise_stmtContext):
+        flow_stmts.convert_raise_stmt(self, ctx)
+
 
         
 # custom error listener to suppress the output of early EOF error to console.

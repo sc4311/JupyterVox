@@ -2,6 +2,8 @@
 ## 1.1 NUMBER
 1. Integer string => ast.Constant(value:int)
 2. Float string => ast.Constant(value:float)
+3. Complex number string => ast.Constant(value:complex)
+4. To make the conversion work across all three types, I used eval(), instead of int, float, or eval
 
 # 2. Non-terminal Tokens
 
@@ -39,10 +41,12 @@
 ### 2.2.2 atom: NUMBER
 1. atom.pyast_tree <= ast.Constant(NUMBER), see 1.1 NUMBER
 ### 2.2.3 atom:STRING+
-1. atom.pyast_tree <= ast.Constant, fields are,
+1. For normal strings, atom.pyast_tree <= ast.Constant, fields are,
     1. value <= concatenated string tokens
     2. A separate list "original_strings" is also added to the ast.Constant node with individual strings in STRING+
     3. String is passed to eval() to remove leading/ending " and ', as well as other special characters.
+2. For formatted srings, i.e., 'f|F|u|U|r|R'STRING+, returns ast.JointedStr. 
+    1. implementation is cheated by calling ast.parse on the concatenated string. As Antlr4 does not parse formatted string, we need to do the implementation. Due to time limitation, the implementation is cheated...
 ### 2.2.3 atom: "True" | "False"
 1. atom.pyast_tree <= ast.Constant, fields are,
     1. value <= True or False, based on the actual statement text
@@ -588,12 +592,18 @@ Antlr4's grammar allows parameters of (a=1, b), but Python AST does not. i.e., "
         2. if import '(' import_as_names ')', or import import_as_names), names <= import_as_names.pyast_tree (a list of ast.alias nodes)
 
 ## 2.49 break_stmt
-### 2.49.1  break_stmt: 'break';
+### 2.49.1 break_stmt: 'break';
 1. Break_stmtContext.pyast_tree <= ast.Break()
 
 ## 2.49 continue_stmt
-### 2.49.1  continue_stmt: 'break';
+### 2.49.1 continue_stmt: 'break';
 1. Continue_stmtContext.pyast_tree <= ast.Continue()
+
+## 2.50 raise_stmt
+### 2.60.1 raise_stmt: 'raise' (test ('from' test)?)?;
+1. Continue_stmtContext.pyast_tree <= ast.Raise(), fields are
+    1. exc <= 1st test.pyast_tree, or exc <= None, if test does not exist
+    2. cause <= 2nd test.pyast_tree, or cause<=None, if 2nd test does not exist
 
 
 

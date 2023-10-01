@@ -16,10 +16,14 @@ from . import tools
 # convert a NUMBER to ast.Constant
 def gen_ast_num_constant(ctx:antlr4.tree.Tree.TerminalNodeImpl):
     # extract the value, a bit hacky
-    try:
-        value = int(ctx.getText())
-    except ValueError:
-        value = float(ctx.getText())
+    # try:
+    #     value = int(ctx.getText())
+    # except ValueError:
+    #     value = float(ctx.getText())
+
+    # since we also need to handle complex values, it makes more
+    # sense to just use eval to obtain the value
+    value = eval(ctx.getText())
 
     # generate the AST node
     ast_node = ast.Constant(value)

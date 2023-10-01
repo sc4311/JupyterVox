@@ -132,3 +132,10 @@ class a (b,): return
 class a (b,12,): return	
 self.card_face = card_face
 window.title(f'TextEditor - {filepath}')
+f'txt{a}txt2{c}text3'
+u'txt{a}txt2{c}text3'
+r'txt{a}txt2{c}text3'
+u'x'r'y'f'z'
+raise
+raise x from y
+raise err(f"{aa}error") from mnc
