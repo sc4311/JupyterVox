@@ -131,3 +131,4 @@ a(12,b,)
 class a (b,): return
 class a (b,12,): return	
 self.card_face = card_face
+window.title(f'TextEditor - {filepath}')

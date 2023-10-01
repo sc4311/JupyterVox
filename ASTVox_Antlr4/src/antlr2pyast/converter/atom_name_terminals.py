@@ -62,6 +62,37 @@ def convert_atom_strings(listener, ctx:Python3Parser.AtomContext):
 
   return ast_node
 
+# convert a formatted string to ast.JoineStr object.
+def convert_atom_formatted_strings(listener, ctx:Python3Parser.AtomContext):
+  '''
+  Convert a formatted string to ast.JoineStr object.
+  This is a cheat. Antlr4's grammar does not parse formatted string. It really
+  should have its own grammar, but instead strings are defined in the lexer
+  file. So Antlr4 does not parse it.
+  As Antlr4 does not parse, we need to. This parsing should be very easy
+  since this is just regular language/expression. But I don't have time to
+  implement it. So I just call Python AST to parse it...
+  '''
+  combined_string=""
+  original_strings=[]
+  
+  for child in ctx.children:
+    # check if child is STRING
+    if not (isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and
+          child.getSymbol().type == Python3Lexer.STRING):
+      raise ValueError("")
+
+    # combine and insert the strings.
+    combined_string += child.getText()
+    original_strings.append(child.getText())
+
+  # call ast.parse to generate the AST tree. The from the top
+  # node's (ast.Module) body, we get ast.Expr, whose value is the tree we want
+  ast_node = ast.parse(combined_string).body[0].value
+  ast_node.original_strings = original_strings
+
+  return ast_node
+
 # convert atom to ast.List or ast.ListComp
 def convert_atom_list_listcomp(listener, ctx:Python3Parser.AtomContext):
     '''
@@ -138,10 +169,19 @@ def convert_atom(listener, ctx:Python3Parser.AtomContext):
         # child a is NUMER type, convert it to ast.Constant
         ctx.pyast_tree = gen_ast_num_constant(first_child)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
-          first_child.getSymbol().type == Python3Lexer.STRING):
-        # rule 3: atom: STRING+
-        # child a is String type, convert it to list of strings
+          first_child.getSymbol().type == Python3Lexer.STRING and
+          (first_child.getText()[0] == '\'' or
+           first_child.getText()[0] == '\"')):
+        # rule 3.1: atom: STRING+
+        # child a is normal string type, convert it to list of strings
         ctx.pyast_tree = convert_atom_strings(listener, ctx)
+    elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
+          first_child.getSymbol().type == Python3Lexer.STRING and
+          first_child.getText()[0] != '\'' and
+          first_child.getText()[0] != '\"'):
+        # rule 3.2: atom: 'f|u|r|F|U|R'STRING+
+        # child a is formatted string type, convert it to list of strings
+        ctx.pyast_tree = convert_atom_formatted_strings(listener, ctx)
     elif (isinstance(first_child, antlr4.tree.Tree.TerminalNodeImpl) and
           first_child.getSymbol().type == Python3Lexer.TRUE):
         # rule 4: atom: "True"
