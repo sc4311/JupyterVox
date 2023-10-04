@@ -18,75 +18,75 @@ class ops_mixin:
   def gen_ast_Add(self, node):
     '''
     Styles:
-    1. direct: "plus"
+    1. default: "plus"
     2. indirect: "the sum of"
     '''
-    node.jvox_speech = {"direct":"plus", "indirect":"the sum of"}
+    node.jvox_speech = {"default":"plus", "indirect":"the sum of"}
 
     return
 
   def gen_ast_Mult(self, node):
     '''
     Styles:
-    1. direct: "multiply"
+    1. default: "multiply"
     2. indirect: "the product of"
     '''
-    node.jvox_speech = {"direct":"multiply", "indirect":"the product of"}
+    node.jvox_speech = {"default":"multiply", "indirect":"the product of"}
 
     return
 
   def gen_ast_Sub(self, node):
     '''
     Styles:
-    1. direct: "minus"
+    1. default: "minus"
     2. indirect: "the sum of"
     '''
-    node.jvox_speech = {"direct":"minus", "indirect":"the difference of"}
+    node.jvox_speech = {"default":"minus", "indirect":"the difference of"}
 
     return
 
   def gen_ast_Div(self, node):
     '''
     Styles:
-    1. direct: "divide"
+    1. default: "divide"
     '''
-    node.jvox_speech = {"direct":"divide"}
+    node.jvox_speech = {"default":"divide"}
 
     return
 
   def gen_ast_Mod(self, node):
     '''
     Styles:
-    1. direct: "modulo"
+    1. default: "modulo"
     '''
-    node.jvox_speech = {"direct":"modulo"}
+    node.jvox_speech = {"default":"modulo"}
 
     return
 
   def gen_ast_FloorDiv(self, node):
     '''
     Styles:
-    1. direct: "floor divide"
+    1. default: "floor divide"
     '''
-    node.jvox_speech = {"direct":"floor divide"}
+    node.jvox_speech = {"default":"floor divide"}
 
     return
 
   def gen_ast_Pow(self, node):
     '''
     Styles:
-    1. direct: "to the power of"
+    1. default: "to the power of"
     '''
-    node.jvox_speech = {"direct":"to the power of"}
+    node.jvox_speech = {"default":"to the power of"}
 
     return
 
   def gen_ast_USub(self, node):
     '''
     Styles:
-    1. direct: "negative"
+    1. default: "negative"
     '''
-    node.jvox_speech = {"direct":"negative"}
+    node.jvox_speech = {"default":"negative"}
 
     return
 
@@ -112,11 +112,11 @@ class ops_mixin:
     # generate the speech
     if use_then:
       speech = (node.left.jvox_speech["default"] + ", then " +
-                node.op.jvox_speech["direct"] + " " + 
+                node.op.jvox_speech["default"] + " " + 
                 node.right.jvox_speech["default"])
     else:
       speech = (node.left.jvox_speech["default"] + " " +
-                node.op.jvox_speech["direct"] + " " + 
+                node.op.jvox_speech["default"] + " " + 
                 node.right.jvox_speech["default"])
 
     # add the speech to jvox_speech
@@ -168,7 +168,7 @@ class ops_mixin:
                 left_speech + and_str + right_speech + ", ")
     else:
       # operator does not have indirect speech, use the direct speech
-      speech = (left_speech + " " + node.op.jvox_speech["direct"] + " " + 
+      speech = (left_speech + " " + node.op.jvox_speech["default"] + " " + 
                 right_speech)
 
     # add the speech to jvox_speech
@@ -234,7 +234,7 @@ class ops_mixin:
                 left_speech + and_str + right_speech + ", ")
     else:
       # operator does not have indirect speech, use the direct speech
-      speech = (left_speech + " " + node.op.jvox_speech["direct"] + " " +
+      speech = (left_speech + " " + node.op.jvox_speech["default"] + " " +
                 right_speech + ", ")
       
     # add the speech to jvox_speech

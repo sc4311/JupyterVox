@@ -8,9 +8,11 @@ import ast
 # Speech generation mixin classes, which have the actual implementation
 # for gen_ast_XXX functions
 import _alu_operations
+import _constants_ids
 
 
-class pyastvox_speech_generator(_alu_operations.ops_mixin):
+class pyastvox_speech_generator(_alu_operations.ops_mixin,
+                                _constants_ids.constants_ids_mixin):
   '''
   Entry-point class for JupyterVox pyastvox module.
   Call the "generate" function with a Python AST tree node to generate the
@@ -51,6 +53,8 @@ class pyastvox_speech_generator(_alu_operations.ops_mixin):
       self.gen_generic(node)
     else: # found the function, call it
       func(node)
+      # set selected style
+      self.set_selected_style_speech_for_node(node)
 
     return
 
@@ -83,6 +87,25 @@ class pyastvox_speech_generator(_alu_operations.ops_mixin):
     '''
     return self.speech_styles[node_class]
 
+  def set_selected_style_speech_for_node(self, node):
+    '''
+    This function is called automatically after each gen_ast_XXX function
+    to select the "selected_style" field of jvox_speech.
+    If user does not set the speech style for a type of node, "default" is
+    used.
+    '''
+    if node.__class__ in self.speech_styles:
+      # user selects a style, use that style
+      if self.speech_styles[node.__class__] in node.jvox_speech:
+        node.jvox_speech["selected_style"] = (
+          node.jvox_speech[self.speech_styles[node.__class__]])
+      else:
+        raise ValueError(f"Style \"{self.speech_styles[node.__class__]}\" has "
+                         f"not been generated for node {node}")
+    else:
+      # user does not select a style, use "default"
+      node.jvox_speech["selected_style"] = node.jvox_speech["default"]
+
   def gen_generic(self, node):
     '''
     Generic implementation for speech generation for a tree node. This generic
@@ -96,9 +119,9 @@ class pyastvox_speech_generator(_alu_operations.ops_mixin):
     
     # default to no speech
     # self.speeches[node] = "error, no speech"
-    node.jvox_speech = "error, no speech"
+    node.jvox_speech = {"default":"error, no speech"}
 
-    # visit all desendents, find which one has a speech, use the speech
+    # visit all desendents, find which one has a speech, use that speech
     for field, value in ast.iter_fields(node):
       if isinstance(value, list):
         for item in value:
@@ -117,13 +140,8 @@ class pyastvox_speech_generator(_alu_operations.ops_mixin):
     '''
     Do nothing. Not a read-able class.
     '''
+    node.jvox_speech={"default":""}
     return
 
-  def gen_ast_Name(self, node):
-    '''
-    Generate speech for ast.Name, i.e., a variable.
-    Just use the variable name/identifier as the speech.
-    '''
-    node.jvox_speech = {"default": node.id}
-    return
+
 

@@ -87,7 +87,7 @@ if (args.test_case_file is None) and (args.stmt is None):
     
 # create the parser
 vox_gen = pyastvox_speech_generator()
-vox_gen.set_speech_style(ast.BinOp, "direct")
+vox_gen.set_speech_style(ast.BinOp, "indirect")
 
 if not args.stmt is None:
     # parse a single statement
