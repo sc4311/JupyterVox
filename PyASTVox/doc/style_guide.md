@@ -3,9 +3,9 @@
    jvox_speech is a dictionary with speeches for different styles. There should
    always be a "default" style. 
 2. Jvox\_speech should also have a "selected\_style" to help the parent nodes to
-   know which speech to use. If user selected a style, "selected\_style" will be
-   using that style. Otherwise,  "default" is copied to "selected\_style." 
-   This "selected\_style" is automatically selected by the
+   know which speech to use if not sure. If user selected a style,
+   "selected\_style" will be using that style. Otherwise, "default" is copied to
+   "selected\_style."  This "selected\_style" is automatically selected by the
    set\_selected\_style\_speech\_for\_node function afer the speech is generated
    for each node (i.e., after gen_ast_XXX function is called)
    
