@@ -35,6 +35,16 @@
 1. default: "matrix multiply"
 ## ast.Pow
 1. default: "to the power of"
+## ast.LShift
+1. default: "left shift by"
+## ast.RShift
+1. default: "right shift by"
+## ast.BitOr
+1. default: "bit-wise or"
+## ast.BitXor
+1. default: "bit-wise xor"
+## ast.BitAnd
+1. default: "bit-wise and"
 ## ast.USub
 1. default: "negative"
 ## ast.BinOp

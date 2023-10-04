@@ -81,6 +81,51 @@ class ops_mixin:
 
     return
 
+  def gen_ast_LShift(self, node):
+    '''
+    Styles:
+    1. default: "left shift by"
+    '''
+    node.jvox_speech = {"default":"left shift by"}
+
+    return
+
+  def gen_ast_RShift(self, node):
+    '''
+    Styles:
+    1. default: "right shift by"
+    '''
+    node.jvox_speech = {"default":"right shift by"}
+
+    return
+
+  def gen_ast_BitOr(self, node):
+    '''
+    Styles:
+    1. default: "bit-wise or"
+    '''
+    node.jvox_speech = {"default":"bit-wise or"}
+
+    return
+
+  def gen_ast_BitXor(self, node):
+    '''
+    Styles:
+    1. default: "bit-wise xor"
+    '''
+    node.jvox_speech = {"default":"bit-wise xor"}
+
+    return
+
+  def gen_ast_BitAnd(self, node):
+    '''
+    Styles:
+    1. default: "bit-wise and"
+    '''
+    node.jvox_speech = {"default":"bit-wise and"}
+
+    return
+
   def gen_ast_USub(self, node):
     '''
     Styles:
@@ -101,9 +146,9 @@ class ops_mixin:
     style_name = "default"
     
     # first, check if the left and right children are unit type
-    left_is_unit_type = (isinstance(node.left, ast.Num) or
+    left_is_unit_type = (isinstance(node.left, ast.Constant) or
                          isinstance(node.left, ast.Name))
-    right_is_unit_type = (isinstance(node.right, ast.Num) or
+    right_is_unit_type = (isinstance(node.right, ast.Constant) or
                           isinstance(node.right, ast.Name))
 
     # add ", then" if left is not a unit-type
@@ -138,9 +183,9 @@ class ops_mixin:
     style_name = "indirect"
 
     # first, check if the left and right children are unit type
-    left_is_unit_type = (isinstance(node.left, ast.Num) or
+    left_is_unit_type = (isinstance(node.left, ast.Constant) or
                          isinstance(node.left, ast.Name))
-    right_is_unit_type = (isinstance(node.right, ast.Num) or
+    right_is_unit_type = (isinstance(node.right, ast.Constant) or
                           isinstance(node.right, ast.Name))
 
     # whether to add coma after "and" in the speech
@@ -247,6 +292,80 @@ class ops_mixin:
 
     return speech
 
+  def gen_ast_BinOp_style_semantic_oriented(self, node):
+    '''
+
+    Speech generation for ast.BinOp, style "semantic_oriented".
+    
+    This style reads the expression based on the semantic order (i.e., operation
+    precedence), instead of the text order. There is a still a problem reading
+    complex expression with multiple complex subexpressions, e.g., (a+b)*(a-b)
+    
+    Examples,
+    1. e.g., "a+b*c", b multiply c, then plus a
+    2. e.g., "(a+b)*c", a plus b, then multiply c
+
+    '''
+
+    style_name = "semantic_oriented"
+    
+    # first, check if the left and right children are unit type
+    left_is_unit_type = (isinstance(node.left, ast.Constant) or
+                         isinstance(node.left, ast.Name))
+    right_is_unit_type = (isinstance(node.right, ast.Constant) or
+                          isinstance(node.right, ast.Name))
+
+    # determine whether we should switch left and right in reading.
+    # Only switch if left is a constant/id and right is not
+    switch_left_right = left_is_unit_type and (not right_is_unit_type)
+
+    # add ", then" before the operator if actual left is not a unit-type
+    if switch_left_right:
+      use_then = not right_is_unit_type
+    else:
+      use_then = not left_is_unit_type
+    if use_then:
+      connect_string = ", then "
+    else:
+      connect_string = " "
+      
+    # get the left and right speeches based on whether we need to switch
+    if switch_left_right:
+      # switch left and right
+      if style_name in node.left.jvox_speech:
+        right_speech = node.left.jvox_speech[style_name]
+      else:
+        right_speech = node.left.jvox_speech["selected_style"]
+
+      if style_name in node.right.jvox_speech:
+        left_speech = node.right.jvox_speech[style_name]
+      else:
+        left_speech = node.right.jvox_speech["selected_style"]
+        
+    else:
+      # do not switch left and right
+      if style_name in node.left.jvox_speech:
+        left_speech = node.left.jvox_speech[style_name]
+      else:
+        left_speech = node.left.jvox_speech["selected_style"]
+
+      if style_name in node.right.jvox_speech:
+        right_speech = node.right.jvox_speech[style_name]
+      else:
+        right_speech = node.right.jvox_speech["selected_style"]
+    
+    # generate the speech
+    speech = (left_speech + connect_string +
+              node.op.jvox_speech["default"] + " " + right_speech)
+    
+    # add the speech to jvox_speech
+    if hasattr(node, "jvox_speech"):
+      node.jvox_speech[style_name] = speech
+    else:
+      node.jvox_speech = {style_name: speech}
+
+    return speech
+
   def gen_ast_BinOp(self, node):
     '''
     Generate speech for ast.BinOp. Call the generator for each style.
@@ -259,6 +378,8 @@ class ops_mixin:
     self.gen_ast_BinOp_style_indirect(node)
     # style: alternate
     self.gen_ast_BinOp_style_alternate(node)
+    # style: semantic oriented
+    self.gen_ast_BinOp_style_semantic_oriented(node)
 
     return
     
@@ -277,9 +398,9 @@ class ops_mixin:
     # for alternating styple
     if style == "alternating":
       # first, check if the left and right children are unit type
-      left_is_unit_type = (isinstance(node.left, ast.Num) or
+      left_is_unit_type = (isinstance(node.left, ast.Constant) or
                            isinstance(node.left, ast.Name))
-      right_is_unit_type = (isinstance(node.right, ast.Num) or
+      right_is_unit_type = (isinstance(node.right, ast.Constant) or
                            isinstance(node.right, ast.Name))
 
       # check if we should use direct or indirect style
