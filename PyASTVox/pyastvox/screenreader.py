@@ -9,10 +9,11 @@ import ast
 # for gen_ast_XXX functions
 import _alu_operations
 import _constants_ids
-
+import _unaryops
 
 class pyastvox_speech_generator(_alu_operations.ops_mixin,
-                                _constants_ids.constants_ids_mixin):
+                                _constants_ids.constants_ids_mixin,
+                                _unaryops.unaryops_mixin):
   '''
   Entry-point class for JupyterVox pyastvox module.
   Call the "generate" function with a Python AST tree node to generate the

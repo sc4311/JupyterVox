@@ -47,6 +47,15 @@
 1. default: "bit-wise and"
 ## ast.USub
 1. default: "negative"
+## ast.Not
+1. default: "not"
+2. indirect: "the negation of"
+## ast.UAdd
+1. default: "positive"
+2. succinct: "" (not speech)
+## ast.Invert
+1. default: "invert"
+2. indirect: "the inversion of"
 ## ast.BinOp
 1. default: "left op.direct right", 
    1. e.g., "a+b*c", a plus b multiply c
