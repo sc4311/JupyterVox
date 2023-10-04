@@ -7,13 +7,15 @@ import ast
 
 # Speech generation mixin classes, which have the actual implementation
 # for gen_ast_XXX functions
-import _alu_operations
+import _binops
 import _constants_ids
 import _unaryops
 import _lists_dicts
 import _boolops_compares
+import _unit_types
 
-class pyastvox_speech_generator(_alu_operations.ops_mixin,
+class pyastvox_speech_generator(_unit_types.unit_types_mixin,
+                                _binops.binops_mixin,
                                 _constants_ids.constants_ids_mixin,
                                 _unaryops.unaryops_mixin,
                                 _lists_dicts.lists_dicts_mixin,
