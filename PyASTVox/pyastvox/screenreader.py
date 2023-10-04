@@ -10,10 +10,14 @@ import ast
 import _alu_operations
 import _constants_ids
 import _unaryops
+import _lists_dicts
+import _boolops_compares
 
 class pyastvox_speech_generator(_alu_operations.ops_mixin,
                                 _constants_ids.constants_ids_mixin,
-                                _unaryops.unaryops_mixin):
+                                _unaryops.unaryops_mixin,
+                                _lists_dicts.lists_dicts_mixin,
+                                _boolops_compares.boolops_compares_mixin):
   '''
   Entry-point class for JupyterVox pyastvox module.
   Call the "generate" function with a Python AST tree node to generate the

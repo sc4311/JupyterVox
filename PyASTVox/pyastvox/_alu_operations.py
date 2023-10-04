@@ -6,13 +6,34 @@ functions parse the Python operators.
 import ast
 
 class ops_mixin:
+
+  def string_constant_process(self, value:str):
+    '''
+    process string to handle certain punctuation marks and special
+    characters
+    '''
+    # For explicitly reading punctuation marks.
+    s = value.replace(',', " comma ")
+    s = s.replace('!', " exclamation mark ")
+
+    return s
+  
   def gen_ast_Constant(self, node):
     '''
     Generate speech for ast.Constant.
-    Just use the string, i.e., str(), of the constant as the speech 
+    For int, Just use the string, i.e., str(), of the constant as the speech
+    For string, process it to handle certain punctuation marks and special
+    characters, then add "string" before the actual string
     '''
-    node.jvox_speech = {"default": str(node.value)}
-    #node.jvox_data = ast.dump(node)
+
+    if isinstance(node.value, str):
+      # process string to handle certain punctuation marks and special
+      # characters
+      s = self.string_constant_process(node.value)
+      node.jvox_speech = {"default": f"string {s}"}
+    else:
+      node.jvox_speech = {"default": str(node.value)}
+
     return
 
   def gen_ast_Add(self, node):
@@ -292,9 +313,58 @@ class ops_mixin:
 
     return speech
 
-  def gen_ast_BinOp_style_semantic_oriented(self, node):
+  def gen_ast_BinOp_style_alternate_v2(self, node):
+    '''Speech generation for ast.BinOp, style "alternate".
+
+    Use direct/default for unit-typed right operand, use indirect for
+    non-unit-typed right operand
+    
+    Examples,
+
     '''
 
+    style_name = "alternatev2"
+
+    # first, check if the left and right children are unit type
+    left_is_unit_type = (isinstance(node.left, ast.Constant) or
+                         isinstance(node.left, ast.Name))
+    right_is_unit_type = (isinstance(node.right, ast.Constant) or
+                          isinstance(node.right, ast.Name))
+
+    # add ", then" if left is not a unit-type
+    use_then = not left_is_unit_type
+
+
+    # get the left string
+    if style_name in node.left.jvox_speech:
+      left_speech = node.left.jvox_speech[style_name]
+    else:
+      left_speech = node.left.jvox_speech["default"]
+    
+    # get the right string based on its unit type
+    if ((not right_is_unit_type) and
+        "indirect" in node.right.jvox_speech):
+      right_speech = node.right.jvox_speech["indirect"]
+    else:
+      right_speech = node.right.jvox_speech["default"]
+
+    # generate the speech
+    if use_then:
+      speech = (left_speech + ", then " +
+                node.op.jvox_speech["default"] + " " +  right_speech)
+    else:
+      speech = (left_speech + " " +
+                node.op.jvox_speech["default"] + " " + right_speech)
+      
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+    node.jvox_speech[style_name] = speech
+
+    return speech
+
+  def gen_ast_BinOp_style_semantic_oriented(self, node):
+    '''
     Speech generation for ast.BinOp, style "semantic_oriented".
     
     This style reads the expression based on the semantic order (i.e., operation
@@ -380,54 +450,11 @@ class ops_mixin:
     self.gen_ast_BinOp_style_alternate(node)
     # style: semantic oriented
     self.gen_ast_BinOp_style_semantic_oriented(node)
+    # style: alternate
+    self.gen_ast_BinOp_style_alternate_v2(node)
 
     return
     
-  def gen_ast_BinOp_old(self, node):
-    '''
-    Generate speech for ast.BinOp.
-
-    Speeches are generated based on styles.
-    '''
-    ############ Get Speech Style #################
-    if not ast.BinOp in self.speech_styles:
-      style = "default"
-    else:
-      style = self.speech_styles[ast.BinOp]
-
-    # for alternating styple
-    if style == "alternating":
-      # first, check if the left and right children are unit type
-      left_is_unit_type = (isinstance(node.left, ast.Constant) or
-                           isinstance(node.left, ast.Name))
-      right_is_unit_type = (isinstance(node.right, ast.Constant) or
-                           isinstance(node.right, ast.Name))
-
-      # check if we should use direct or indirect style
-      # if left/right children are Num/Name, use direct
-      # if there are nested BinOp children, use indirect
-      if (left_is_unit_type and right_is_unit_type):
-        style = "direct"
-      else:
-        style = "indirect"
-
-    ######## Generate Speech #####################
-    # gen the speech for the operator
-    op_str = self.gen_binary_operations_complex(node.op, style)
-
-    # get the speeches for left and right chilren
-    left_str = node.left.jvox_speech
-    right_str = node.right.jvox_speech
-
-    # get the speech for the op code
-    if style == "default" or style == "direct":
-      node.jvox_speech = left_str + " " + op_str + " " + right_str
-    elif style == "indirect":
-      node.jvox_speech = (op_str + " " + left_str + " and " +
-                          right_str + ", ")
-
-    return
-
 #####################################################################################
     
     # # generate speech for comparison
@@ -475,43 +502,6 @@ class ops_mixin:
     #                        right_speech.text)
             
     #     return speech
-
-    # # emit for UnaryOp nodes
-    # def emit_UnaryOp(self, node, level):
-    #     # create an empty array to hold the values
-    #     speech = Speech()
-        
-    #     # visit operation
-    #     speech.data['op'] = self.emit_Opcode(node.op)
-        
-    #     # generate speech for operand
-    #     unary_operand = self.emit(node.operand)
-        
-    #     speech.text = (speech.data['op']+ " " + unary_operand.text)
-    #     return speech
-
-    # # parse an ast.Add/Mult/Assi... node
-    # def emit_Opcode(self, node):
-    #     if isinstance(node, ast.Add):
-    #         return 'plus'
-    #     elif isinstance(node, ast.Mult):
-    #         return 'multiply'
-    #     elif isinstance(node, ast.Sub):
-    #         return "minus"
-    #     elif isinstance(node, ast.Div):
-    #         return "divide"
-    #     elif isinstance(node, ast.Mod):
-    #         return "Mod"
-    #     elif isinstance(node, ast.FloorDiv):
-    #         return "FloorDiv"
-    #     elif isinstance(node, ast.MatMult):
-    #         return "MatMult"
-    #     elif isinstance(node, ast.Pow):
-    #         return "to the power of"
-    #     elif isinstance(node, ast.USub):
-    #         return "negative"
-    #     else:
-    #         raise Exception("Unknown Opcode" + str(node))
 
     # # emit for AugAssign nodes (e.g., +=)
     # def emit_AugAssign(self, node, level):

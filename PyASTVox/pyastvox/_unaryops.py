@@ -1,6 +1,6 @@
 '''
-This file defines additional member functions for the Class astparser, These
-functions parse the Python unary operations.
+This file defines additional member functions for the class
+pyastvox_screen_reader, These functions parse the Python unary operations.
 '''
 
 import ast
