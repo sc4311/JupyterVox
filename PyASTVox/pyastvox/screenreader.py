@@ -10,7 +10,7 @@ import ast
 import _alu_operations
 
 
-class pyast_speech_generator(_alu_operations.ops_mixin):
+class pyastvox_speech_generator(_alu_operations.ops_mixin):
   '''
   Entry-point class for JupyterVox pyastvox module.
   Call the "generate" function with a Python AST tree node to generate the
@@ -124,6 +124,6 @@ class pyast_speech_generator(_alu_operations.ops_mixin):
     Generate speech for ast.Name, i.e., a variable.
     Just use the variable name/identifier as the speech.
     '''
-    node.jvox_speech = node.id
+    node.jvox_speech = {"default": node.id}
     return
 

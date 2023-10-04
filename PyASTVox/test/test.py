@@ -7,12 +7,14 @@ import argparse
 
 # help import sibling directories
 import sys
-sys.path.append("../vox_pyast_parser")
+sys.path.append("../pyastvox")
 
 # load the Vox parser
 from astparser import astparser
 from speech import Speech
 import utils
+
+from screenreader import pyastvox_speech_generator
 
 # function to parse a statement
 def parse_statement(parser, stmt, verbose):
@@ -49,6 +51,20 @@ def read_test_case(file_handle):
 
     return test_case
 
+# generate the speech for one statement
+def gen_speech_for_one(vox_gen, stmt, verbose):
+    # generate AST tree
+    tree = ast.parse(stmt)
+
+    # print the tree if verbose
+    if verbose:
+        utils.ast_visit(tree)
+
+    # generate speech
+    vox_gen.generate(tree)
+
+    return tree.jvox_speech
+
 
 # parse the input
 parser = argparse.ArgumentParser(description='Testing file for JupyterVox with PyAST')
@@ -68,13 +84,15 @@ if (args.test_case_file is None) and (args.stmt is None):
     print("Please specific test case file or statement")
     exit(1)
 
+    
 # create the parser
-vox_parser = astparser()
+vox_gen = pyastvox_speech_generator()
+vox_gen.set_speech_style(ast.BinOp, "direct")
 
 if not args.stmt is None:
     # parse a single statement
-    s = parse_statement(vox_parser, args.stmt, args.verbose)
-    print("*  ", args.stmt, "=>", s.text, "\n")
+    speech = gen_speech_for_one(vox_gen, args.stmt, args.verbose)
+    print("*  ", args.stmt, "=>", speech, "\n")
 else:
     # parse a test case file
     # open the file
@@ -92,9 +110,9 @@ else:
         if test_case == "": # no more test cases
             break
 
-        s = parse_statement(vox_parser, test_case, args.verbose)
+        speech = gen_speech_for_one(vox_gen, test_case, args.verbose)
     
-        print(">>> Test case:\n", test_case, "=>", s.text, "\n")
+        print(">>> Test case:\n", test_case, "=>", speech, "\n")
         #print(s.data)
 
     print("\nDone.")

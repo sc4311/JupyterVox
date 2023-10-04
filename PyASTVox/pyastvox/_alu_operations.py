@@ -11,53 +11,258 @@ class ops_mixin:
     Generate speech for ast.Constant.
     Just use the string, i.e., str(), of the constant as the speech 
     '''
-    node.jvox_speech = str(node.value)
+    node.jvox_speech = {"default": str(node.value)}
     #node.jvox_data = ast.dump(node)
     return
 
-  def gen_binary_operations_complex(self, node, style:str):
+  def gen_ast_Add(self, node):
     '''
-    Parse  an ast.Add/Mult/Assi... node
-    Generate multiple types of speeches:
-    1. direct style: "plus/multiply/minus/
-    2. indirect style: the sum/product/difference of
-   
-    Please also see gen_ast_BinOp for details
-   
-    Note there are no separate implementation for each binary operation, i.e.,
-    not implementation for ast.Add (gen_ast_Add) and all
+    Styles:
+    1. direct: "plus"
+    2. indirect: "the sum of"
     '''
-    
-    if isinstance(node, ast.Add):
-        s = {"direct":"plus", "indirect":"the sum of"}
-    elif isinstance(node, ast.Mult):
-        s = {"direct":"multiply", "indirect":"the product of"}
-    elif isinstance(node, ast.Sub):
-        s = {"direct":"minus", "indirect":"the difference of"}
-    elif isinstance(node, ast.Div):
-        s = {"direct":"divide"} # no indirect, quotient is a less-known
-    elif isinstance(node, ast.Mod):
-        s = {"direct":"Mod"}
-    elif isinstance(node, ast.FloorDiv):
-        s = {"direct": "floor division"}
-    elif isinstance(node, ast.MatMult):
-        s = {"direct": "matrix multiply"}
-    elif isinstance(node, ast.Pow):
-        s = {"direct": "to the power of"}
-    elif isinstance(node, ast.USub):
-        s = {"direct": "negative"}
-    else:
-        raise ValueError("Unknown Opcode" + str(node))
+    node.jvox_speech = {"direct":"plus", "indirect":"the sum of"}
 
-    if style == "direct":
-      # default style, direct
-      return s["direct"]
-    elif style == "indirect":
-      return s["indirect"]
+    return
+
+  def gen_ast_Mult(self, node):
+    '''
+    Styles:
+    1. direct: "multiply"
+    2. indirect: "the product of"
+    '''
+    node.jvox_speech = {"direct":"multiply", "indirect":"the product of"}
+
+    return
+
+  def gen_ast_Sub(self, node):
+    '''
+    Styles:
+    1. direct: "minus"
+    2. indirect: "the sum of"
+    '''
+    node.jvox_speech = {"direct":"minus", "indirect":"the difference of"}
+
+    return
+
+  def gen_ast_Div(self, node):
+    '''
+    Styles:
+    1. direct: "divide"
+    '''
+    node.jvox_speech = {"direct":"divide"}
+
+    return
+
+  def gen_ast_Mod(self, node):
+    '''
+    Styles:
+    1. direct: "modulo"
+    '''
+    node.jvox_speech = {"direct":"modulo"}
+
+    return
+
+  def gen_ast_FloorDiv(self, node):
+    '''
+    Styles:
+    1. direct: "floor divide"
+    '''
+    node.jvox_speech = {"direct":"floor divide"}
+
+    return
+
+  def gen_ast_Pow(self, node):
+    '''
+    Styles:
+    1. direct: "to the power of"
+    '''
+    node.jvox_speech = {"direct":"to the power of"}
+
+    return
+
+  def gen_ast_USub(self, node):
+    '''
+    Styles:
+    1. direct: "negative"
+    '''
+    node.jvox_speech = {"direct":"negative"}
+
+    return
+
+  def gen_ast_BinOp_style_default(self, node):
+    '''
+    Speech generation for ast.BinOp, style "default".
+    Examples,
+    1. e.g., "a+b*c", a plus b multiply c
+    2. e.g., "(a+b)*c", a plus b, then multiply c
+    '''
+
+    style_name = "default"
+    
+    # first, check if the left and right children are unit type
+    left_is_unit_type = (isinstance(node.left, ast.Num) or
+                         isinstance(node.left, ast.Name))
+    right_is_unit_type = (isinstance(node.right, ast.Num) or
+                          isinstance(node.right, ast.Name))
+
+    # add ", then" if left is not a unit-type
+    use_then = not left_is_unit_type
+    
+    # generate the speech
+    if use_then:
+      speech = (node.left.jvox_speech["default"] + ", then " +
+                node.op.jvox_speech["direct"] + " " + 
+                node.right.jvox_speech["default"])
     else:
-      raise ValueError("Unknow BinOp Style" + style)
+      speech = (node.left.jvox_speech["default"] + " " +
+                node.op.jvox_speech["direct"] + " " + 
+                node.right.jvox_speech["default"])
+
+    # add the speech to jvox_speech
+    if hasattr(node, "jvox_speech"):
+      node.jvox_speech[style_name] = speech
+    else:
+      node.jvox_speech = {style_name: speech}
+
+    return speech
+
+  def gen_ast_BinOp_style_indirect(self, node):
+    '''
+    Speech generation for ast.BinOp, style "indirect".
+    Examples,
+    1. e.g., "a+b*c", the sum of a and the sum of b and c
+    2. e.g., "(a+b)*c", the product of the sum of a and b, and c
+    '''
+
+    style_name = "indirect"
+
+    # first, check if the left and right children are unit type
+    left_is_unit_type = (isinstance(node.left, ast.Num) or
+                         isinstance(node.left, ast.Name))
+    right_is_unit_type = (isinstance(node.right, ast.Num) or
+                          isinstance(node.right, ast.Name))
+
+    # whether to add coma after "and" in the speech
+    coma_after_and = not right_is_unit_type
+    # coma_after_and = False
+    and_str = " and, " if coma_after_and else " and "
+    
+    # get the string for the left/right operand node. If the operand node is
+    # ast.Constant or ast.Name it does not have indirect speech. Use "default"
+    # in that case.
+    if "indirect" in node.left.jvox_speech:
+      left_speech = node.left.jvox_speech["indirect"]
+    else:
+      left_speech = node.left.jvox_speech["default"]
+      
+    if "indirect" in node.right.jvox_speech:
+      right_speech = node.right.jvox_speech["indirect"]
+    else:
+      right_speech = node.right.jvox_speech["default"]
+    
+    # generate the speech
+    if "indirect" in node.op.jvox_speech:
+      # operator has indirect speech
+      speech = (node.op.jvox_speech["indirect"] + " " +
+                left_speech + and_str + right_speech + ", ")
+    else:
+      # operator does not have indirect speech, use the direct speech
+      speech = (left_speech + " " + node.op.jvox_speech["direct"] + " " + 
+                right_speech)
+
+    # add the speech to jvox_speech
+    if hasattr(node, "jvox_speech"):
+      node.jvox_speech[style_name] = speech
+    else:
+      node.jvox_speech = {style_name: speech}
+
+    return speech
+
+  def gen_ast_BinOp_style_alternate(self, node):
+    '''
+    Speech generation for ast.BinOp, style "alternate".
+    Examples,
+    1. e.g., "a+b*c", a plus the product of b and c
+    2. e.g., "(a+b)*c", the sum of a plus b, then multiply c
+    '''
+
+    style_name = "alternate"
+
+    # determine what style to use
+    use_style = "indirect"
+    if ((hasattr(node.left, "jvox_data") and
+         "alternate" in node.left.jvox_data and 
+         node.left.jvox_data["alternate"] == "indirect") or
+        (hasattr(node.right, "jvox_data") and
+         "alternate" in node.right.jvox_data and 
+         node.right.jvox_data["alternate"] == "indirect")):
+      # if either left or right operand speeches are "indirect" use direct
+      use_style = "direct"
+
+    if not ("indirect" in node.op.jvox_speech):
+      # if the operator does not support indirect style, use direct
+      use_style = "direct"
+
+    # first, check if the left and right children are unit type
+    left_is_unit_type = (isinstance(node.left, ast.Constant) or
+                         isinstance(node.left, ast.Name))
+    right_is_unit_type = (isinstance(node.right, ast.Constant) or
+                          isinstance(node.right, ast.Name))
+
+    # whether to add coma after "and" in the speech
+    coma_after_and = not right_is_unit_type
+    # coma_after_and = False
+    and_str = " and, " if coma_after_and else " and "
+
+    # get left and right speech if they have "alternate" speech. If
+    # "alternate" does not exist, use "default"
+    if style_name in node.left.jvox_speech:
+      left_speech = node.left.jvox_speech[style_name]
+    else:
+      left_speech = node.left.jvox_speech["default"]
+      
+    if style_name in node.right.jvox_speech:
+      right_speech = node.right.jvox_speech[style_name]
+    else:
+      right_speech = node.right.jvox_speech["default"]
+
+    # generate the speech
+    if use_style == "indirect":
+      # operator has indirect speech
+      speech = (node.op.jvox_speech["indirect"] + " " +
+                left_speech + and_str + right_speech + ", ")
+    else:
+      # operator does not have indirect speech, use the direct speech
+      speech = (left_speech + " " + node.op.jvox_speech["direct"] + " " +
+                right_speech + ", ")
+      
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+    node.jvox_speech[style_name] = speech
+    if not hasattr(node, "jvox_data"):
+      node.jvox_data = {}
+    node.jvox_data[style_name] = use_style
+
+    return speech
 
   def gen_ast_BinOp(self, node):
+    '''
+    Generate speech for ast.BinOp. Call the generator for each style.
+    '''
+    node.jvox_speech = {}
+    
+    # style: plain
+    self.gen_ast_BinOp_style_default(node)
+    # style: indirect
+    self.gen_ast_BinOp_style_indirect(node)
+    # style: alternate
+    self.gen_ast_BinOp_style_alternate(node)
+
+    return
+    
+  def gen_ast_BinOp_old(self, node):
     '''
     Generate speech for ast.BinOp.
 
