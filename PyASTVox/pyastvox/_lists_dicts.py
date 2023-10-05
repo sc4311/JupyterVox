@@ -18,14 +18,17 @@ class lists_dicts_mixin:
 
     style_name = "default"
 
-    # get the speech of each item
-    items = []
-    for e in node.elts:
-      s = e.jvox_speech["default"]
-      items.append(s)
-
-    # generate the speech
-    speech = "a list with items of " + ", ".join(items)    
+    if len(node.elts) == 0:
+      # handle the empty string case first
+      speech = "an empty string"
+    else:
+      # has more than one items
+      speech = "a list with items of "
+      # get the speech of each item
+      speech += node.elts[0].jvox_speech["default"]
+      for i in range(1, len(node.elts)-1):
+        speech += ", " + node.elts[i].jvox_speech["default"]
+      speech += ", and " + node.elts[-1].jvox_speech["default"]
 
     # add the speech to jvox_speech
     if hasattr(node, "jvox_speech"):
@@ -55,17 +58,26 @@ class lists_dicts_mixin:
 
     style_name = "default"
 
-    # get the speech of each item
-    items = []
-    for i in range(len(node.keys)):
-      key_speech = node.keys[i].jvox_speech["default"]
-      val_speech = node.values[i].jvox_speech["default"]
-      s = f"item {i+1} has key of {key_speech} and value of {val_speech}"
+    if len(node.keys) == 0:
+      # empty dictionary
+      speech = "an empty dictionary"
+    else:
+      speech = f"a dictionary with {len(nodes.keys)} items of, "
+      # get the speech of each item
+      key_speech = node.keys[0].jvox_speech["default"]
+      val_speech = node.values[0].jvox_speech["default"]
+      speech += f"item {1} has key of {key_speech} and value of {val_speech}"
+      for i in range(1, len(node.keys)-1):
+        key_speech = node.keys[i].jvox_speech["default"]
+        val_speech = node.values[i].jvox_speech["default"]
+        speech += (f", item {i+1} has key of {key_speech} and value of "
+                   f"{val_speech}")
       
-      items.append(s)
+      key_speech = node.keys[-1].jvox_speech["default"]
+      val_speech = node.values[-1].jvox_speech["default"]
+      speech += (f", and item {len(node.keys)} has key of {key_speech} and"
+                 f"value of {val_speech}")
 
-    # generate the speech
-    speech = "a dictionary with items of, " + ", ".join(items)    
 
     # add the speech to jvox_speech
     if hasattr(node, "jvox_speech"):

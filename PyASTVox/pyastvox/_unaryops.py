@@ -71,6 +71,34 @@ class unaryops_mixin:
       node.jvox_speech = {style_name: speech}
 
     return speech
+
+  def gen_ast_UnaryOp_indirect(self, node):
+    '''
+    Generate speech for ast.UnaryOp
+    E.g.,
+
+    '''
+
+    style_name = "indirect"
+
+    # generate speech for operator and operand
+    if "indirect" in node.op.jvox_speech:
+      op_speech = node.op.jvox_speech["indirect"]
+    else:
+      op_speech = node.op.jvox_speech["default"]
+      
+    operand_speech = node.operand.jvox_speech["default"]
+
+    # generate the speech
+    speech = op_speech + " " + operand_speech
+
+    # add the speech to jvox_speech
+    if hasattr(node, "jvox_speech"):
+      node.jvox_speech[style_name] = speech
+    else:
+      node.jvox_speech = {style_name: speech}
+
+    return speech
     
 
   def gen_ast_UnaryOp(self, node):
@@ -80,5 +108,7 @@ class unaryops_mixin:
 
     # default style
     self.gen_ast_UnaryOp_default(node)
+    # indirect style
+    self.gen_ast_UnaryOp_indirect(node)
 
     return

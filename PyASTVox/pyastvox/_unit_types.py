@@ -30,7 +30,7 @@ class unit_types_mixin:
       # process string to handle certain punctuation marks and special
       # characters
       s = self.string_constant_process(node.value)
-      node.jvox_speech = {"default": f"string {s}"}
+      node.jvox_speech = {"default": f"\"string\" {s}"}
     else:
       node.jvox_speech = {"default": str(node.value)}
 

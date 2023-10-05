@@ -179,7 +179,7 @@ class boolops_compares_mixin:
       s = node.values[i].jvox_speech["default"]  
       speech += ", " + s
       
-    speech += ", and " + node.values[-1].jvox_speech["default"]
+    speech += " and " + node.values[-1].jvox_speech["default"]
     
     # add the speech to jvox_speech
     if hasattr(node, "jvox_speech"):
