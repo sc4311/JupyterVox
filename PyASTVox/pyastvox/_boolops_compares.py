@@ -13,7 +13,8 @@ class boolops_compares_mixin:
     1. default: "and"
     2. indirect: "the logical and of"
     '''
-    node.jvox_speech = {"default":"and", "indirect":"the logical and of"}
+    node.jvox_speech = {"default":"\"and\"",
+                        "indirect":"the logical \"and\" of"}
 
     return
 
@@ -21,9 +22,10 @@ class boolops_compares_mixin:
     '''
     Styles:
     1. default: "or"
-    2. indirect: "the logical or of"
+    2. indirect: "the logical \"or\" of"
     '''
-    node.jvox_speech = {"default":"or", "indirect":"the logical or of"}
+    node.jvox_speech = {"default":"\"or\"",
+                        "indirect":"the logical or of"}
 
     return
 
@@ -32,7 +34,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is equal to"
     '''
-    node.jvox_speech = {"default":"is equal to"}
+    node.jvox_speech = {"default":"equal to"}
 
     return
 
@@ -41,7 +43,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is not equal to"
     '''
-    node.jvox_speech = {"default":"is not equal to"}
+    node.jvox_speech = {"default":"not equal to"}
 
     return
 
@@ -50,7 +52,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is less than"
     '''
-    node.jvox_speech = {"default":"is less than"}
+    node.jvox_speech = {"default":"less than"}
 
     return
 
@@ -59,7 +61,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is less than or equal to"
     '''
-    node.jvox_speech = {"default":"is less than or equal to"}
+    node.jvox_speech = {"default":"less than or equal to"}
 
     return
 
@@ -68,7 +70,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is greater than"
     '''
-    node.jvox_speech = {"default":"is greater than"}
+    node.jvox_speech = {"default":"greater than"}
 
     return
 
@@ -77,7 +79,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is greater than or equal to"
     '''
-    node.jvox_speech = {"default":"is greater than or equal to"}
+    node.jvox_speech = {"default":"greater than or equal to"}
 
     return
 
@@ -86,7 +88,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is the same as"
     '''
-    node.jvox_speech = {"default":"is the same as"}
+    node.jvox_speech = {"default":"the same as"}
 
     return
 
@@ -95,7 +97,7 @@ class boolops_compares_mixin:
     Styles:
     1. default: "is not the same as"
     '''
-    node.jvox_speech = {"default":"is not the same as"}
+    node.jvox_speech = {"default":"not the same as"}
 
     return
 
@@ -221,7 +223,7 @@ class boolops_compares_mixin:
     for i in range(1, len(node.values)):
       # add the operate speech
       speech += connect_string + node.op.jvox_speech["default"] + " "
-      connect_string = ", then" # always use "then" for the rest of the operands
+      connect_string = ", then " # always use "then" for the rest of the operands
 
       # add the operand speech
       is_unit_type = (isinstance(node.values[i], ast.Constant) or
@@ -263,11 +265,24 @@ class boolops_compares_mixin:
 
     style_name = "default"
 
+    # first, check if the first value is unit type
+    left_is_unit_type = (isinstance(node.left, ast.Constant) or
+                         isinstance(node.left, ast.Name))
+
+    # use ", then" if the first value is not a unit type
+    use_then = not left_is_unit_type
+    if use_then:
+      connect_string = ", then "
+    else:
+      connect_string = " "
+
     # generate the string
-    speech = node.left.jvox_speech["default"] 
-    for i in range(len(node.ops)):
-      speech += (" " + node.ops[i].jvox_speech["default"] + " " +
-                 node.comparators[i].jvox_speech["default"])
+    speech = node.left.jvox_speech["default"] + connect_string
+    for i in range(1, len(node.ops) - 1):
+      speech += (node.ops[i].jvox_speech["default"] + " " +
+                 node.comparators[i].jvox_speech["default"] + ", then")
+    speech += (node.ops[-1].jvox_speech["default"] + " " +
+               node.comparators[-1].jvox_speech["default"])
       
     # add the speech to jvox_speech
     if hasattr(node, "jvox_speech"):
