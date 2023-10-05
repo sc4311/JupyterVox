@@ -55,7 +55,7 @@ class subscript_mixin:
             
         return speech
 
-    def gen_ast_Subscript_indirect(self, node):
+    def gen_ast_Subscript_reversed(self, node):
         '''
         Generate speech for ast.Subscript. Style: indirect
         Examples:
@@ -63,7 +63,7 @@ class subscript_mixin:
         2. a[i, "new"]: list items with indices i and string new of list a
         '''
 
-        style_name = "indirect"
+        style_name = "reversed"
 
         # get the name of the list or dict
         list_name = node.value.jvox_speech["selected_style"]
@@ -104,5 +104,5 @@ class subscript_mixin:
         # style default
         self.gen_ast_Subscript_default(node)
         # style indirect
-        self.gen_ast_Subscript_indirect(node)
+        self.gen_ast_Subscript_reversed(node)
             
