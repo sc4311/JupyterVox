@@ -23,7 +23,7 @@ class lists_dicts_mixin:
       speech = "an empty string"
     else:
       # has more than one items
-      speech = "a list with items of "
+      speech = f"a list with {len(node.elts)} items of "
       # get the speech of each item
       speech += node.elts[0].jvox_speech["default"]
       for i in range(1, len(node.elts)-1):
@@ -62,7 +62,7 @@ class lists_dicts_mixin:
       # empty dictionary
       speech = "an empty dictionary"
     else:
-      speech = f"a dictionary with {len(nodes.keys)} items of, "
+      speech = f"a dictionary with {len(node.keys)} items of, "
       # get the speech of each item
       key_speech = node.keys[0].jvox_speech["default"]
       val_speech = node.values[0].jvox_speech["default"]
