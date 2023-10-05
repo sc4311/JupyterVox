@@ -20,6 +20,13 @@ class subscript_mixin:
 
         # get the name of the list or dict
         list_name = node.value.jvox_speech["selected_style"]
+	      # a small tweak if the list name is "a". Variable "a" is generated
+        # as "a-" for ast.Name so that the text2speech won't read it as an
+        # article. However, for the speech generate here, we will add "\'s"
+        # after it, which text2speech reads as "a s". So we need to remove
+        # the dash after a
+        if list_name == "a-":
+            list_name = "a"
 
         # get the speeches for the indices
         idx_speeches = []
@@ -79,6 +86,7 @@ class subscript_mixin:
             for i in range(1, len(idx_speeches)-1):
                 speech += f", {idx_speeches[i]}"
             speech += f", and {idx_speeches[-1]}"
+            speech += f" of list {list_name}"
 
         # add the speech to jvox_speech
         if hasattr(node, "jvox_speech"):
