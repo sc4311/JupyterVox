@@ -32,7 +32,11 @@ class subscript_mixin:
         idx_speeches = []
         if not isinstance(node.slice, ast.Tuple):
             # just one index
-            idx_speeches.append(node.slice.jvox_speech["selected_style"])
+            if isinstance(node.slice, ast.BinOp):
+                idx_speeches.append("expression " +
+                                    node.slice.jvox_speech["selected_style"])
+            else:
+                idx_speeches.append(node.slice.jvox_speech["selected_style"])
         else:
             # more one indices
             for e in node.slice.elts:
@@ -72,7 +76,11 @@ class subscript_mixin:
         idx_speeches = []
         if not isinstance(node.slice, ast.Tuple):
             # just one index
-            idx_speeches.append(node.slice.jvox_speech["selected_style"])
+            if isinstance(node.slice, ast.BinOp):
+                idx_speeches.append("expression " +
+                                    node.slice.jvox_speech["selected_style"])
+            else:
+                idx_speeches.append(node.slice.jvox_speech["selected_style"])
         else:
             # more one indices
             for e in node.slice.elts:
