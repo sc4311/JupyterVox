@@ -33,8 +33,7 @@ class subscript_mixin:
         if not isinstance(node.slice, ast.Tuple):
             # just one index
             if isinstance(node.slice, ast.BinOp):
-                idx_speeches.append(", " +
-                                    node.slice.jvox_speech["selected_style"])
+                idx_speeches.append(node.slice.jvox_speech["selected_style"])
             else:
                 idx_speeches.append(node.slice.jvox_speech["selected_style"])
         else:
@@ -44,9 +43,9 @@ class subscript_mixin:
 
         # combine and generate the speech
         if len(idx_speeches) == 1:
-            speech = f"{list_name}\'s item with index {idx_speeches[0]}"
+            speech = f"{list_name}\'s item with index, {idx_speeches[0]}"
         else:
-            speech = f"{list_name}\'s items with indices {idx_speeches[0]}"
+            speech = f"{list_name}\'s items with indices, {idx_speeches[0]}"
             for i in range(1, len(idx_speeches)-1):
                 speech += f", {idx_speeches[i]}"
             speech += f", and {idx_speeches[-1]}"
@@ -77,8 +76,7 @@ class subscript_mixin:
         if not isinstance(node.slice, ast.Tuple):
             # just one index
             if isinstance(node.slice, ast.BinOp):
-                idx_speeches.append(", " +
-                                    node.slice.jvox_speech["selected_style"])
+                idx_speeches.append(node.slice.jvox_speech["selected_style"])
             else:
                 idx_speeches.append(node.slice.jvox_speech["selected_style"])
         else:
@@ -88,9 +86,9 @@ class subscript_mixin:
 
         # combine and generate the speech
         if len(idx_speeches) == 1:
-            speech = f"list item with index {idx_speeches[0]}, of list {list_name}"
+            speech = f"list item with index, {idx_speeches[0]}, of list {list_name}"
         else:
-            speech = f"list item with indices of {idx_speeches[0]}"
+            speech = f"list item with indices of, {idx_speeches[0]}"
             for i in range(1, len(idx_speeches)-1):
                 speech += f", {idx_speeches[i]}"
             speech += f", and {idx_speeches[-1]}"
