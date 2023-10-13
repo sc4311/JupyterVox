@@ -82,11 +82,12 @@ class subscript_mixin:
         if len(idx_speeches) == 1:
             speech = f"list item with index {idx_speeches[0]}, of list {list_name}"
         else:
-            speech = f"list items with indices {idx_speeches[0]}"
+            speech = f"list item with indices of {idx_speeches[0]}"
             for i in range(1, len(idx_speeches)-1):
                 speech += f", {idx_speeches[i]}"
             speech += f", and {idx_speeches[-1]}"
-            speech += f", of list {list_name}"
+            # if the index is a tuple, than the object has to be a dictionary
+            speech += f", of dict {list_name}"
 
         # add the speech to jvox_speech
         if hasattr(node, "jvox_speech"):
