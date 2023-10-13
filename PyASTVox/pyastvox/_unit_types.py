@@ -15,6 +15,7 @@ class unit_types_mixin:
     # For explicitly reading punctuation marks.
     s = value.replace(',', " comma ")
     s = s.replace('!', " exclamation mark ")
+    s = s.replace('.', " period ")
 
     return s
   
