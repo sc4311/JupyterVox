@@ -87,7 +87,7 @@ class subscript_mixin:
                 speech += f", {idx_speeches[i]}"
             speech += f", and {idx_speeches[-1]}"
             # if the index is a tuple, than the object has to be a dictionary
-            speech += f", of dict {list_name}"
+            speech += f", of dictionary {list_name}"
 
         # add the speech to jvox_speech
         if hasattr(node, "jvox_speech"):
