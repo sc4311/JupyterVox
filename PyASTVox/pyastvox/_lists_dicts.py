@@ -66,16 +66,16 @@ class lists_dicts_mixin:
       # get the speech of each item
       key_speech = node.keys[0].jvox_speech["default"]
       val_speech = node.values[0].jvox_speech["default"]
-      speech += f"item {1} has key of {key_speech} and value of {val_speech}"
+      speech += f"item {1} has key of {key_speech}, and value of {val_speech}"
       for i in range(1, len(node.keys)-1):
         key_speech = node.keys[i].jvox_speech["default"]
         val_speech = node.values[i].jvox_speech["default"]
-        speech += (f", item {i+1} has key of {key_speech} and value of "
+        speech += (f", item {i+1} has key of {key_speech}, and value of "
                    f"{val_speech}")
       
       key_speech = node.keys[-1].jvox_speech["default"]
       val_speech = node.values[-1].jvox_speech["default"]
-      speech += (f", and item {len(node.keys)} has key of {key_speech} and"
+      speech += (f", and item {len(node.keys)} has key of {key_speech}, and"
                  f"value of {val_speech}")
 
 
