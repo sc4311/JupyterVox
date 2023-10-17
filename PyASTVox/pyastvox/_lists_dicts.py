@@ -28,7 +28,10 @@ class lists_dicts_mixin:
       speech += node.elts[0].jvox_speech["default"]
       for i in range(1, len(node.elts)-1):
         speech += ", " + node.elts[i].jvox_speech["default"]
-      speech += ", and " + node.elts[-1].jvox_speech["default"]
+
+        # process the last item, if there are more than one item
+      if len(node.elts) > 1:
+        speech += ", and " + node.elts[-1].jvox_speech["default"]
 
     # add the speech to jvox_speech
     if hasattr(node, "jvox_speech"):
@@ -72,12 +75,13 @@ class lists_dicts_mixin:
         val_speech = node.values[i].jvox_speech["default"]
         speech += (f", item {i+1} has key of {key_speech}, and value of "
                    f"{val_speech}")
-      
-      key_speech = node.keys[-1].jvox_speech["default"]
-      val_speech = node.values[-1].jvox_speech["default"]
-      speech += (f", and item {len(node.keys)} has key of {key_speech}, and"
-                 f"value of {val_speech}")
 
+      # process the last item, if there are more than one item
+      if len(node.keys) > 1:
+        key_speech = node.keys[-1].jvox_speech["default"]
+        val_speech = node.values[-1].jvox_speech["default"]
+        speech += (f", and item {len(node.keys)} has key of {key_speech}, and"
+                   f"value of {val_speech}")
 
     # add the speech to jvox_speech
     if hasattr(node, "jvox_speech"):
