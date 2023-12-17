@@ -62,34 +62,34 @@
 2. indirect: "the inversion of"
 ## ast.BinOp
 1. default: "left op.direct right", 
-   1. e.g., "a+b*c", a plus b multiply c
-   2. e.g., "(a+b)*c", a plus b, then multiply c
+    1. e.g., "a+b*c", a plus b multiply c
+    2. e.g., "(a+b)*c", a plus b, then multiply c
 2. indirect: "the sum/product/difference... of left and right"
-   1. e.g., "a+b*c", the sum of a and the sum of b and c
-   2. e.g., "(a+b)*c", the product of the sum of a and b, and c
+    1. e.g., "a+b*c", the sum of a and the sum of b and c
+    2. e.g., "(a+b)*c", the product of the sum of a and b, and c
 3. alternate: alternating default and indirect styles for each level of expressions
-   1. e.g., "a+b*c", a plus the product of b and c
-   2. e.g., "(a+b)*c", the sum of a plus b, then multiply c
-   3. jvox_data is used to hold if the speech is direct or indirect
-   4. lowest level is indirect
+    1. e.g., "a+b*c", a plus the product of b and c
+    2. e.g., "(a+b)*c", the sum of a plus b, then multiply c
+    3. jvox_data is used to hold if the speech is direct or indirect
+    4. lowest level is indirect
 4. semantic\_oriented: This style reads the expression based on the semantic
    order (i.e., operation precedence), instead of the text order. There is a
    still a problem reading complex expression with multiple complex
    subexpressions, e.g., (a+b)*(a-b)
-   1. e.g., "a+b*c", b multiply c, then plus a
-   2. e.g., "(a+b)*c", a plus b, then multiply c
+    1. e.g., "a+b*c", b multiply c, then plus a
+    2. e.g., "(a+b)*c", a plus b, then multiply c
 ## ast.UnaryOp
 1. default: "op.default left.default right.default"
-   1. -3.14: negative 3.14
-   2. +3.14: positive 3.14
-   3. not a: not a
-   4. ^ a: invert a
+    1. -3.14: negative 3.14
+    2. +3.14: positive 3.14
+    3. not a: not a
+    4. ^ a: invert a
 ## ast.List
 1. default: "a list with items of ..."
-   1. e.g., [1, 2, a]: a list with items of 1, 2, a
+    1. e.g., [1, 2, a]: a list with items of 1, 2, a
 ## ast.Dict
 1. default: "a dictionary with items of, item 1 has key of ... and value of ...,
    item 2..."
-   1. e.g., {"key1":1, "key2":3}: a dictionary with items of, item 1 has key of
+    1. e.g., {"key1":1, "key2":3}: a dictionary with items of, item 1 has key of
    a string of key1 and value of 1, and item 2 has key of a string of key2 and
    value 3
