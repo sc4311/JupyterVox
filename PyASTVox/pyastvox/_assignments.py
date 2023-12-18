@@ -38,8 +38,6 @@ class assignments_mixin:
 
     return speech
 
-    return
-
   def gen_ast_Assign_indirect(self, node):
     '''
     Generate speech for ast.Assign. Style "default"
@@ -58,9 +56,9 @@ class assignments_mixin:
       verb = " is "
     else:
       verb = " are "
-    
+
     # generate the speech for the targets
-    target_speech = "" 
+    target_speech = ""
     for t in node.targets:
       target_speech += t.jvox_speech["default"] + ", "
     target_speech += verb + "assigned with value, "
@@ -78,8 +76,6 @@ class assignments_mixin:
 
     return speech
 
-    return
-
   def gen_ast_Assign(self, node):
     '''
     Generate speech for ast.Assign.
@@ -96,16 +92,37 @@ class assignments_mixin:
   def gen_ast_AugAssign_default(self, node):
     '''
     Generate speech for ast.AugAssign. Style "default"
+
+    Examples:
+    1. e.g., a += b * c: a plus equals b multiply c
+    2. e.g., a -= b * c: a minus equals b multiply c
+    3. e.g., a *= b * c: a multiply equals b multiply c
+    4. e.g., a /= b * c: a divide equals b multiply c
     '''
 
     style_name = "default"
 
+    # generate the speech for the target
+    target_speech = node.target.jvox_speech["default"] + " "
+
+
+    # get the operator speech
+    operator_speech = node.op.jvox_speech["default"] + " equals "
+
+    # get the value speech
+    value_speech = node.value.jvox_speech["default"]
+
+    # generate the final speech
+    speech = target_speech + operator_speech + value_speech
+
     # add the speech to jvox_speech
     if not hasattr(node, "jvox_speech"):
       node.jvox_speech = {}
-    node.jvox_speech[style_name] = "To be generated"
+    node.jvox_speech[style_name] = speech
 
-    return
+
+
+    return speech
 
   def gen_ast_AugAssign(self, node):
     '''
