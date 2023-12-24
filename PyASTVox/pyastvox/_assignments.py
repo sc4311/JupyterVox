@@ -42,7 +42,7 @@ class assignments_mixin:
 
   def gen_ast_Assign_indirect(self, node):
     '''
-    Generate speech for ast.Assign. Style '"default"
+    Generate speech for ast.Assign. Style "default"
 
     Examples:
     1. e.g., a = b * c: a is assigned with value, b multiply c
@@ -90,5 +90,29 @@ class assignments_mixin:
 
     # style indirect
     self.gen_ast_Assign_indirect(node)
+
+    return
+
+  def gen_ast_AugAssign_default(self, node):
+    '''
+    Generate speech for ast.AugAssign. Style "default"
+    '''
+
+    style_name = "default"
+
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+    node.jvox_speech[style_name] = "To be generated"
+
+    return
+
+  def gen_ast_AugAssign(self, node):
+    '''
+    Generate speech for ast.AugAssign.
+    '''
+
+    # style default
+    self.gen_ast_AugAssign_default(node)
 
     return

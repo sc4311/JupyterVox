@@ -10,8 +10,8 @@ import sys
 sys.path.append("../pyastvox")
 
 # load the Vox parser
-from astparser import astparser
-from speech import Speech
+#from astparser import astparser
+#from speech import Speech
 import utils
 
 from screenreader import pyastvox_speech_generator

@@ -5,7 +5,7 @@ pyastvox_screen_reader, These functions parse lists and dictionaries.
 
 import ast
 
-from speech import Speech
+#from speech import Speech
 
 class lists_dicts_mixin:
 
