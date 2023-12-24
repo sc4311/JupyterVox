@@ -1,8 +1,13 @@
+# import flask
 from flask import Flask
 from flask import jsonify
 from flask import request
 
+# import jupytervox packages
+import jvox_interface
+
 app = Flask(__name__)
+jvox = None
 
 @app.route("/")
 def hello():
@@ -24,5 +29,24 @@ def gen_speech_post():
     
     return jsonify(dat)
 
+@app.route('/speech3/post',methods=['POST'])
+def gen_speech_post_jvox():
+    # retrieve statement
+    stmt = request.json['stmt']
+    print("web api get statement", stmt)
+
+    # generate speech with jvox
+    jvox_speech = jvox.gen_speech_for_one(stmt, True)
+    print(jvox_speech)
+    
+    # return the speech
+    return jsonify(jvox_speech)
+
+
 if __name__ == "__main__":
+    jvox = jvox_interface.jvox_interface("default")
+    print("hello jvox:", jvox)
+    # start the web service. this function will not return until the service is
+    # terminate. so run this function at the end
     app.run()
+    
