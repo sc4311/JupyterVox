@@ -2,6 +2,7 @@
 from flask import Flask
 from flask import jsonify
 from flask import request
+from flask import send_file
 
 # import jupytervox packages
 import jvox_interface
@@ -38,9 +39,14 @@ def gen_speech_post_jvox():
     # generate speech with jvox
     jvox_speech = jvox.gen_speech_for_one(stmt, True)
     print(jvox_speech)
+
+    # generate the mp3 file
+    file_name = "/tmp/jvox.mp3"
+    jvox.gen_mp3_from_speech(jvox_speech, file_name)
     
     # return the speech
-    return jsonify(jvox_speech)
+    # return jsonify(jvox_speech)
+    return send_file(file_name, mimetype="audio/mpeg")
 
 
 if __name__ == "__main__":
