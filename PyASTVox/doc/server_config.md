@@ -81,9 +81,16 @@
 	ProxyPassReverse http://localhost:5000/speech3/post
 	</Location>
 6. Test with the following command remotely,
-    1. curl --header "Content-Type: application/json"   --request POST   --data '{"stmt":"a = b*c"}'   http://3.145.53.241/jvox/speech2/post
-    2. curl --header "Content-Type: application/json"   --request POST   --data '{"stmt":"a = b*c+12"}'   http://3.145.53.241/jvox/speech3/post --output /tmp/test.mp3
+    1. curl --header "Content-Type: application/json"   --request POST   --data '{"stmt":"a = b*c"}'   http://*publicip*/jvox/speech2/post
+    2. curl --header "Content-Type: application/json"   --request POST   --data '{"stmt":"a = b*c+12"}'   http://*publicip*/jvox/speech3/post --output /tmp/test.mp3
     3. The frist one should reply the statment, the second one should return a valid mp3 with statement reading.
 
 ## 7. Set up the JVox notebook extension
-1. 
+1. Make sure JVOx code is cloned and JVox Python environment is enter
+2. Make sure Jupyter notebook, JVox web service, and Apache are both running
+3. Modify the JS code with the correct API. In our code, file notebook_extension/jvox_ext/main.js, function "http_post_speech_with_mp3", change surl to the correct URL, "http://*publicip*/jvox/speech3/post"
+4. Install and enable the extension, in our code, direcotry notebook_extension/
+    1. Install: jupyter nbextension install jvox_ext --user
+    2. Enable: jupyter nbextension enable jvox_ext/main --user
+5. Final test, go to http://*publicip*/ipython, create a new notebook, create a cell, write a simple expression (e.g., a = 11 + 13), put cursor in the on this line, use the "paper plane" button on the tool bar or "alt+n" to listen to the screen reading. 
+6. If not working, check browser's JS console (from developer tools), and do the tests from the above steps. 
