@@ -9,7 +9,7 @@ from gtts import gTTS
 
 # help import sibling directories
 import sys
-sys.path.append("../pyastvox")
+sys.path.append("../../pyastvox")
 
 # load the Vox parser
 #from astparser import astparser
