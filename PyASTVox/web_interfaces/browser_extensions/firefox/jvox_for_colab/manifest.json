@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "JVox for Colab",
+  "version": "1.0",
+
+  "description": "JVox for Colab.",
+
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+  
+  "background": {
+  "scripts": ["jvox_background_script.js"],
+  "type": "module"
+  },
+  
+  "permissions": ["*://3.144.13.232/*"],
+  
+  "content_scripts": [
+    {
+      "matches": ["*://colab.research.google.com/*"],
+      "js": ["colab_jvox.js"]
+    }
+  ]
+
+}
+
