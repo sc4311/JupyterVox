@@ -32,7 +32,7 @@ class boolops_compares_mixin:
   def gen_ast_Eq(self, node):
     '''
     Styles:
-    1. default: "is equal to"
+    1. default: "equal to"
     '''
     node.jvox_speech = {"default":"equal to"}
 
@@ -41,7 +41,7 @@ class boolops_compares_mixin:
   def gen_ast_NotEq(self, node):
     '''
     Styles:
-    1. default: "is not equal to"
+    1. default: "not equal to"
     '''
     node.jvox_speech = {"default":"not equal to"}
 
@@ -50,7 +50,7 @@ class boolops_compares_mixin:
   def gen_ast_Lt(self, node):
     '''
     Styles:
-    1. default: "is less than"
+    1. default: "less than"
     '''
     node.jvox_speech = {"default":"less than"}
 
@@ -59,7 +59,7 @@ class boolops_compares_mixin:
   def gen_ast_LtE(self, node):
     '''
     Styles:
-    1. default: "is less than or equal to"
+    1. default: "less than or equal to"
     '''
     node.jvox_speech = {"default":"less than or equal to"}
 
@@ -68,7 +68,7 @@ class boolops_compares_mixin:
   def gen_ast_Gt(self, node):
     '''
     Styles:
-    1. default: "is greater than"
+    1. default: "greater than"
     '''
     node.jvox_speech = {"default":"greater than"}
 
@@ -77,7 +77,7 @@ class boolops_compares_mixin:
   def gen_ast_GtE(self, node):
     '''
     Styles:
-    1. default: "is greater than or equal to"
+    1. default: "greater than or equal to"
     '''
     node.jvox_speech = {"default":"greater than or equal to"}
 
@@ -86,7 +86,7 @@ class boolops_compares_mixin:
   def gen_ast_Is(self, node):
     '''
     Styles:
-    1. default: "is the same as"
+    1. default: "the same as"
     '''
     node.jvox_speech = {"default":"the same as"}
 
@@ -95,9 +95,9 @@ class boolops_compares_mixin:
   def gen_ast_IsNot(self, node):
     '''
     Styles:
-    1. default: "is not the same as"
+    1. default: "is not"
     '''
-    node.jvox_speech = {"default":"not the same as"}
+    node.jvox_speech = {"default":"is not"}
 
     return
 
@@ -113,9 +113,9 @@ class boolops_compares_mixin:
   def gen_ast_NotIn(self, node):
     '''
     Styles:
-    1. default: "is not in"
+    1. default: "not in"
     '''
-    node.jvox_speech = {"default":"is not in"}
+    node.jvox_speech = {"default":"not in"}
 
     return
 
@@ -164,7 +164,7 @@ class boolops_compares_mixin:
     Generate speech for ast.BoolOp, style "indirect"
 
     Examples:
-
+    
     '''
 
     style_name = "indirect"
@@ -196,7 +196,9 @@ class boolops_compares_mixin:
     non-unit-typed right operand
     
     Examples,
-
+    1. e.g., a or b or c: a- "or" b, then "or" 
+    2. e.g., a or b and c: a- "or" , the logical "and" of b and c
+    3. e.g., a and b or c, a- "and" b, then "or" c
     '''
 
     style_name = "alternatev2"
@@ -260,7 +262,9 @@ class boolops_compares_mixin:
     Generate speech for ast.Compare, style "default"
 
     Examples:
-    
+     1. e.g., a>12, a- greater than 12
+    2. e.g., a>(12*b), a- greater than 12 multiply b
+    3. e.g., a>(12*b)+(c*5), a- greater than 12 multiply b, then plus c multiply 5
     '''
 
     style_name = "default"

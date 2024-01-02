@@ -12,8 +12,8 @@ class subscript_mixin:
         '''
         Generate speech for ast.Subscript. Style: default
         Examples:
-        1. a[1]: list item index 1 of list a
-        2. a[i, "new"]: list items with indices i and string new of list a
+        1. a[1]: a's item with index 1
+        2. a[i, "new"]: a's items with indices i and new
         '''
 
         style_name = "default"

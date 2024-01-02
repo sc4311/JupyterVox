@@ -78,6 +78,9 @@
    subexpressions, e.g., (a+b)*(a-b)
     1. e.g., "a+b*c", b multiply c, then plus a
     2. e.g., "(a+b)*c", a plus b, then multiply c
+5. alternatev2: Use direct/default for unit-typed right operand, use indirect for non-unit-typed right operand
+    1. e.g., "a+b*c", a- plus the product of b and c
+    2. e.g., "(a+b)*c", a- plus b, then multiply c
 ## ast.UnaryOp
 1. default: "op.default left.default right.default"
     1. -3.14: negative 3.14
@@ -93,18 +96,67 @@
     1. e.g., {"key1":1, "key2":3}: a dictionary with items of, item 1 has key of
    a string of key1 and value of 1, and item 2 has key of a string of key2 and
    value 3
-
+## ast.Subscript
+1. default: 
+    1. a[1]: a's item with index 1
+    2. a[i, "new"]:  a's items with indices i and new
+2. reversed:
+    1. a[1]: list item index 1 of list a
+    2. a[i, "new"]: list items with indices i and string new of list a
 ## ast.Return
 1. default: 
     1. if there is value: "return, " + the selected-style speech for the value node
     2. if there is not value: "return"
-
 ## ast.Continue
 1. default: "continue"
-
 ## ast.Break
 1. default: "break"
-
 ## ast.Pass
 1. default: "pass"
-
+## ast.And
+1. default: "and"
+2. indirect: "the logical "and" of"
+## ast.Or
+1. default: "or"
+2. indirect: "the logical "or" of"
+## ast.Eq
+1. default: "equal to"
+## ast.NotEq
+1. default: "not equal to"
+## ast.Gt
+1. default: "greater than"
+## ast.GtE
+1. default: "greater than or equal to"
+## ast.Is
+1. default: "the same as"
+## ast.IsNot
+1. default: "is not"
+## ast.In
+1. default: "is in"
+## ast.NotIn
+1. default: "is not in"
+## ast.BoolOp
+1. default: bascially read the expression as it is
+    1. e.g., a or b or c: a or b, then or c
+    2. e.g., a or b and c: a or b and c
+    3. e.g., a and b or c, a and b, then or c
+2. indirect: use indirect readings for And and Or operators
+    1. e.g., a or b or c: the logical or of a-, b and c
+    2. e.g., a or b and c: the logical or of a- "and" b and c
+    3. e.g., a and b or c, a and b, then or c
+2. alternatev2: use direct/default for unit-typed right operand, use indirect for non-unit-typed right operand
+    1. e.g., a or b or c: a- "or" b, then "or" 
+    2. e.g., a or b and c: a- "or" , the logical "and" of b and c
+    3. e.g., a and b or c, a- "and" b, then "or" c
+## ast.Compare
+1. default:
+    1. e.g., a>12, a- greater than 12
+    2. e.g., a>(12\*b), a- greater than 12 multiply b
+    3. e.g., a>(12\*b)+(c\*5), a- greater than 12 multiply b, then plus c multiply 5
+## ast.Assign
+1. default: left hand + "equals" + selected-style reading for right hand
+    1. e.g., a = b * c: a equals b multiply c
+    2. e.g., a = b = b * c: a equals b equals b multiply c
+2. indirect: left hand + "is assigned with value" + selected-style reading for right hand
+    1. e.g., a = b * c: a is assigned with value, b multiply c
+    2. e.g., a = b = b * c: a and b are assigned with value, b multiply c

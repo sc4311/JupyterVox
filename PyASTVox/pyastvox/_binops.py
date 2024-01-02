@@ -291,7 +291,8 @@ class binops_mixin:
     non-unit-typed right operand
     
     Examples,
-
+    1. e.g., "a+b*c", a- plus the product of b and c
+    2. e.g., "(a+b)*c", a- plus b, then multiply c
     '''
 
     style_name = "alternatev2"
