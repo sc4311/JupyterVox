@@ -93,3 +93,18 @@
     1. e.g., {"key1":1, "key2":3}: a dictionary with items of, item 1 has key of
    a string of key1 and value of 1, and item 2 has key of a string of key2 and
    value 3
+
+## ast.Return
+1. default: 
+    1. if there is value: "return, " + the selected-style speech for the value node
+    2. if there is not value: "return"
+
+## ast.Continue
+1. default: "continue"
+
+## ast.Break
+1. default: "break"
+
+## ast.Pass
+1. default: "pass"
+

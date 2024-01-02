@@ -21,12 +21,16 @@ class simple_stmt_mixin:
         style_name = "default"
 
         # get the value node and its jvox_speech
-        val_speech = node.value.jvox_speech["selected_style"]
+        if node.value is not None:
+            val_speech = node.value.jvox_speech["selected_style"]
+            speech = "return, " + val_speech
+        else:
+            speech = "return"
 
         # add the speech to jvox_speech
         if not hasattr(node, "jvox_speech"):
             node.jvox_speech = {}
-            node.jvox_speech[style_name] = "return, " + val_speech
+            node.jvox_speech[style_name] = speech
 
         return
 
