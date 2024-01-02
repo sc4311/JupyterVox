@@ -18,6 +18,8 @@ import _subscript
 import _if_stmt
 import _simple_stmt
 
+from pyastvox_speech_styles import pyastvox_speech_styles
+
 class pyastvox_speech_generator(_unit_types.unit_types_mixin,
                                 _binops.binops_mixin,
                                 _constants_ids.constants_ids_mixin,
@@ -39,9 +41,10 @@ class pyastvox_speech_generator(_unit_types.unit_types_mixin,
   style for each type of ast nodes.
   '''
   # fields
-  speech_styles: dict # speech styles for different type of nodes
+  speech_styles: dict  # speech styles for different type of nodes
 
-  def __init__(self, speech_styles={}):
+  def __init__(self,
+               speech_styles=pyastvox_speech_styles.selected_styles):
       self.speech_styles = speech_styles
       
       return
