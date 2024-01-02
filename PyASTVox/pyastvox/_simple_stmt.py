@@ -5,6 +5,7 @@ return
 pass
 continue
 break
+import
 '''
 
 import ast
@@ -96,7 +97,7 @@ class simple_stmt_mixin:
 
     def gen_ast_Pass_default(self, node):
         '''
-        Generate speech for ast.Break. Style "default".
+        Generate speech for ast.Pass. Style "default".
         Just read "pass", there is nothing more to read.
         '''
 
@@ -116,5 +117,115 @@ class simple_stmt_mixin:
 
         # style default
         self.gen_ast_Pass_default(node)
+
+        return
+
+    def gen_ast_Import_default(self, node):
+        '''
+        Generate speech for ast.Import. Style "default".
+        Reads "import", then follows with package names
+        Example:
+        1. import a.c: import a dot c
+        2. import numpy as np: import numpy as np
+        '''
+
+        style_name = "default"
+
+        # generate speeches with packages
+        speech = "import"
+        for p in node.names:
+            speech += ", " + p.jvox_speech["selected_style"]
+
+        # add the speech to jvox_speech
+        if not hasattr(node, "jvox_speech"):
+            node.jvox_speech = {}
+            node.jvox_speech[style_name] = speech
+
+        return
+    
+    def gen_ast_Import(self, node):
+        '''
+        Generate speech for ast.Import
+        '''
+
+        # style default
+        self.gen_ast_Import_default(node)
+
+        return
+
+    def gen_ast_alias_default(self, node):
+        '''
+        Generate speech for ast.alias. Style "default".
+        Reads the package name. If there is as name, also reads "as" + the
+        asname. "." is replaced as "dot".
+        Example:
+        1. numpy: "numpy"
+        2. numpy as np: "numpy as np"
+        3. package1.a as pa: "package1 dot a as pa"
+        '''
+
+        style_name = "default"
+
+        # generate speeches with packages
+        speech = node.name.replace(".", " dot ")
+        if node.asname is not None:
+            speech += " as " + node.asname.replace(".", " dot ")
+
+        # add the speech to jvox_speech
+        if not hasattr(node, "jvox_speech"):
+            node.jvox_speech = {}
+            node.jvox_speech[style_name] = speech
+
+        return
+    
+    def gen_ast_alias(self, node):
+        '''
+        Generate speech for ast.alias
+        '''
+
+        # style default
+        self.gen_ast_alias_default(node)
+
+        return
+
+    def gen_ast_ImportFrom_default(self, node):
+        '''
+        Generate speech for ast.ImportFrom. Style "default".
+        Reads "from" + module name +  "import" + package names.
+        If level is not 0, then level will also be read out after the module
+        name.
+        Examples:
+        1. from a.x import b, c: "from a dot x import b, c"
+        2. from ..a import b, c: "from a (relative level 2) import b"
+        3. form .. import x: "form directory (relative level 2) import x"
+        '''
+
+        style_name = "default"
+
+        # generate speeches with packages
+        if node.module is not None:
+            speech = "from " + node.module.replace(".", " dot ")
+        else:
+            speech = "from directory"
+        if node.level != 0:
+            speech += f" (relative level {node.level})"
+        speech += " import"
+        for p in node.names:
+            speech += ", " + p.jvox_speech["selected_style"]
+
+        # add the speech to jvox_speech
+        if not hasattr(node, "jvox_speech"):
+            node.jvox_speech = {}
+            node.jvox_speech[style_name] = speech
+
+        return
+    
+    def gen_ast_ImportFrom(self, node):
+        '''
+        Generate speech for ast.Import
+        '''
+
+        # style default
+        self.gen_ast_ImportFrom_default(node)
 
         return

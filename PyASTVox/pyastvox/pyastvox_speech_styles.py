@@ -4,6 +4,8 @@
 # final "spoken" reading. The style selected in this file can be changed with
 # pyastvox_speech_generator class' function set_speech style.
 #
+# If a node type does not have selected style, then default will be used.
+#
 # Note that all styles will be generated, the selection should only happen at
 # after all speech styles are generated. This is because the complex
 # inter-dependency between styles. 
