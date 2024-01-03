@@ -13,11 +13,11 @@ class functions_mixin:
   def gen_ast_Call_default(self, node):
     '''
     Generate speech for ast.Call. Style "default"
-    Read "call" funcation_name "with" arguments.
+    Read "call" function_name "with" arguments.
     E.g.,
     1. func1(): call func1 with no arguments
     2. func1(a): "call func1 with argument, a-"
-    3. func1(b=c): "call func1 with argument, key b equals c"
+    3. func1(b=c): "call func1 with argument, b equals c"
     4. func1(a, *m, b=c, **x): call func1 with argument, key b equals c
     '''
 
@@ -35,45 +35,16 @@ class functions_mixin:
       keywords.append(kw.jvox_speech["selected_style"])
 
     # construct the whole speech
-    # Fairly cumbersome implementation to handle variable cases in a more
-    # readable fashion.
-    if (len(arguments) == 0) and (len(keywords) == 0):
-      # no arguments at all
-      speech = f"call {func_name} with no arguments"
-    elif (len(keywords) == 0):
-      # at least one non-keyword args, but no keyword arguments
-      if (len(arguments) == 1):
-        # just one non-keyworded argument
-        speech = f"call {func_name} with argument, {arguments[0]}"
-      else:
-        # more than one non-keyworded arguments, no keyword arguments
-        args_speech = ', '.join(arguments[0:-1]) # all args expect the last one
-        speech = (f"call {func_name} with arguments, {args_speech}, and " + 
-                  f"{arguments[-1]}")
-    elif (len(arguments) == 0):
-      # no non-keyword args, at least one keyword args
-      if (len(keywords) == 1):
-        # just one keyworded argument
-        speech = f"call {func_name} with argument, {keywords[0]}"
-      else:
-        # more than on keyword arguments
-        args_speech = ', '.join(keywords[:-1]) # all keywords but last one
-        speech = (f"call {func_name} with arguments, {args_speech}, and " + 
-                  f"{keywords[-1]}")
-    else:
-      # >=1 non-keyword args, and >=1 keyword args
-      if (len(arguments) > 0) and (len(keywords) == 1):
-        # has non-keyworded arguments, and only one keyword argument
-        args_speech = ', '.join(arguments) # all non-keyworded args
-        speech = (f"call {func_name} with arguments {args_speech}, and " + 
-                  f"{keywords[-1]}")
-      else:
-        # more than one keyword arguments
-        args_speech = ', '.join(arguments) + ", " # all non-keyworded args
-        args_speech += ', '.join(keywords[:-1]) # all keywords but last one
-        speech = (f"call {func_name} with arguments, {args_speech}, and " + 
-                  f"{keywords[-1]}")
-      
+    valid_args = arguments + keywords
+    if len(valid_args) == 0: # no arguments
+      arg_speech = "no arguments"
+    elif len(valid_args) == 1: # one argument
+      arg_speech = f"argument, {valid_args[0]}"
+    else: # more than one arguments
+      arg_speech = ("arguments, " + ", ".join(valid_args[:-1]) + ", and " +
+                valid_args[-1])
+
+    speech = f"call {func_name} with {arg_speech}"
     
     # add the speech to jvox_speech
     if not hasattr(node, "jvox_speech"):
@@ -140,7 +111,7 @@ class functions_mixin:
       # normal keyword arg
       arg = self.var_name_special_processing(node.arg)
       val = node.value.jvox_speech["selected_style"]
-      speech = f"key {arg} equals {val}"
+      speech = f"{arg} equals {val}"
     else:
       # double starred arg
       val = node.value.jvox_speech["selected_style"]
@@ -160,5 +131,152 @@ class functions_mixin:
     
     # style default
     self.gen_ast_keyword_default(node)
+    
+    return
+
+  def gen_ast_arg_default(self, node):
+    '''
+    Generate speech for ast.arg. Style "default"
+    Read arg "with annotation" annotation "of type".
+    Note that I am not sure how to get AST to generate type_comment.
+    E.g.,
+    1. a: int: "a with annotation int"
+    '''
+
+    style_name = "default"
+
+    speech = self.var_name_special_processing(node.arg)
+    if node.annotation is not None:
+      speech += (" with annotation " +
+                 node.annotation.jvox_speech["selected_style"])
+    if node.type_comment is not None:
+      speech += "with type of " + arg.type_comment
+    
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+      node.jvox_speech[style_name] = speech
+      
+      return
+
+  def gen_ast_arg(self, node):
+    '''
+    Generate speech for ast.arg
+    '''
+    
+    # style default
+    self.gen_ast_arg_default(node)
+    
+    return
+
+  def gen_ast_arguments_default(self, node):
+    '''
+    Generate speech for ast.arguments. Style "default"
+    Read arguments one by one.
+    E.g.,
+    1. (a: 'annotation', m: str,  b=1, c=2, *d, e, f=3, **g): "with arguments, a- with annotation "string" annotation, m with annotation str, b with default value 1, c with default value 2, starred d, e, f with default value 3, and doubled-starred g"
+    2. (): with no arguments
+    '''
+
+    style_name = "default"
+
+    # generate speech for normal arguments
+    args = []
+    for arg in node.args:
+      args.append(arg.jvox_speech["selected_style"])
+    
+    # adjust args with default values. list visit order is reversed
+    # i goes from -1, -2 ... -len(node.defaults)
+    for i in range(-1, -len(node.defaults)-1 ,-1):
+      args[i] = (args[i] + " with default value " +
+                 node.defaults[i].jvox_speech["selected_style"])
+    
+    # generate speech for variable arguments
+    vararg = []
+    if node.vararg is not None:
+      vararg.append("starred " + node.vararg.jvox_speech["selected_style"])
+
+    # generate speech for keyword-only arguments
+    kwonlyargs = []
+    for i in range(len(node.kwonlyargs)):
+      arg_speech = node.kwonlyargs[i].jvox_speech["selected_style"]
+      if node.kw_defaults[i] is not None:
+        arg_speech += (" with default value " +
+                       node.kw_defaults[i].jvox_speech["selected_style"])
+      kwonlyargs.append(arg_speech)
+
+    # generate speech for kwarg (double-starred keyword argument)
+    kwarg = []
+    if node.kwarg is not None:
+      kwarg.append("doubled-starred " +
+                   node.kwarg.jvox_speech["selected_style"])
+
+    # construct the whole speech
+    valid_args = args + vararg + kwonlyargs + kwarg
+    
+    if len(valid_args) == 0: # no arguments
+      speech = "no arguments"
+    elif len(valid_args) == 1: # one argument
+      speech = f"argument, {valid_args[0]}"
+    else: # more than one arguments
+      speech = ("arguments, " + ", ".join(valid_args[:-1]) + ", and " +
+                valid_args[-1])
+    
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+      node.jvox_speech[style_name] = speech
+      
+      return
+
+  def gen_ast_arguments(self, node):
+    '''
+    Generate speech for ast.arg
+    '''
+    
+    # style default
+    self.gen_ast_arguments_default(node)
+    
+    return
+
+  def gen_ast_FunctionDef_default(self, node):
+    '''
+    Generate speech for ast.arg. Style "default"
+    Read: "Define function" + func_name + "with arguments" + args +
+          "The function body is" + body
+    E.g.,
+    1. def f(a: 'annotation', m: str,  b=1, c=2, *d, e, f=3, **g): a+b; return y: Define function f with arguments, a- with annotation "string" annotation, m with annotation str, b with default value 1, c with default value 2, starred d, e, f with default value 3, and doubled-starred g. The function body is. a- plus b. return, y."
+    2 def f(): return; : "Define function f with no arguments. The function body is. return." 
+    '''
+
+    style_name = "default"
+
+    # generate speech for function name
+    func_name = self.var_name_special_processing(node.name)
+    speech = f"Define function {func_name}"
+
+    # arguments
+    speech += " with " + node.args.jvox_speech["selected_style"] + '.'
+
+    # body.
+    if node.body is not None:
+      speech += " The function body is. "
+      for stmt in node.body:
+        speech += stmt.jvox_speech["selected_style"] + '. '
+    
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+      node.jvox_speech[style_name] = speech
+      
+      return
+
+  def gen_ast_FunctionDef(self, node):
+    '''
+    Generate speech for ast.FunctionDef
+    '''
+    
+    # style default
+    self.gen_ast_FunctionDef_default(node)
     
     return

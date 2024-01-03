@@ -187,3 +187,17 @@
     2. func1(a): "call func1 with argument, a-"
     3. func1(b=c): "call func1 with argument, key b equals c"
     4. func1(a, *m, b=c, **x): call func1 with argument, key b equals c
+## ast.arg:
+1. default: Read arg "with annotation" annotation "of type". Note that I am not sure how to get AST to generate type_comment. E.g.,
+    1. a: int: "a with annotation int"
+    2. a: "a"
+## ast.Arguments:
+1. default: Read arguments one by one. E.g.,
+    1. (a: 'annotation', m: str,  b=1, c=2, *d, e, f=3, **g): "with arguments, a- with annotation "string" annotation, m with annotation str, b with default value 1, c with default value 2, starred d, e, f with default value 3, and doubled-starred g"
+    2. (): with no arguments
+## ast.FunctionDef:
+1. Read: "Define function" + func_name + "with arguments" + args + "The function body is" + body E.g.,
+    1. def f(a: 'annotation', m: str,  b=1, c=2, *d, e, f=3, **g): a+b; return y: Define function f with arguments, a- with annotation "string" annotation, m with annotation str, b with default value 1, c with default value 2, starred d, e, f with default value 3, and doubled-starred g. The function body is. a- plus b. return, y."
+    2. def f(): return; : "Define function f with no arguments. The function body is. return." 
+2. Note that we dont support decorator_list, returns, type_cooment, type_params yet.
+
