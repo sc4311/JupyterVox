@@ -17,6 +17,7 @@ import _assignments
 import _subscript
 import _if_stmt
 import _simple_stmt
+import _functions
 
 from pyastvox_speech_styles import pyastvox_speech_styles
 
@@ -29,7 +30,8 @@ class pyastvox_speech_generator(_unit_types.unit_types_mixin,
                                 _assignments.assignments_mixin,
                                 _subscript.subscript_mixin,
                                 _if_stmt.if_stmt_mixin,
-                                _simple_stmt.simple_stmt_mixin):
+                                _simple_stmt.simple_stmt_mixin,
+                                _functions.functions_mixin):
   '''
   Entry-point class for JupyterVox pyastvox module.
   Call the "generate" function with a Python AST tree node to generate the

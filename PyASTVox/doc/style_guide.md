@@ -162,15 +162,28 @@
     2. e.g., a = b = b * c: a and b are assigned with value, b multiply c
 ## ast.FromImport
 1. default: Reads "from" + module name +  "import" + package names. If level is not 0, then level will also be read out after the module name.
-   1. e.g., from a.x import b, c: "from a dot x import b, c"
-   2. e.g., from ..a import b, c: "from a (relative level 2) import b"
-   3. e.g., form .. import x: "form directory (relative level 2) import x"
+    1. e.g., from a.x import b, c: "from a dot x import b, c"
+    2. e.g., from ..a import b, c: "from a (relative level 2) import b"
+    3. e.g., form .. import x: "form directory (relative level 2) import x"
 ## ast.Import
 1. default:  Reads "import", then follows with package names
-   1. e.g., import a.c: import a dot c
-   2. e.g., import numpy as np: import numpy as np
+    1. e.g., import a.c: import a dot c
+    2. e.g., import numpy as np: import numpy as np
 ## ast.alias
 1. default: Reads the package name. If there is as name, also reads "as" + the asname. "." is replaced as "dot". Examples:
-   1. numpy: "numpy"
-   2. numpy as np: "numpy as np"
-   3. package1.a as pa: "package1 dot a as pa"
+    1. numpy: "numpy"
+    2. numpy as np: "numpy as np"
+    3. package1.a as pa: "package1 dot a as pa"
+## ast.keyword
+1. default: For normal keyword arg, read "key" arg "equals" value. For double stared arg, read "double-starred" arg. E.g.,
+    1. b = c: "key b equals c"
+    2. **b : "double starred b"
+## ast.Starred
+1. default: Simply read "starred" + variable name. E.g.,
+    1. *args: "starred args"
+## ast.Call
+1. default: Read "call" funcation_name "with" arguments. E.g.,
+    1. func1(): call func1 with no arguments
+    2. func1(a): "call func1 with argument, a-"
+    3. func1(b=c): "call func1 with argument, key b equals c"
+    4. func1(a, *m, b=c, **x): call func1 with argument, key b equals c

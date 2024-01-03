@@ -7,6 +7,20 @@ IDs.
 import ast
 
 class constants_ids_mixin:
+  # special processing for variable name for better screen reading
+  # e.g., to avoid "a" being read as an article, convert "a" to a-"
+  def var_name_special_processing(self, var_name):
+    if var_name == 'a' or var_name == "A":
+      # append "-" so that gTTs won't read it as an article
+      speech = var_name + "-"
+    elif self.similar_to_keywords(var_name):
+      speech = f"\"variable\" {var_name}"
+    else:
+      speech = var_name
+
+    return speech
+
+  
   def gen_ast_Constant(self, node):
     '''
     Generate speech for ast.Constant.
@@ -32,13 +46,14 @@ class constants_ids_mixin:
     Generate speech for ast.Name, i.e., a variable.
     Just use the variable name/identifier as the speech.
     '''
-    if node.id == 'a' or node.id == "A":
-      # append "-" so that gTTs won't read it as an article
-      speech = node.id + "-"
-    elif self.similar_to_keywords(node.id):
-      speech = f"\"variable\" {node.id}"
-    else:
-      speech = node.id
+    # if node.id == 'a' or node.id == "A":
+    #   # append "-" so that gTTs won't read it as an article
+    #   speech = node.id + "-"
+    # elif self.similar_to_keywords(node.id):
+    #   speech = f"\"variable\" {node.id}"
+    # else:
+    #   speech = node.id
+    speech = self.var_name_special_processing(node.id)
       
     node.jvox_speech = {"default": speech}
     return
