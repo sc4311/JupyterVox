@@ -293,6 +293,11 @@ class functions_mixin:
     function. Return True if handled, return false, if not handled.
     '''
 
+    if type(node.func) is not ast.Name:
+      # if node.func is not ast.Name, it's likely ast.Attribute, definitely not
+      # builtin
+      return False
+
     if node.func.id == "range":
       return self.gen_func_range_default(node)
 

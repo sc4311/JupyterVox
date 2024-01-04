@@ -27,7 +27,8 @@ class loops_mixin:
         
         # get the body.
         body = ""
-        if (node.body is not None) and (len(node.body) > 0):
+        if ((node.body is not None) and (len(node.body) > 0) and
+            (node.body[0] is not None)):
             body = " The loop body is. "
             for stmt in node.body:
                 body += stmt.jvox_speech["selected_style"] + '. '
@@ -76,7 +77,8 @@ class loops_mixin:
         
         # get the body.
         body = ""
-        if (node.body is not None) and (len(node.body) > 0):
+        if ((node.body is not None) and (len(node.body) > 0) and
+            (node.body[0] is not None)):
             body = " The loop body is. "
             for stmt in node.body:
                 body += stmt.jvox_speech["selected_style"] + '. '

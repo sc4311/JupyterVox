@@ -21,7 +21,8 @@ class if_stmt_mixin:
         
         # get the body.
         body = ""
-        if (node.body is not None) and (len(node.body) > 0):
+        if ((node.body is not None) and (len(node.body) > 0) and
+            (node.body[0] is not None)):
             body = ". If true, the code is. "
             for stmt in node.body:
                 body += stmt.jvox_speech["selected_style"] + '. '
