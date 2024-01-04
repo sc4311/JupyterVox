@@ -16,6 +16,7 @@ class unit_types_mixin:
     s = value.replace(',', " comma ")
     s = s.replace('!', " exclamation mark ")
     s = s.replace('.', " period ")
+    s = s.replace('_', " underscore ")
 
     return s
   

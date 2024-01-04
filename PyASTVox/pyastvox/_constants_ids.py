@@ -18,6 +18,9 @@ class constants_ids_mixin:
     else:
       speech = var_name
 
+    # read underscore explicitly
+    speech = speech.replace('_', " underscore ")
+
     return speech
 
   

@@ -210,7 +210,8 @@ class boolops_compares_mixin:
     # use ", then" if the first value is not a unit type
     use_then = not first_val_is_unit_type
     if use_then:
-      connect_string = ", then "
+      #connect_string = ", then "
+      connect_string = ", "
     else:
       connect_string = " "
 
@@ -276,7 +277,7 @@ class boolops_compares_mixin:
     # use ", then" if the first value is not a unit type
     use_then = not left_is_unit_type
     if use_then:
-      connect_string = ", then "
+      connect_string = ", "
     else:
       connect_string = " "
 

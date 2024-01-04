@@ -48,7 +48,7 @@ class functions_mixin:
       arg_speech = ("arguments, " + ", ".join(valid_args[:-1]) + ", and " +
                 valid_args[-1])
 
-    speech = f"function call {func_name} with {arg_speech}"
+    speech = f"function call {func_name}, with {arg_speech}"
     
     # add the speech to jvox_speech
     if not hasattr(node, "jvox_speech"):
@@ -301,6 +301,9 @@ class functions_mixin:
     if node.func.id == "range":
       return self.gen_func_range_default(node)
 
+    if node.func.id == "len":
+      return self.gen_func_len_default(node)
+
     return False
   
   def gen_func_range_default(self, node):
@@ -341,6 +344,37 @@ class functions_mixin:
       speech = f"range from {start} to {stop} with step {step}"
     else:
       return False; # more than 4 args? something wrong. don't handle
+
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+      node.jvox_speech[style_name] = speech
+      
+    return True
+
+  def gen_func_len_default(self, node):
+    '''
+    Generate speech for builtin function "len"
+    Based on arguments:
+    1. just stop: from 0 to {stop}
+    2. start and stop: from {start} to {stop}
+    3. start, stop, and step: from {start} to {stop} with step {step}
+    4. other: not handled
+    '''
+
+    style_name = "default"
+
+    if len(node.keywords) != 0:
+      return False; # something wrong? don't handle
+
+    if (len(node.args) != 0 and type(node.args[0]) is ast.Starred):
+      return False; # something wrong? don't handle
+
+    # get argument
+    arg = node.args[0].jvox_speech["selected_style"]
+
+    # generate speech
+    speech = f"length of {arg}"
 
     # add the speech to jvox_speech
     if not hasattr(node, "jvox_speech"):
