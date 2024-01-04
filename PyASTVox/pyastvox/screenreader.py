@@ -167,5 +167,56 @@ class pyastvox_speech_generator(_unit_types.unit_types_mixin,
     node.jvox_speech={"default":""}
     return
 
+  def gen_standalone_statemetns(self, text):
+    '''
+    Function to handle statements "else:", "try:", "except:"
+    Simply read the text as it is
+    '''
 
+    # remove leading and ending white spaces and newline
+    t = text.strip().rstrip('\n')
+    
+    if t == "else:":
+      return "else"
+    elif t == "try:":
+      return "try"
+    elif t == "except:":
+      return "except"
+    else:
+      return ""
+
+  def gen_leading_whitespace_speech(self, text):
+    '''
+    Function to read the leading white spaces. 
+    '''
+
+    # count white spaces
+    whitespaces = []
+    i = 0
+    while (i < len(text)):
+      # count continuous spaces
+      count = 0
+      while(text[i] == ' '):
+        i += 1
+        count += 1
+      if count>0:
+        whitespaces.append(f"{count} white spaces")
+
+      # count continuous tab
+      count = 0
+      while(text[i] == '\t'):
+        i += 1
+        count += 1
+      if count>0:
+        whitespaces.append(f"{count} tabs")
+
+      # break if not whitespace
+      if (text[i] != ' ') and (text[i] != '\t'):
+        break
+
+    # generate the speech
+    speech = ", ".join(whitespaces)
+
+    return speech
+      
 

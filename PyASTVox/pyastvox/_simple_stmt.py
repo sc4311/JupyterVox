@@ -229,3 +229,4 @@ class simple_stmt_mixin:
         self.gen_ast_ImportFrom_default(node)
 
         return
+        
