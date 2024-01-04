@@ -210,6 +210,11 @@
 1. default: Read as "While loop with test" + test + "The loop body is" + body + "The code after loop ends is" + orelse. E.g.,
     1. while (a>b): return;: "While loop with test, a- greater than b. The loop body is. return." 
 
+## ast.If
+1. default: Read as "If statement with test" + test + "If true, the code is." + body + "If false, the code is." + orelse. E.g.,
+    1. if (a>b): return;: 'If statement with test, a- greater than b.. If true, the code is. return. '
+
+
 ## Builtin Function
 ### Range
 1. default: Based on arguments:
