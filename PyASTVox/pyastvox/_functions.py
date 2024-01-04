@@ -13,15 +13,19 @@ class functions_mixin:
   def gen_ast_Call_default(self, node):
     '''
     Generate speech for ast.Call. Style "default"
-    Read "call" function_name "with" arguments.
+    Read "function call" function_name "with" arguments.
     E.g.,
-    1. func1(): call func1 with no arguments
-    2. func1(a): "call func1 with argument, a-"
-    3. func1(b=c): "call func1 with argument, b equals c"
-    4. func1(a, *m, b=c, **x): call func1 with argument, key b equals c
+    1. func1(): function call func1 with no arguments
+    2. func1(a): "function call func1 with argument, a-"
+    3. func1(b=c): "function call func1 with argument, b equals c"
+    4. func1(a, *m, b=c, **x): invoke func1 with argument, key b equals c
     '''
 
     style_name = "default"
+
+    # check if this call is handled as a builtin function
+    if (self.gen_builtin_func_default(node)):
+      return
 
     # get function name
     func_name = node.func.jvox_speech["selected_style"]
@@ -44,14 +48,14 @@ class functions_mixin:
       arg_speech = ("arguments, " + ", ".join(valid_args[:-1]) + ", and " +
                 valid_args[-1])
 
-    speech = f"call {func_name} with {arg_speech}"
+    speech = f"function call {func_name} with {arg_speech}"
     
     # add the speech to jvox_speech
     if not hasattr(node, "jvox_speech"):
       node.jvox_speech = {}
       node.jvox_speech[style_name] = speech
       
-      return
+    return
 
   def gen_ast_Call(self, node):
     '''
@@ -82,7 +86,7 @@ class functions_mixin:
       node.jvox_speech = {}
       node.jvox_speech[style_name] = speech
       
-      return
+    return
 
   def gen_ast_Starred(self, node):
     '''
@@ -122,7 +126,7 @@ class functions_mixin:
       node.jvox_speech = {}
       node.jvox_speech[style_name] = speech
       
-      return
+    return
 
   def gen_ast_keyword(self, node):
     '''
@@ -157,7 +161,7 @@ class functions_mixin:
       node.jvox_speech = {}
       node.jvox_speech[style_name] = speech
       
-      return
+    return
 
   def gen_ast_arg(self, node):
     '''
@@ -227,7 +231,7 @@ class functions_mixin:
       node.jvox_speech = {}
       node.jvox_speech[style_name] = speech
       
-      return
+    return
 
   def gen_ast_arguments(self, node):
     '''
@@ -259,7 +263,7 @@ class functions_mixin:
     speech += " with " + node.args.jvox_speech["selected_style"] + '.'
 
     # body.
-    if node.body is not None:
+    if (node.body is not None) and (len(node.body) > 0):
       speech += " The function body is. "
       for stmt in node.body:
         speech += stmt.jvox_speech["selected_style"] + '. '
@@ -269,7 +273,7 @@ class functions_mixin:
       node.jvox_speech = {}
       node.jvox_speech[style_name] = speech
       
-      return
+    return
 
   def gen_ast_FunctionDef(self, node):
     '''
@@ -280,3 +284,63 @@ class functions_mixin:
     self.gen_ast_FunctionDef_default(node)
     
     return
+
+  ###################### build-in function speeches #####################
+
+  def gen_builtin_func_default(self, node):
+    '''
+    If it is calling a builtin function, call the corresponding specialized
+    function. Return True if handled, return false, if not handled.
+    '''
+
+    if node.func.id == "range":
+      return self.gen_func_range_default(node)
+
+    return False
+  
+  def gen_func_range_default(self, node):
+    '''
+    Generate speech for builtin function "Range"
+    Based on arguments:
+    1. just stop: from 0 to {stop}
+    2. start and stop: from {start} to {stop}
+    3. start, stop, and step: from {start} to {stop} with step {step}
+    4. other: not handled
+    '''
+
+    style_name = "default"
+
+    if len(node.keywords) != 0:
+      return False; # something wrong? don't handle
+
+    if len(node.args) == 1:
+      # only one argument
+      if type(node.args[0]) is not ast.Starred:
+        # just one normal "stop" argument
+        stop = node.args[0].jvox_speech["selected_style"]
+        speech = f"range from 0 to {stop}"
+      else:
+        # has an ast.Starred argument
+        starred = node.args[0].jvox_speech["selected_style"]
+        speech = f"range with argument starred {starred}"
+    elif len(node.args) == 2:
+      # two arguments, should be start and stop
+      start = node.args[0].jvox_speech["selected_style"]
+      stop = node.args[1].jvox_speech["selected_style"]
+      speech = f"range from {start} to {stop}"
+    elif len(node.args) == 3:
+      # two arguments, should be start and stop
+      start = node.args[0].jvox_speech["selected_style"]
+      stop = node.args[1].jvox_speech["selected_style"]
+      step = node.args[2].jvox_speech["selected_style"]
+      speech = f"range from {start} to {stop} with step {step}"
+    else:
+      return False; # more than 4 args? something wrong. don't handle
+
+    # add the speech to jvox_speech
+    if not hasattr(node, "jvox_speech"):
+      node.jvox_speech = {}
+      node.jvox_speech[style_name] = speech
+      
+    return True 
+      

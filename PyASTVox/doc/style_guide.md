@@ -182,11 +182,11 @@
 1. default: Simply read "starred" + variable name. E.g.,
     1. *args: "starred args"
 ## ast.Call
-1. default: Read "call" funcation_name "with" arguments. E.g.,
-    1. func1(): call func1 with no arguments
-    2. func1(a): "call func1 with argument, a-"
-    3. func1(b=c): "call func1 with argument, key b equals c"
-    4. func1(a, *m, b=c, **x): call func1 with argument, key b equals c
+1. default: Read "function call" funcation_name "with" arguments. E.g.,
+    1. func1(): function call func1 with no arguments
+    2. func1(a): "function call func1 with argument, a-"
+    3. func1(b=c): "function call func1 with argument, key b equals c"
+    4. func1(a, *m, b=c, **x): function call func1 with argument, key b equals c
 ## ast.arg:
 1. default: Read arg "with annotation" annotation "of type". Note that I am not sure how to get AST to generate type_comment. E.g.,
     1. a: int: "a with annotation int"
@@ -196,8 +196,25 @@
     1. (a: 'annotation', m: str,  b=1, c=2, *d, e, f=3, **g): "with arguments, a- with annotation "string" annotation, m with annotation str, b with default value 1, c with default value 2, starred d, e, f with default value 3, and doubled-starred g"
     2. (): with no arguments
 ## ast.FunctionDef:
-1. Read: "Define function" + func_name + "with arguments" + args + "The function body is" + body E.g.,
+1. default: "Define function" + func_name + "with arguments" + args + "The function body is" + body E.g.,
     1. def f(a: 'annotation', m: str,  b=1, c=2, *d, e, f=3, **g): a+b; return y: Define function f with arguments, a- with annotation "string" annotation, m with annotation str, b with default value 1, c with default value 2, starred d, e, f with default value 3, and doubled-starred g. The function body is. a- plus b. return, y."
     2. def f(): return; : "Define function f with no arguments. The function body is. return." 
 2. Note that we dont support decorator_list, returns, type_cooment, type_params yet.
+## ast.Attribute:
+1. default:  Because it is difficult to read nested attributes, here I am simplyreading the statement literally with "dot". E.g.,
+    1. a.b.c: "a dot b dot c"
+## ast.For:
+1. default: Read as "for loop with target" + target + “to loop over" + iter + "The loop body is" + body + "The code after loop ends is" + orelse. E.g.,
+    1. for i in list_x: return;: "for loop with target i, to loop over list_x. The loop body is. return." 
+## ast.While:
+1. default: Read as "While loop with test" + test + "The loop body is" + body + "The code after loop ends is" + orelse. E.g.,
+    1. while (a>b): return;: "While loop with test, a- greater than b. The loop body is. return." 
+
+## Builtin Function
+### Range
+1. default: Based on arguments:
+    1. just stop: from 0 to {stop}
+    2. start and stop: from {start} to {stop}
+    3. start, stop, and step: from {start} to {stop} with step {step}
+    4. other: not handled
 
