@@ -8,6 +8,8 @@ def str_node(node):
         return rv + ')'
     else:
         return repr(node)
+
+
     
 def ast_visit(node, level=0):
     print('  ' * level + str_node(node))
@@ -19,3 +21,15 @@ def ast_visit(node, level=0):
                     ast_visit(item, level=level+1)
         elif isinstance(value, ast.AST):
             ast_visit(value, level=level+1)
+
+# output node to out_str,and visit its children
+def ast_visit_non_print(node, out_str, level=0):
+    #print('  ' * level + str_node(node))
+    out_str.append('  ' * level + str_node(node))
+    for field, value in ast.iter_fields(node):
+        if isinstance(value, list):
+            for item in value:
+                if isinstance(item, ast.AST):
+                    ast_visit_non_print(item, out_str, level=level+1)
+        elif isinstance(value, ast.AST):
+            ast_visit_non_print(value, out_str, level=level+1)

@@ -4,67 +4,44 @@
 
 import ast
 import argparse
+import traceback
 
-# help import sibling directories
+# import sibling directories
 import sys
 sys.path.append("../pyastvox")
+sys.path.append("../../ASTVox_Antlr4/src/antlr2pyast/")
 
 # load the Vox parser
-#from astparser import astparser
-#from speech import Speech
 import utils
 
-from screenreader import pyastvox_speech_generator
+# import JVox speech generator
+from jvox_screenreader import jvox_screenreader
 
-# function to parse a statement
-def parse_statement(parser, stmt, verbose):
-    # generate AST tree
-    tree = ast.parse(stmt)
-
-    # print the tree if verbose
-    if verbose:
-        utils.ast_visit(tree)
-
-    # generate speech
-    s = parser.emit(tree)
-
-    return s
-
-# function to read a test case from the file a test case in a file starts with a
-# line of "<<<...", and ends with a line ">>>,,,".
-#
-# Note that this function does not check for incorrect formatting. So please
-# make sure the test case file is correctly formatted.
 def read_test_case(file_handle):
-    # skip lines until a line of "<<<..."
+    # read line by line, and parse/check each line
+    test_case_cnt = 0
+    correct_cnt = 0
+    incorrect_test_cases = []
+    cannot_parse_cnt = 0
+    cannot_parse_test_cases = []
     for line in file_handle:
-        if line.startswith("<<<"):
-           break
+        # remove leading  white space, as Python AST cannot handle it. 
+        # this is reasonable, since indentation has meaning
+        no_white_line = line.lstrip()
+        if no_white_line == "":
+            continue # skip empty line
 
-    # read-in the test  cases
-    test_case = ""
-    for line in file_handle:
-        if not line.startswith(">>>"):
-            test_case += line
-        else:
-            break
+        # preprocess the line to replace \n, \t with the actual \n and \t
+        line = line.replace("\\n", '\n')
+        line = line.replace("\\t", '\t')
+        if line.startswith('#'): # comments, skip
+            continue;
 
-    return test_case
+        # found a line that works
+        return line
 
-# generate the speech for one statement
-def gen_speech_for_one(vox_gen, stmt, verbose):
-    # generate AST tree
-    tree = ast.parse(stmt)
-
-    # print the tree if verbose
-    if verbose:
-        utils.ast_visit(tree)
-
-    # generate speech
-    vox_gen.generate(tree)
-
-    return tree.jvox_speech
-
+    # end of file
+    return ""
 
 # parse the input
 parser = argparse.ArgumentParser(description='Testing file for JupyterVox with PyAST')
@@ -78,6 +55,9 @@ parser.add_argument('-s', '--stmt', metavar='STATEMENT', dest='stmt',
 parser.add_argument('-v', '-verbose', dest='verbose', action='store_true',
                     help='enable verbose output')
 
+parser.add_argument('-p', '--use_pyast', dest='use_pyast', action='store_true',
+                    help='whether to use python AST for parsing; default use ANTRL4')
+
 args = parser.parse_args()
 
 if (args.test_case_file is None) and (args.stmt is None):
@@ -86,12 +66,11 @@ if (args.test_case_file is None) and (args.stmt is None):
 
     
 # create the parser
-vox_gen = pyastvox_speech_generator()
-vox_gen.set_speech_style(ast.BinOp, "alternatev2")
+jvox = jvox_screenreader(not args.use_pyast)
 
 if not args.stmt is None:
     # parse a single statement
-    speech = gen_speech_for_one(vox_gen, args.stmt, args.verbose)
+    speech = jvox.generate_for_one(args.stmt, args.verbose)
     print("*  ", args.stmt, "=>", speech, "\n")
 else:
     # parse a test case file
@@ -109,11 +88,10 @@ else:
 
         if test_case == "": # no more test cases
             break
-
-        speech = gen_speech_for_one(vox_gen, test_case, args.verbose)
-    
-        print(">>> Test case:\n", test_case, "=>", speech, "\n")
-        #print(s.data)
+        
+        speech = jvox.generate_for_one(test_case, args.verbose)
+        
+        print(">>> Test case:\n", test_case, "=>", speech, '\n')
 
     print("\nDone.")
 
