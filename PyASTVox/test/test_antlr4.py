@@ -18,7 +18,7 @@ import utils
 # import JVox speech generator
 from screenreader import pyastvox_speech_generator
 
-# parser based on antlr2
+# parser based on Antlr4
 from converter import antlr2pyast
 
 # function to read a test case from the file a test case in a file starts with a
@@ -52,8 +52,8 @@ def read_test_case(file_handle):
     for line in file_handle:
         # remove leading  white space, as Python AST cannot handle it. 
         # this is reasonable, since indentation has meaning
-        line = line.lstrip()
-        if line == "":
+        no_white_line = line.lstrip()
+        if no_white_line == "":
             continue # skip empty line
 
         # preprocess the line to replace \n, \t with the actual \n and \t
@@ -97,6 +97,18 @@ def ast_visit(node, out_str, level=0):
 
 # generate the speech for one statement
 def gen_speech_for_one(vox_gen, stmt, verbose):
+    # remove lead white spaces, but keep the original statement for
+    # white space reading.
+    stmt_original = stmt
+    stmt = stmt.lstrip()
+    
+    # first check if it is a standalone non-parse-able statement,
+    # e.g., "try", "else", "except". They will be read without
+    # parsing.
+    standalone_speech = vox_gen.gen_standalone_statemetns(stmt)
+    if standalone_speech != "":
+        return standalone_speech
+    
     # generate AST tree
     # tree = ast.parse(stmt)
     # generate and convert tree
@@ -110,7 +122,6 @@ def gen_speech_for_one(vox_gen, stmt, verbose):
         if verbose:
             traceback.print_exc()
         return "Antlr4 Converter error for code"
-
 
     # print the tree
     if verbose:
@@ -126,6 +137,10 @@ def gen_speech_for_one(vox_gen, stmt, verbose):
         # speech generation error, should not happen
         traceback.print_exc()
         return "JVox speech generate error"
+
+    # generate whitespace speeches
+    whitespace_speech = vox_gen.gen_leading_whitespace_speech(stmt_original)
+    converted_tree.jvox_speech["whitespace"] =  whitespace_speech
         
     return converted_tree.jvox_speech
 
@@ -176,7 +191,7 @@ else:
         
         speech = gen_speech_for_one(vox_gen, test_case, args.verbose)
         
-        print(">>> Test case:\n", test_case, "=>", speech, "\n")
+        print(">>> Test case:\n", test_case, "=>", speech, '\n')
         #print(s.data)
 
     print("\nDone.")

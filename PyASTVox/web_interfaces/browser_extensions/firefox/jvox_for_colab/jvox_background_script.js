@@ -10,7 +10,8 @@ function jvox_gen_speech_sound(stmt_text){
   
   // encode the data
   // 
-  var surl = "http://3.144.13.232/jvox/speech3/post";
+  //var surl = "http://3.144.13.232/jvox/speech3/post";
+  var surl = " http://localhost:5000/speech3/post";
   //var surl = "https://example.com"
   var xmlHttp = new XMLHttpRequest();
 	xmlHttp.responseType = "blob"; // response is mp3 byte stream

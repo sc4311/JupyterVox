@@ -218,5 +218,19 @@ class pyastvox_speech_generator(_unit_types.unit_types_mixin,
     speech = ", ".join(whitespaces)
 
     return speech
-      
+
+  def gen_comment_speech(self, text):
+    '''
+    Function to read a comment line.
+    Simply just read the line.
+    '''
+
+    text = text.lstrip()
+
+    speech = ""
+    
+    if text[0] == "#":
+      speech = "comment: " + text
+
+    return speech
 
