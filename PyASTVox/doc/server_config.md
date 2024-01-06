@@ -94,3 +94,132 @@
     2. Enable: jupyter nbextension enable jvox_ext/main --user
 5. Final test, go to http://*publicip*/ipython, create a new notebook, create a cell, write a simple expression (e.g., a = 11 + 13), put cursor in the on this line, use the "paper plane" button on the tool bar or "alt+n" to listen to the screen reading. 
 6. If not working, check browser's JS console (from developer tools), and do the tests from the above steps. 
+
+## 8. Antlr4 Setup
+1. This is required for the new and current antlr4 parser based JVox. 
+2. Based on https://stackoverflow.com/q/63128280
+3. pip3 install antlr4-tools
+    1. outputs: Collecting antlr4-tools
+  Downloading antlr4_tools-0.2.1-py3-none-any.whl (4.3 kB)
+Collecting install-jdk
+  Downloading install_jdk-1.1.0-py3-none-any.whl (15 kB)
+Installing collected packages: install-jdk, antlr4-tools
+Successfully installed antlr4-tools-0.2.1 install-jdk-1.1.0
+
+4. antlr4:
+    1. output: Downloading antlr4-4.13.1-complete.jar
+ANTLR tool needs Java to run; install Java JRE 11 yes/no (default yes)? yes
+Installed Java in /home/admin/.jre/jdk-11.0.21+9-jre; remove that dir to uninstall
+ANTLR Parser Generator  Version 4.13.1
+ -o ___              specify output directory where all output is generated
+ -lib ___            specify location of grammars, tokens files
+ -atn                generate rule augmented transition network diagrams
+ -encoding ___       specify grammar file encoding; e.g., euc-jp
+ -message-format ___ specify output style for messages in antlr, gnu, vs2005
+ -long-messages      show exception details when available for errors and warnings
+ -listener           generate parse tree listener (default)
+ -no-listener        don't generate parse tree listener
+ -visitor            generate parse tree visitor
+ -no-visitor         don't generate parse tree visitor (default)
+ -package ___        specify a package/namespace for the generated code
+ -depend             generate file dependencies
+ -D<option>=value    set/override a grammar-level option
+ -Werror             treat warnings as errors
+ -XdbgST             launch StringTemplate visualizer on generated code
+ -XdbgSTWait         wait for STViz to close before continuing
+ -Xforce-atn         use the ATN simulator for all predictions
+ -Xlog               dump lots of logging info to antlr-timestamp.log
+ -Xexact-output-dir  all output goes into -o dir regardless of paths/package
+
+5. pip3 install antlr4-python3-runtime
+    1. outputs: Collecting antlr4-python3-runtime
+  Downloading antlr4_python3_runtime-4.13.1-py3-none-any.whl (144 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 144.5/144.5 kB 3.5 MB/s eta 0:00:00
+Installing collected packages: antlr4-python3-runtime
+Successfully installed antlr4-python3-runtime-4.13.1
+
+6. Test Antlr4 and JVox using the test.py in JupyterVox/PyASTVox/test
+
+
+## 9. List of current pip packages
+Package                           Version
+--------------------------------- ----------
+antlr4-python3-runtime            4.13.1
+antlr4-tools                      0.2.1
+argon2-cffi                       23.1.0
+argon2-cffi-bindings              21.2.0
+asttokens                         2.4.1
+attrs                             23.1.0
+beautifulsoup4                    4.12.2
+bleach                            6.1.0
+blinker                           1.7.0
+certifi                           2023.11.17
+cffi                              1.16.0
+charset-normalizer                3.3.2
+click                             8.1.7
+comm                              0.2.0
+debugpy                           1.8.0
+decorator                         5.1.1
+defusedxml                        0.7.1
+executing                         2.0.1
+fastjsonschema                    2.19.0
+Flask                             3.0.0
+gTTS                              2.5.0
+idna                              3.6
+install-jdk                       1.1.0
+ipykernel                         6.27.1
+ipython                           8.19.0
+ipython-genutils                  0.2.0
+itsdangerous                      2.1.2
+jedi                              0.19.1
+Jinja2                            3.1.2
+jsonschema                        4.20.0
+jsonschema-specifications         2023.12.1
+jupyter_client                    8.6.0
+jupyter-contrib-core              0.4.2
+jupyter-contrib-nbextensions      0.7.0
+jupyter_core                      5.5.1
+jupyter-highlight-selected-word   0.2.0
+jupyter-nbextensions-configurator 0.6.3
+jupyterlab_pygments               0.3.0
+lxml                              4.9.4
+MarkupSafe                        2.1.3
+matplotlib-inline                 0.1.6
+mistune                           3.0.2
+nbclient                          0.9.0
+nbconvert                         7.13.1
+nbformat                          5.9.2
+nest-asyncio                      1.5.8
+notebook                          6.4.12
+packaging                         23.2
+pandocfilters                     1.5.0
+parso                             0.8.3
+pexpect                           4.9.0
+pip                               23.0.1
+platformdirs                      4.1.0
+prometheus-client                 0.19.0
+prompt-toolkit                    3.0.43
+psutil                            5.9.7
+ptyprocess                        0.7.0
+pure-eval                         0.2.2
+pycparser                         2.21
+Pygments                          2.17.2
+python-dateutil                   2.8.2
+PyYAML                            6.0.1
+pyzmq                             25.1.2
+referencing                       0.32.0
+requests                          2.31.0
+rpds-py                           0.15.2
+Send2Trash                        1.8.2
+setuptools                        66.1.1
+six                               1.16.0
+soupsieve                         2.5
+stack-data                        0.6.3
+terminado                         0.18.0
+tinycss2                          1.2.1
+tornado                           6.4
+traitlets                         5.9.0
+urllib3                           2.1.0
+wcwidth                           0.2.12
+webencodings                      0.5.1
+Werkzeug                          3.0.1
