@@ -190,7 +190,7 @@ def current_token_start_stop(stmt: str, cur_pos: int, verbose: bool):
 
     # find the start and stop
     ret_val = {"start": tokens[cur_idx].start,
-               "stop": tokens[cur_idx].start,
+               "stop": tokens[cur_idx].stop,
                "text": tokens[cur_idx].text,
                "type": tokens[cur_idx].type}
     if verbose:
