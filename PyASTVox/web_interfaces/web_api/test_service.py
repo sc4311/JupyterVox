@@ -48,6 +48,32 @@ def gen_speech_post_jvox():
     # return jsonify(jvox_speech)
     return send_file(file_name, mimetype="audio/mpeg")
 
+@app.route('/tokennavigate',methods=['POST'])
+def token_navigation():
+    # retrieve statement, current position, and navigation command
+    stmt = request.json['stmt']
+    cur_pos = int(request.json['pos'])
+    cmd = request.json['cmd']
+    
+    print("web token navi api get statement:", stmt, "cur_pos:", cur_pos,
+          "cmd:", cmd )
+
+    # navigate based on command
+    if cmd == "next":
+        next_token = jvox.find_next_token_start(stmt, cur_pos, True)
+        print("next token:", next_token)
+        dat = {"start": next_token["start"], "stop":next_token["stop"]}
+    elif cmd == "pre":
+        pre_token = jvox.find_previous_token_start(stmt, cur_pos, True)
+        print("previous token:", pre_token)
+        dat = {"start": pre_token["start"], "stop":pre_token["stop"]}
+    elif cmd == "cur":
+        cur_token = jvox.find_cur_token_start_stop(stmt, cur_pos, True)
+        print("Current token:", cur_token)
+        dat = {"start": cur_token["start"], "stop":cur_token["stop"]}
+
+    return jsonify(dat)
+
 
 if __name__ == "__main__":
     jvox = jvox_interface.jvox_interface("default")

@@ -21,6 +21,9 @@ import utils
 # import JVox speech generator
 from jvox_screenreader import jvox_screenreader
 
+# import token navigation package
+from token_navigation import token_navigation
+
 
 class jvox_interface:
     vox_gen = None;
@@ -44,4 +47,25 @@ class jvox_interface:
         print("jvox created mp3 file at", file_name)
 
         return
+
+    # find next token
+    def find_next_token_start(self, stmt, cur_pos, verbose):
+        next_token = token_navigation.next_token(stmt, cur_pos, verbose)
+
+        return {"start":next_token['next_start'],
+                "stop":next_token['next_stop']}
+
+    # find previous token
+    def find_previous_token_start(self, stmt, cur_pos, verbose):
+        previous_token = token_navigation.previous_token(stmt, cur_pos, verbose)
+
+        return {"start":previous_token['pre_start'],
+                "stop":previous_token['pre_stop']}
+
+    # find current token start stop
+    def find_cur_token_start_stop(self, stmt, cur_pos, verbose):
+        cur_token = token_navigation.current_token_start_stop(stmt, cur_pos,
+                                                               verbose)
+
+        return {"start":cur_token['start'], "stop":cur_token['stop']}
     
