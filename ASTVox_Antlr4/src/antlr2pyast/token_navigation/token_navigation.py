@@ -48,7 +48,7 @@ def current_token_index(tokens: list, cur_pos: int):
     Return value:
     The list index of current token. If the cur_pos is wrong, then return None.
     '''
-
+   
     for i in range(len(tokens)):
         t = tokens[i]
         if (t.start <= cur_pos) and (cur_pos <= t.stop):
