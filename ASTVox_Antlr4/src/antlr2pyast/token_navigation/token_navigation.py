@@ -53,7 +53,7 @@ def current_token_index(tokens: list, cur_pos: int):
         t = tokens[i]
         if (t.start <= cur_pos) and (cur_pos <= t.stop):
             return i
-
+    
     return None
 
 # determine the start position (col) of next token
@@ -81,30 +81,57 @@ def next_token(stmt: str, cur_pos: int, verbose: bool):
         print("Tokens are:")
         print_tokens(tokens)
 
-    # get the current token position
-    cur_idx = current_token_index(tokens, cur_pos)
-    if verbose:
-        print(f"Current token is {tokens[cur_idx]} (index {cur_idx})")
+    # find the token that starts after current cursor position
+    found = False
+    for t in tokens:
+        if cur_pos < t.start:
+            # next token should start after the cursor
+            found = True
+            break
 
-    # find the start of next token
-    if cur_idx == len(tokens)-1:
+    if found:
+        # find the next token
+        ret_val = {"next_start": t.start,
+                   "next_stop": t.start,
+                   "next_text": t.text,
+                   "next_type": t.type}
+    else:
+        # reach the end of the token list
         # no next token, current token is the last, return -1
         ret_val = {"next_start": -1,
                    "next_stop": -1,
                    "next_text": "",
                    "next_type": -1}
-    else:
-        # there is a next token
-        # there is a next token
-        ret_val = {"next_start": tokens[cur_idx+1].start,
-                   "next_stop": tokens[cur_idx+1].start,
-                   "next_text": tokens[cur_idx+1].text,
-                   "next_type": tokens[cur_idx+1].type}
     
     if verbose:
         print(f"Next token start is at {ret_val} (-1 means no next token).")
 
     return ret_val
+
+    # # get the current token position
+    # cur_idx = current_token_index(tokens, cur_pos)
+    # if verbose:
+    #     print(f"Current token is {tokens[cur_idx]} (index {cur_idx})")
+
+    # # find the start of next token
+    # if cur_idx == len(tokens)-1:
+    #     # no next token, current token is the last, return -1
+    #     ret_val = {"next_start": -1,
+    #                "next_stop": -1,
+    #                "next_text": "",
+    #                "next_type": -1}
+    # else:
+    #     # there is a next token
+    #     # there is a next token
+    #     ret_val = {"next_start": tokens[cur_idx+1].start,
+    #                "next_stop": tokens[cur_idx+1].start,
+    #                "next_text": tokens[cur_idx+1].text,
+    #                "next_type": tokens[cur_idx+1].type}
+    
+    # if verbose:
+    #     print(f"Next token start is at {ret_val} (-1 means no next token).")
+
+    # return ret_val
     
 # determine the start position (col) of the previous token
 def previous_token(stmt: str, cur_pos: int, verbose: bool):
@@ -132,30 +159,57 @@ def previous_token(stmt: str, cur_pos: int, verbose: bool):
         print("Tokens are:")
         print_tokens(tokens)
 
-    # get the current token position
-    cur_idx = current_token_index(tokens, cur_pos)
-    if verbose:
-        print(f"Current token is {tokens[cur_idx]} (index {cur_idx})")
+    # find the token that starts after current cursor position
+    found = False
+    for t in reversed(tokens):
+        if t.stop < cur_pos:
+            # previous token should stop before the cursor
+            found = True
+            break
 
-    # find the start of the previous token
-    if cur_idx == 0:
+    if found:
+        # there is a previous token
+        ret_val = {"pre_start": t.start,
+                   "pre_stop": t.start,
+                   "pre_text": t.text,
+                   "pre_type": t.type}
+    else:
         # no previous token, current token is the first, return -1
         ret_val = {"pre_start": -1,
                    "pre_stop": -1,
                    "pre_text": "",
                    "pre_type": -1}
-    else:
-        # there is a next token
-        ret_val = {"pre_start": tokens[cur_idx-1].start,
-                   "pre_stop": tokens[cur_idx-1].start,
-                   "pre_text": tokens[cur_idx-1].text,
-                   "pre_type": tokens[cur_idx-1].type}
-    
+
     if verbose:
         print(f"Previous token start is at {ret_val} (-1 means no previous "
               "token).")
 
     return ret_val
+
+    # # get the current token position
+    # cur_idx = current_token_index(tokens, cur_pos)
+    # if verbose:
+    #     print(f"Current token is {tokens[cur_idx]} (index {cur_idx})")
+
+    # # find the start of the previous token
+    # if cur_idx == 0:
+    #     # no previous token, current token is the first, return -1
+    #     ret_val = {"pre_start": -1,
+    #                "pre_stop": -1,
+    #                "pre_text": "",
+    #                "pre_type": -1}
+    # else:
+    #     # there is a next token
+    #     ret_val = {"pre_start": tokens[cur_idx-1].start,
+    #                "pre_stop": tokens[cur_idx-1].start,
+    #                "pre_text": tokens[cur_idx-1].text,
+    #                "pre_type": tokens[cur_idx-1].type}
+    
+    # if verbose:
+    #     print(f"Previous token start is at {ret_val} (-1 means no previous "
+    #           "token).")
+
+    # return ret_val
 
 # determine the start and stop position (col) of current token
 def current_token_start_stop(stmt: str, cur_pos: int, verbose: bool):
@@ -183,17 +237,37 @@ def current_token_start_stop(stmt: str, cur_pos: int, verbose: bool):
         print("Tokens are:")
         print_tokens(tokens)
 
-    # get the current token position
-    cur_idx = current_token_index(tokens, cur_pos)
-    if verbose:
-        print(f"Current token is {tokens[cur_idx]} (index {cur_idx})")
+    # find the token that starts after current cursor position
+    for t in reversed(tokens):
+        # search reversely, the first token that starts before cur_pos
+        # is the current token. This assumes white spaces are part of
+        # their immediate previous token
+        # if cur_pos is out-of-range, than we are using the first
+        # or last token as current token
+        if t.start <= cur_pos:
+            break
 
-    # find the start and stop
-    ret_val = {"start": tokens[cur_idx].start,
-               "stop": tokens[cur_idx].stop,
-               "text": tokens[cur_idx].text,
-               "type": tokens[cur_idx].type}
+    ret_val = {"start": t.start,
+               "stop": t.stop,
+               "text": t.text,
+               "type": t.type}
+        
     if verbose:
         print(f"Current token start and stop are {ret_val}")
 
     return ret_val    
+
+    # # get the current token position
+    # cur_idx = current_token_index(tokens, cur_pos)
+    # if verbose:
+    #     print(f"Current token is {tokens[cur_idx]} (index {cur_idx})")
+
+    # # find the start and stop
+    # ret_val = {"start": tokens[cur_idx].start,
+    #            "stop": tokens[cur_idx].stop,
+    #            "text": tokens[cur_idx].text,
+    #            "type": tokens[cur_idx].type}
+    # if verbose:
+    #     print(f"Current token start and stop are {ret_val}")
+
+    # return ret_val    
