@@ -214,6 +214,13 @@
 1. default: Read as "If statement with test" + test + "If true, the code is." + body + "If false, the code is." + orelse. E.g.,
     1. if (a>b): return;: 'If statement with test, a- greater than b.. If true, the code is. return. '
 
+## ast.Tuple
+1. default: "a tuple with items of ..."
+    1. e.g., (1, 2, a): a tuple with items of 1, 2, a
+## ast.Set
+1. default: "a set with items of ..."
+    1. e.g., {1, 2, a}: a set with items of 1, 2, a
+
 
 ## Builtin Function
 ### Range
