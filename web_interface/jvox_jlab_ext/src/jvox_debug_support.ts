@@ -59,6 +59,7 @@ export class jvox_debugSupport {
 				const ename = errorOutput.ename;   // Error name (e.g., TypeError)
 				const evalue = errorOutput.evalue; // Error message
 				const traceback = errorOutput.traceback; // Stack trace array
+				
 
 				console.error(`Error Name: ${ename}`);
 				console.error(`Error Message: ${evalue}`);
@@ -66,6 +67,7 @@ export class jvox_debugSupport {
 
 				const errorLineNo = this.jvox_getErrorLineNo(traceback);
 
+				// only process SyntaxError, as LSP diagnostics only reports SyntaxError
 				if (ename == "SyntaxError") {
 
 					const diagnostic = this.jvox_findDiagnosticbyError(cell.editor, evalue, errorLineNo - 1);
@@ -354,6 +356,8 @@ export class jvox_debugSupport {
 		gotoColumn: Boolean = false
 	): void {
 		console.log("JVox: going to last error column.")
+		console.log("JVox: last error: ", this.lastError);
+		console.log("JVox: last error diagnostic: ", this.lastError?.diagnostic);
 
 		if (!this.lastError || !this.lastError.diagnostic || !this.lastError.diagnostic.cell) {
 			console.debug("JVox: No last error or diagnostic/cell information to set cursor.");
@@ -363,7 +367,9 @@ export class jvox_debugSupport {
 		const errorDiag: jvox_diagnostic = this.lastError.diagnostic;
 		const editor: CodeEditor.IEditor = this.lastError.diagnostic.cell;
 
-		let { startLine, startCol } = errorDiag;
+		let startLine = errorDiag.startLine;
+		let startCol = errorDiag.startCol;
+
 		if (!gotoColumn)
 			startCol = 0;
 		// Ensure startLine and startCol are valid (CodeMirror is 0-based)
