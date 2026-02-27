@@ -77,7 +77,7 @@ export class JVoxCommandRegistry {
             label: 'AI-based explanation of the nested options of current line or current selection',
             selector: '.jp-Notebook.jp-mod-editMode',
             hotkeys: ['Accel Alt Q'],
-            hotkeys_Mac: ['Alt Shift Q']
+            hotkeys_Mac: ['Accel Shift Z']
         },
     ];
 
