@@ -12,7 +12,7 @@ import { CodeEditor } from '@jupyterlab/codeeditor';
 // creating an audio object right before playing causes an awkward
 // scilence/delay before the screenreading sound.
 const audio = new Audio();
-let reading_rate = 2; // increasing speech speed.
+let reading_rate = 1.5; // increasing speech speed.
 export async function jvox_speak(audioUrl: string){
     // Extract BASE64 encoded audio bytes, and play the audio
     audio.src = audioUrl;

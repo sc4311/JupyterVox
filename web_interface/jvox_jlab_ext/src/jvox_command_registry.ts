@@ -77,7 +77,7 @@ export class JVoxCommandRegistry {
             label: 'AI-based explanation of the nested options of current line or current selection',
             selector: '.jp-Notebook.jp-mod-editMode',
             hotkeys: ['Accel Alt Q'],
-            hotkeys_Mac: ['Accel Shift Q']
+            hotkeys_Mac: ['Alt Shift Q']
         },
     ];
 
@@ -88,7 +88,7 @@ export class JVoxCommandRegistry {
         // Detect if the underlying OS is MacOS
         const isMacOS = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
         console.log("JVox command registry: getCommandById: isMacOS = ", isMacOS);
-        
+
         let command = this.commands.find(cmd => cmd.id === id);
         if (isMacOS && command?.hotkeys_Mac) {
             command.hotkeys = command.hotkeys_Mac;
