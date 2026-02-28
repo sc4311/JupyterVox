@@ -3,6 +3,15 @@
   "title": "jvox-lab-ext-screenreader",
   "description": "jvox-lab-ext-screenreader settings.",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "reading_rate": {
+      "type": "number",
+      "title": "Reading Rate",
+      "description": "Playback speed for the screen-reader audio (e.g. 1.0 = normal, 1.5 = 1.5× speed).",
+      "default": 1.5,
+      "minimum": 0.25,
+      "maximum": 4.0
+    }
+  },
   "additionalProperties": false
 }

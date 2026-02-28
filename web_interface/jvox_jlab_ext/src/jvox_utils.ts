@@ -13,6 +13,16 @@ import { CodeEditor } from '@jupyterlab/codeeditor';
 // scilence/delay before the screenreading sound.
 const audio = new Audio();
 let reading_rate = 1.5; // increasing speech speed.
+
+/**
+ * Update the reading rate used by jvox_speak.
+ * Called when the user changes the setting in the JupyterLab Settings UI.
+ */
+export function jvox_setReadingRate(rate: number): void {
+    reading_rate = rate;
+    console.log(`JVox: reading rate set to ${rate}`);
+}
+
 export async function jvox_speak(audioUrl: string){
     // Extract BASE64 encoded audio bytes, and play the audio
     audio.src = audioUrl;

@@ -15,6 +15,7 @@ import { requestAPI } from './request';
  * JVox packages
  */
 import { jvox_add_readline_command } from './jvox_read_single_line'
+import { jvox_setReadingRate } from './jvox_utils'
 import {
     jvox_debugSupport
 } from './jvox_debug_support'
@@ -46,6 +47,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
 				.load(plugin.id)
 				.then(settings => {
 					console.log('jvox-jlab-ext settings loaded:', settings.composite);
+
+					// Apply current reading_rate value
+					const rate = settings.get('reading_rate').composite as number;
+					jvox_setReadingRate(rate);
+
+					// Listen for future changes
+					settings.changed.connect(() => {
+						const updatedRate = settings.get('reading_rate').composite as number;
+						jvox_setReadingRate(updatedRate);
+					});
 				})
 				.catch(reason => {
 					console.error('Failed to load settings for jvox-jlab-ext.', reason);
