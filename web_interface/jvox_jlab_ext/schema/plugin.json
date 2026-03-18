@@ -11,12 +11,6 @@
       "default": 1.5,
       "minimum": 0.25,
       "maximum": 4.0
-    },
-    "info_plane_enabled": {
-      "type": "boolean",
-      "title": "Info Plane Enabled",
-      "description": "Show the side-by-side information panel next to each code cell.",
-      "default": true
     }
   },
   "additionalProperties": false

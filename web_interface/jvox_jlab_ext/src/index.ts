@@ -22,7 +22,6 @@ import {
 
 // import { jvox_ReadChunk } from './jvox_read_chunk';
 import { jvox_AiExplain } from './jvox_ai_explanation';
-import { JvoxInfoPanelManager } from './jvox_info_panel';
 
 /**
  * Initialization data for the jvox-jlab-ext extension.
@@ -42,11 +41,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     ) => {
 		console.log('JupyterLab extension jvox-jlab-ext is activated!');
 
-		// initialize JVox Info Panel – manages on-demand info panels
-		// for code cells (screen-reader-friendly content)
-		const infoPlaneManager = new JvoxInfoPanelManager(notebookTracker);
-		console.log('JVox Info Plane manager initialized');
-
 		// initialize setting registry
 		if (settingRegistry) {
 			settingRegistry
@@ -58,17 +52,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
 					const rate = settings.get('reading_rate').composite as number;
 					jvox_setReadingRate(rate);
 
-					// Apply current info_plane_enabled value
-					const ipEnabled = settings.get('info_plane_enabled').composite as boolean;
-					infoPlaneManager.setEnabled(ipEnabled);
-
 					// Listen for future changes
 					settings.changed.connect(() => {
 						const updatedRate = settings.get('reading_rate').composite as number;
 						jvox_setReadingRate(updatedRate);
-
-						const updatedIpEnabled = settings.get('info_plane_enabled').composite as boolean;
-						infoPlaneManager.setEnabled(updatedIpEnabled);
 					});
 				})
 				.catch(reason => {
@@ -123,9 +110,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
 		// register JVox AI explanation functions
 		const jvoxAIExplainer = new jvox_AiExplain()
 		jvoxAIExplainer.jvox_registerAiExplainCommands(app, notebookTracker, palette);
-
-		// register JVox Info Panel open/close commands
-		infoPlaneManager.registerInfoPanelCommands(app, palette);
 
 	}
 };
