@@ -79,6 +79,21 @@ export class JVoxCommandRegistry {
             hotkeys: ['Accel Alt Q'],
             hotkeys_Mac: ['Accel Shift Z']
         },
+        {
+            id: 'jvox:open-info-panel',
+            label: 'Open and Focus on Information Panel for Current Cell',
+            selector: '.jp-Notebook.jp-mod-editMode',
+            hotkeys: ['Accel Alt I'],
+            hotkeys_Mac: ['Accel Shift I']
+        },
+        {
+            id: 'jvox:close-info-panel',
+            label: 'Close the Information Panel for Current Cell',
+            selector: '.jp-Notebook.jp-mod-editMode',
+            hotkeys: ['Accel Alt O'],
+            hotkeys_Mac: ['Accel Shift O']
+        },
+        
     ];
 
     /**

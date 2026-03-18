@@ -3,3 +3,35 @@
 
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
+
+/* ===================================================================
+   JVox Info Plane – below-code layout
+   =================================================================== */
+
+/* Info Plane root */
+.jvox-info-plane {
+    overflow-y: auto;
+    border-top: 1px solid var(--jp-border-color1);
+    background: var(--jp-layout-color1);
+    padding: 8px;
+    font-family: var(--jp-ui-font-family);
+    font-size: var(--jp-ui-font-size1);
+    color: var(--jp-ui-font-color1);
+}
+
+.jvox-info-plane:focus {
+    outline: 2px solid var(--jp-brand-color1);
+    outline-offset: -2px;
+}
+
+/* Content area */
+.jvox-info-plane-content {
+    line-height: 1.5;
+}
+
+/* Placeholder text when no info is available */
+.jvox-info-plane-placeholder {
+    color: var(--jp-ui-font-color2);
+    font-style: italic;
+    margin: 0;
+}
