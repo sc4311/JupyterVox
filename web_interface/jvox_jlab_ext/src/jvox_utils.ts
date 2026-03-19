@@ -4,6 +4,7 @@
 
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { CodeEditor } from '@jupyterlab/codeeditor';
+import { JVoxInfoPanel } from './jvox_info_panel';  
 
 /**
  *  play sound
@@ -13,6 +14,7 @@ import { CodeEditor } from '@jupyterlab/codeeditor';
 // scilence/delay before the screenreading sound.
 const audio = new Audio();
 let reading_rate = 1.5; // increasing speech speed.
+let infoPanel: JVoxInfoPanel | null = null; // singleton info panel instance, to be initialized when the extension is activated.
 
 /**
  * Update the reading rate used by jvox_speak.
@@ -157,4 +159,17 @@ export function jvox_getSelection(notebookTracker: INotebookTracker
     }
 
     return { text: selectedText };
+}
+
+export function jvox_updateInfoPanel(message: string): void {
+    if (infoPanel) {
+        console.debug("Updating JVox info panel with message:", message);
+        infoPanel.showMessage(message);
+    } else {
+        console.warn("JVox: Info panel is not initialized yet.");
+    }
+}
+
+export function jvox_setInfoPanel(panel: JVoxInfoPanel): void {
+    infoPanel = panel;
 }

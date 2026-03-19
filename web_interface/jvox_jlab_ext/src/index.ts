@@ -22,6 +22,8 @@ import {
 
 // import { jvox_ReadChunk } from './jvox_read_chunk';
 import { jvox_AiExplain } from './jvox_ai_explanation';
+import { JVoxInfoPanel } from './jvox_info_panel';
+import { jvox_setInfoPanel } from './jvox_utils';
 
 /**
  * Initialization data for the jvox-jlab-ext extension.
@@ -110,6 +112,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
 		// register JVox AI explanation functions
 		const jvoxAIExplainer = new jvox_AiExplain()
 		jvoxAIExplainer.jvox_registerAiExplainCommands(app, notebookTracker, palette);
+
+		// register JVox bottom information panel
+		const infoPanel = new JVoxInfoPanel();
+		app.shell.add(infoPanel, 'bottom');
+		infoPanel.registerCommands(app, palette);
+		jvox_setInfoPanel(infoPanel); // set the info panel instance in jvox_utils, for global use in the extension.
 
 	}
 };

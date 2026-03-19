@@ -3,3 +3,18 @@
 
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
+
+.jvox-info-panel {
+    min-height: 80px;
+    background: var(--jp-layout-color1);
+    color: var(--jp-ui-font-color1);
+    font-family: var(--jp-code-font-family);
+    font-size: var(--jp-ui-font-size1);
+    overflow-y: auto;
+}
+
+.jvox-info-panel-content {
+    padding: 8px 12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

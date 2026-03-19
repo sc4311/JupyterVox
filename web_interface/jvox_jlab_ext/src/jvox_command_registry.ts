@@ -79,6 +79,13 @@ export class JVoxCommandRegistry {
             hotkeys: ['Accel Alt Q'],
             hotkeys_Mac: ['Accel Shift Z']
         },
+        {
+            id: 'jvox:toggle-info-panel',
+            label: 'Toggle JVox Info Panel',
+            selector: 'body',
+            hotkeys: ['Accel Alt I'],
+            hotkeys_Mac: ['Accel Shift I']
+        },
     ];
 
     /**

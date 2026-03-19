@@ -2,7 +2,7 @@
  * JVox utilities
  */
 
-import { jvox_speak } from "./jvox_utils";
+import { jvox_speak, jvox_updateInfoPanel } from "./jvox_utils";
 
 import { requestAPI } from "./request";
 
@@ -47,6 +47,7 @@ async function jvox_handleAudioResponse(response: Response)
     const base64Audio = data.audio;
 
     console.debug("speech text:", speechText);
+    jvox_updateInfoPanel(speechText); // update the info panel with the speech text
 
     // Extract BASE64 encoded audio bytes, and play the audio
     const audioUrl = `data:audio/mpeg;base64,${base64Audio}`;

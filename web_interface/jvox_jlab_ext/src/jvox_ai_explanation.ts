@@ -12,7 +12,7 @@ import { requestAPI } from './request';
  
 // import { CodeEditor } from '@jupyterlab/codeeditor';
 
-import { jvox_getLineAndCursor, jvox_getSelection, jvox_speak } from './jvox_utils';
+import { jvox_getLineAndCursor, jvox_getSelection, jvox_speak, jvox_updateInfoPanel } from './jvox_utils';
  
 import { JVoxCommandRegistry } from './jvox_command_registry';
 
@@ -159,6 +159,7 @@ export class jvox_AiExplain {
 
         // play audio
         console.debug("speech text:", speechText);
+        jvox_updateInfoPanel(speechText); // update the info panel with the speech text
         // Extract BASE64 encoded audio bytes, and play the audio
         const audioUrl = `data:audio/mpeg;base64,${base64Audio}`;
         jvox_speak(audioUrl);
