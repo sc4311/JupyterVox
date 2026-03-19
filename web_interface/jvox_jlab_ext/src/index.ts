@@ -22,8 +22,8 @@ import {
 
 // import { jvox_ReadChunk } from './jvox_read_chunk';
 import { jvox_AiExplain } from './jvox_ai_explanation';
-import { JVoxInfoPanel } from './jvox_info_panel';
-import { jvox_setInfoPanel } from './jvox_utils';
+import { JVoxInfoPanelManager } from './jvox_info_panel';
+import { jvox_setInfoPanelManager } from './jvox_utils';
 
 /**
  * Initialization data for the jvox-jlab-ext extension.
@@ -113,11 +113,15 @@ const plugin: JupyterFrontEndPlugin<void> = {
 		const jvoxAIExplainer = new jvox_AiExplain()
 		jvoxAIExplainer.jvox_registerAiExplainCommands(app, notebookTracker, palette);
 
-		// register JVox bottom information panel
-		const infoPanel = new JVoxInfoPanel();
-		app.shell.add(infoPanel, 'bottom');
-		infoPanel.registerCommands(app, palette);
-		jvox_setInfoPanel(infoPanel); // set the info panel instance in jvox_utils, for global use in the extension.
+		// register JVox bottom information panel manager
+		const infoPanelManager = new JVoxInfoPanelManager(app);
+		infoPanelManager.registerCommands(palette);
+		jvox_setInfoPanelManager(infoPanelManager);
+
+		// Open the panel after the workspace is fully restored.
+		app.restored.then(() => {
+			infoPanelManager.open();
+		});
 
 	}
 };

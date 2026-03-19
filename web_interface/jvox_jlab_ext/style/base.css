@@ -5,7 +5,8 @@
 */
 
 .jvox-info-panel {
-    min-height: 80px;
+    min-height: 40px;
+    max-height: 200px;
     background: var(--jp-layout-color1);
     color: var(--jp-ui-font-color1);
     font-family: var(--jp-code-font-family);
