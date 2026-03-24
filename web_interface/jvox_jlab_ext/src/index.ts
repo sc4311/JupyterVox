@@ -20,6 +20,8 @@ import {
     jvox_debugSupport
 } from './jvox_debug_support'
 
+import { JVoxKernelErrorComm } from './jvox_kernel_error_comm';
+
 // import { jvox_ReadChunk } from './jvox_read_chunk';
 import { jvox_AiExplain } from './jvox_ai_explanation';
 import { JVoxInfoPanelManager } from './jvox_info_panel';
@@ -83,6 +85,29 @@ const plugin: JupyterFrontEndPlugin<void> = {
 		 * Register JVox debug support
 		 */
 		const jvox_debug = new jvox_debugSupport();
+
+		// Set up the kernel Comm channel for structured error data
+		const kernelErrorComm = new JVoxKernelErrorComm();
+		kernelErrorComm.onError((errorData) => {
+			jvox_debug.jvox_onKernelError(errorData);
+		});
+
+		// Set up Comm when kernel becomes available
+		notebookTracker.currentChanged.connect(() => {
+			const session = notebookTracker.currentWidget?.context?.sessionContext;
+			if (session) {
+				// When kernel changes (start/restart), re-setup the comm
+				session.kernelChanged.connect(() => {
+					kernelErrorComm.dispose();
+					kernelErrorComm.setup(notebookTracker);
+				});
+				// Also try to set up now if kernel is already running
+				if (session.session?.kernel) {
+					kernelErrorComm.setup(notebookTracker);
+				}
+			}
+		});
+
 		// register an event handler to process the 
 		// NotebookActions.executed.connect(jvox_on_execution_finished);
 		// Use a wrapper to pass the extra parameters
@@ -93,13 +118,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
 				lspManager);
 		});
 
+		/*
 		// register an event handler to monitor the connection signal
 		// to LSP server
 		lspManager.connected.connect((manager, connectionData) => {
 			const { connection, virtualDocument } = connectionData;
 			jvox_debug.jvox_onLSPConnected(notebookTracker, manager, connection, virtualDocument);
 		});
-
+		*/
 		// add commands for JVox debug support
 		jvox_debug.jvox_registerDebugSupportCommands(app, notebookTracker, palette);
 
