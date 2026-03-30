@@ -11,6 +11,19 @@
       "default": 1.5,
       "minimum": 0.25,
       "maximum": 4.0
+    },
+    "ai_client": {
+      "type": "string",
+      "title": "AI Client",
+      "description": "Which AI backend to use for code explanations and AI magics.",
+      "default": "ollama",
+      "enum": ["ollama", "gemini"]
+    },
+    "gemini_api_key": {
+      "type": "string",
+      "title": "Gemini API Key",
+      "description": "Your Google Gemini API key. Required when AI Client is set to 'gemini'.",
+      "default": ""
     }
   },
   "additionalProperties": false

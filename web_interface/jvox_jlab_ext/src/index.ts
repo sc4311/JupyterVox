@@ -19,8 +19,10 @@ import { jvox_setReadingRate } from './jvox_utils'
 import {
     jvox_debugSupport
 } from './jvox_debug_support'
+import { JVoxSettings } from './jvox_settings';
 
 import { JVoxKernelErrorComm } from './jvox_kernel_error_comm';
+import { JVoxAiSettingsComm } from './jvox_ai_settings_comm';
 
 // import { jvox_ReadChunk } from './jvox_read_chunk';
 import { jvox_AiExplain } from './jvox_ai_explanation';
@@ -45,21 +47,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
     ) => {
 		console.log('JupyterLab extension jvox-jlab-ext is activated!');
 
-		// initialize setting registry
+		// initialize settings manager
+		const jvoxSettings = new JVoxSettings();
 		if (settingRegistry) {
-			settingRegistry
-				.load(plugin.id)
-				.then(settings => {
-					console.log('jvox-jlab-ext settings loaded:', settings.composite);
-
+			jvoxSettings
+				.load(settingRegistry, plugin.id)
+				.then(() => {
 					// Apply current reading_rate value
-					const rate = settings.get('reading_rate').composite as number;
-					jvox_setReadingRate(rate);
+					jvox_setReadingRate(jvoxSettings.readingRate);
 
 					// Listen for future changes
-					settings.changed.connect(() => {
-						const updatedRate = settings.get('reading_rate').composite as number;
-						jvox_setReadingRate(updatedRate);
+					jvoxSettings.changed.connect(() => {
+						jvox_setReadingRate(jvoxSettings.readingRate);
 					});
 				})
 				.catch(reason => {
@@ -92,6 +91,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
 			jvox_debug.jvox_onKernelError(errorData);
 		});
 
+		// Set up the kernel Comm channel for AI settings
+		const aiSettingsComm = new JVoxAiSettingsComm(jvoxSettings);
+
+		// Re-send AI settings to the kernel whenever they change
+		jvoxSettings.changed.connect(() => {
+			aiSettingsComm.sendSettings();
+		});
+
 		// Set up Comm when kernel becomes available
 		notebookTracker.currentChanged.connect(() => {
 			const session = notebookTracker.currentWidget?.context?.sessionContext;
@@ -100,10 +107,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
 				session.kernelChanged.connect(() => {
 					kernelErrorComm.dispose();
 					kernelErrorComm.setup(notebookTracker);
+					aiSettingsComm.dispose();
+					aiSettingsComm.setup(notebookTracker);
 				});
 				// Also try to set up now if kernel is already running
 				if (session.session?.kernel) {
 					kernelErrorComm.setup(notebookTracker);
+					aiSettingsComm.setup(notebookTracker);
 				}
 			}
 		});
@@ -136,7 +146,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 		// jvoxChunkReader.jvox_registerReadChunkCommands(app, notebookTracker, palette);
 
 		// register JVox AI explanation functions
-		const jvoxAIExplainer = new jvox_AiExplain()
+		const jvoxAIExplainer = new jvox_AiExplain(jvoxSettings)
 		jvoxAIExplainer.jvox_registerAiExplainCommands(app, notebookTracker, palette);
 
 		// register JVox bottom information panel manager

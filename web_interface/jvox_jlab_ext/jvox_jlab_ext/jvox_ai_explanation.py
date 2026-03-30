@@ -31,14 +31,17 @@ class JVoxAIExplanationRouteHandler(APIHandler):
         input_data = self.get_json_body()
         stmt = input_data["statement"]
         command = input_data["command"]
+        ai_client = input_data.get("ai_client")    # "ollama" or "gemini"
+        api_key = input_data.get("api_key", "")     # Gemini API key (may be empty)
         print("JVox AI explanation web api got statement", stmt)
         print("JVox AI explanation web api got command", command)
+        print("JVox AI explanation web api got ai_client", ai_client)
 
         ai_response = ""
         if command == "codeExplain":
-            ai_response = jvox.ai_explain_code(stmt) 
+            ai_response = jvox.ai_explain_code(stmt, ai_client=ai_client, api_key=api_key) 
         elif command == "nestedCodeExplain":
-            ai_response = jvox.ai_explain_nested_code(stmt)
+            ai_response = jvox.ai_explain_nested_code(stmt, ai_client=ai_client, api_key=api_key)
 
         # generate audio bytes
         mp3_bytes = jvox.gen_mp3_bytes_from_speech_gtts(ai_response)

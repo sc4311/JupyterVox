@@ -20,13 +20,14 @@ def get_api_key():
 
     return API_KEY
 
-def generate(prompt):
+def generate(prompt, api_key=None):
     '''
     For sending one prompt
     '''
     logger = jvox_logging("general", log_to_stderr=False)
 
-    api_key = get_api_key()
+    if not api_key:
+        api_key = get_api_key()
     client = genai.Client(api_key=api_key)
 
     response = client.models.generate_content(
@@ -35,7 +36,7 @@ def generate(prompt):
 
     return response.text
 
-def converse(prompts):
+def converse(prompts, api_key=None):
     """
     For sending a sequence of converstaion
     """
@@ -43,7 +44,9 @@ def converse(prompts):
     #logger.debug(f"Prompts to send: {prompts}")
 
     # Setup
-    client = genai.Client(api_key=get_api_key())
+    if not api_key:
+        api_key = get_api_key()
+    client = genai.Client(api_key=api_key)
     chat = client.chats.create(model=gemini_model_name)
 
     responses = []

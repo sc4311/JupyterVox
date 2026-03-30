@@ -30,7 +30,7 @@ def get_server_url():
 
     return llama_server_url
 
-def generate(prompt):
+def generate(prompt, api_key=None):
     '''
     For sending one prompt
     '''

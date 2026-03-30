@@ -15,8 +15,15 @@ import { requestAPI } from './request';
 import { jvox_getLineAndCursor, jvox_getSelection, jvox_speak, jvox_updateInfoPanel } from './jvox_utils';
  
 import { JVoxCommandRegistry } from './jvox_command_registry';
+import { JVoxSettings } from './jvox_settings';
 
 export class jvox_AiExplain {
+
+    private _settings: JVoxSettings;
+
+    constructor(settings: JVoxSettings) {
+        this._settings = settings;
+    }
 
     // Register "read next chunk", "read previous chunk", and "read current chunk" commands
     public jvox_registerAiExplainCommands(
@@ -92,6 +99,8 @@ export class jvox_AiExplain {
         const dataToSend = { 
             statement: text_to_explain,
             command: "codeExplain",
+            ai_client: this._settings.aiClient,
+            api_key: this._settings.geminiApiKey,
          };
         requestAPI('AIExplain', {
             body: JSON.stringify(dataToSend),
@@ -125,6 +134,8 @@ export class jvox_AiExplain {
         const dataToSend = { 
             statement: text_to_explain,
             command: "nestedCodeExplain",
+            ai_client: this._settings.aiClient,
+            api_key: this._settings.geminiApiKey,
          };
         requestAPI('AIExplain', {
             body: JSON.stringify(dataToSend),

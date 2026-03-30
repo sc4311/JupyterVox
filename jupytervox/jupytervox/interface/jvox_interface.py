@@ -40,7 +40,8 @@ from ..parser.debug_support.runtime_error_support import entry_point as rt_suppo
 from ..parser.statement_chunking import statement_chunking as stmt_chunk
 
 # from ..commons.ai_backend import gemini_interface as ai_interface
-from ..commons.ai_backend import llama_cpp_interface as ai_interface
+# from ..commons.ai_backend import llama_cpp_interface as ai_interface
+from ..commons.ai_backend import get_ai_interface
 #from jvox_server_commons import jvox_llama_cpp_interface as ai_interface
 
 class jvox_interface:
@@ -379,7 +380,7 @@ class jvox_interface:
     #   beginner programmers understand the meaning of code, including
     #   variable names, without echoing the original code back to the user.
     # --------------------------------------------------------------
-    def ai_explain_code(self, statement):
+    def ai_explain_code(self, statement, ai_client=None, api_key=None):
         print(f"Explaining statement with AI: {statement}")
 
         prompt = f"""please explain the literal meaning of the following Python 
@@ -387,7 +388,8 @@ class jvox_interface:
         statement, please be succinct. Make sure you read variable names. 
         Statement is: {statement}"""
 
-        response = ai_interface.generate(prompt)
+        ai_interface = get_ai_interface(ai_client)
+        response = ai_interface.generate(prompt, api_key=api_key)
         if isinstance(response, str):
             response = response.replace('`', '"')
 
@@ -395,14 +397,15 @@ class jvox_interface:
 
         return response
 
-    def ai_explain_nested_code(self, statement):
+    def ai_explain_nested_code(self, statement, ai_client=None, api_key=None):
         print(f"Explaining nested statement with AI: {statement}")
 
         prompt = f"""please explain the nested operations of the following Python 
         statement for beginners in one or two sentences. Please be concise.
         Input code: {statement}"""
 
-        response = ai_interface.generate(prompt)
+        ai_interface = get_ai_interface(ai_client)
+        response = ai_interface.generate(prompt, api_key=api_key)
         if isinstance(response, str):
             response = response.replace('`', '"')
         print(f"AI Explanation Response: {response}")

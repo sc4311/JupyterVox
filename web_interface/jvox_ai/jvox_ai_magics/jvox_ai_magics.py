@@ -19,10 +19,12 @@ from IPython.display import HTML, JSON, Markdown, Math
 import logging
 
 #from .jvox_ai_backend import jvox_gemini_interface as ai_interface
-from jupytervox.commons import llama_cpp_interface as ai_interface
+from jupytervox.commons.ai_backend import get_ai_interface
 
 #from jvox_server_commons import jvox_logging
 from jupytervox.commons import jvox_logging
+
+from .jvox_ai_settings_comm import get_ai_client, get_api_key
 
 @magics_class
 class JVoxAiMagics(Magics):
@@ -56,7 +58,8 @@ class JVoxAiMagics(Magics):
 
         logger.debug(f"prompt is: {prompt}")
 
-        response = ai_interface.generate(prompt)
+        ai_interface = get_ai_interface(get_ai_client())
+        response = ai_interface.generate(prompt, api_key=get_api_key())
 
         logger.debug(f"response is: {response}")
 
