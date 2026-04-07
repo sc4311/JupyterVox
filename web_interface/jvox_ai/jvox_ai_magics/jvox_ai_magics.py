@@ -63,8 +63,19 @@ class JVoxAiMagics(Magics):
 
         logger.debug(f"response is: {response}")
 
+        response = self._strip_code_fences(response)
+
         self.shell.set_next_input(response, replace=False)
         return HTML("AI generated code inserted below &#11015;&#65039;")
+
+    def _strip_code_fences(self, code):
+        """Remove markdown code fences if present."""
+        code = code.strip()
+        if code.startswith("```"):
+            code = code.split("\n", 1)[1] if "\n" in code else ""
+        if code.endswith("```"):
+            code = code[:-3].rstrip()
+        return code
 
     def prepare_prompt(self, cell_text):
 

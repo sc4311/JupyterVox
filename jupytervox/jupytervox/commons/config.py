@@ -5,15 +5,22 @@
 import os
 import tomllib
 import sys
+import getpass
 
 # add a default config to put all log files to /tmp if no config file is found, to avoid errors when logging without a config file
+# Use {user} placeholder to generate per-user log files, avoiding permission
+# conflicts when multiple OS users share the same JupyterHub instance.
 default_config = {
     "logs": {
-        "ipython": "/tmp/jvox_ipython.log",
-        "general": "/tmp/jvox_general.log",
-        "JupyterLab": "/tmp/jvox_jupyterlab.log"
+        "ipython": "/tmp/jvox_ipython_{user}.log",
+        "general": "/tmp/jvox_general_{user}.log",
+        "JupyterLab": "/tmp/jvox_jupyterlab_{user}.log"
     }
 }
+
+def _expand_log_path(path):
+    """Replace {user} placeholder with the current OS username."""
+    return path.replace("{user}", getpass.getuser())
 
 def jvox_parse_config(config_path):
     """
@@ -83,7 +90,7 @@ def jvox_ipython_log_path():
 
     log_path = config["logs"]["ipython"]
 
-    return log_path
+    return _expand_log_path(log_path)
 
 def jvox_general_log_path():
     """
@@ -94,7 +101,7 @@ def jvox_general_log_path():
 
     log_path = config["logs"]["general"]
 
-    return log_path
+    return _expand_log_path(log_path)
 
 def jvox_jupyterlab_log_path():
     """
@@ -105,7 +112,7 @@ def jvox_jupyterlab_log_path():
 
     log_path = config["logs"]["JupyterLab"]
 
-    return log_path
+    return _expand_log_path(log_path)
 
 if __name__ == "__main__":
     # Just call the one you want here
