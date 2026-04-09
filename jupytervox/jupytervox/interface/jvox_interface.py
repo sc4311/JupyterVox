@@ -411,3 +411,43 @@ class jvox_interface:
         print(f"AI Explanation Response: {response}")
 
         return response
+
+    def ai_explain_detailed_code(self, statement, cell_content, ai_client=None, api_key=None):
+        print(f"Explaining statement in detail with AI: {statement}")
+
+        stmt = statement.strip() if statement else ""
+        cell = cell_content.strip() if cell_content else ""
+
+        is_whole_cell = (stmt == cell)
+        is_single_line = "\n" not in stmt
+
+        if is_whole_cell:
+            # The selection is the entire cell — no need to mention surrounding context
+            prompt = f"""Please explain what the following Python code does for beginners
+        in two to three sentences. Make sure you read variable names. Do not repeat the code.
+        Code:
+        {stmt}"""
+        elif is_single_line:
+            # Single line — explain syntax first, then its role in the cell
+            prompt = f"""Please explain the following Python statement for beginners in two to three sentences.
+        First, briefly explain the syntax of the statement. Then explain what it does within
+        the context of the surrounding code cell. Make sure you read variable names. Do not repeat the statement.
+        Code cell:
+        {cell}
+        Statement to explain: {stmt}"""
+        else:
+            # Multiple lines — explain what they do in the context of the cell
+            prompt = f"""Please explain what the following Python statements do for beginners
+        in two to three sentences. Explain within the context of the surrounding code cell.
+        Make sure you read variable names. Do not repeat the statements.
+        Code cell:
+        {cell}
+        Statements to explain: {stmt}"""
+
+        ai_interface = get_ai_interface(ai_client)
+        response = ai_interface.generate(prompt, api_key=api_key)
+        if isinstance(response, str):
+            response = response.replace('`', '"')
+        print(f"AI Detailed Explanation Response: {response}")
+
+        return response

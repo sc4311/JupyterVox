@@ -53,15 +53,15 @@ export class jvox_AiExplain {
         palette.addItem({ command: commandObj.id, category: 'JVox Operations' });
 
         // read previous chunk
-        const prevCommandObj = JVoxCommandRegistry.getCommandById('jvox:ai-code-nested-operation-explanation');
+        const prevCommandObj = JVoxCommandRegistry.getCommandById('jvox:ai-code-detailed-explanation');
         if (!prevCommandObj) {
-            console.error("JVox command registry: command 'jvox:ai-code-nested-operation-explanation' not found.");
+            console.error("JVox command registry: command 'jvox:ai-code-detailed-explanation' not found.");
             return;
         }
 
         commands.addCommand(prevCommandObj.id, {
             label: prevCommandObj.label,
-            execute: () => this.jvox_AiNestedCodeExplain(notebookTracker)
+            execute: () => this.jvox_AIDetailedCodeExplain(notebookTracker)
         });
 
         app.commands.addKeyBinding({
@@ -121,19 +121,23 @@ export class jvox_AiExplain {
     }
 
     /**
-     * Explain the nested operations of code at the cursor (line or selection) using an AI backend.
+     * Explain the current line or selection in detail within the context of the whole code cell using an AI backend.
      * @param notebookTracker The INotebookTracker instance for tracking the active notebook and cell.
     **/
-    private jvox_AiNestedCodeExplain(notebookTracker:INotebookTracker)
+    private jvox_AIDetailedCodeExplain(notebookTracker:INotebookTracker)
     {
-        console.debug("In jvox_AiNestedCodeExplain.")
+        console.debug("In jvox_AIDetailedCodeExplain.")
 
         let text_to_explain = this.jox_getSelectionOrLine(notebookTracker);
 
-        // send line to server extension
+        // get the entire cell content for context
+        const cellContent = notebookTracker.currentWidget?.content.activeCell?.model.sharedModel.getSource() ?? "";
+
+        // send line and cell content to server extension
         const dataToSend = { 
             statement: text_to_explain,
-            command: "nestedCodeExplain",
+            cell_content: cellContent,
+            command: "detailedCodeExplain",
             ai_client: this._settings.aiClient,
             api_key: this._settings.geminiApiKey,
          };

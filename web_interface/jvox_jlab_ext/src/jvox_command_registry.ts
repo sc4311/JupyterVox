@@ -73,8 +73,8 @@ export class JVoxCommandRegistry {
             hotkeys_Mac: ['Accel Shift A']
         },
         {
-            id: 'jvox:ai-code-nested-operation-explanation',
-            label: 'AI-based explanation of the nested options of current line or current selection',
+            id: 'jvox:ai-code-detailed-explanation',
+            label: 'AI-based detailed explanation of current line or selection in cell context',
             selector: '.jp-Notebook.jp-mod-editMode',
             hotkeys: ['Accel Alt Q'],
             hotkeys_Mac: ['Accel Shift Z']
